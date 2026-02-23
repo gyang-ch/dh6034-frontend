@@ -1,0 +1,399 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap");
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --radius-soft: 8px;
+    --radius-inner: 6px;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    margin: 0;
+  }
+
+  body {
+    font-family: "Aptos", "Aptos Display", "Segoe UI", "Calibri", "Noto Sans", sans-serif;
+    cursor: auto;
+  }
+
+  :focus-visible {
+    outline: 2px solid #0f766e;
+    outline-offset: 3px;
+  }
+}
+
+@layer utilities {
+  .font-major {
+    font-family: "Aptos", "Aptos Display", "Segoe UI", "Calibri", "Noto Sans", sans-serif;
+  }
+
+  .font-title {
+    font-family: "Playfair Display", "Cormorant Garamond", "Times New Roman", serif;
+  }
+
+  .font-subtitle {
+    font-family: "Archivo", "Aptos", "Segoe UI", "Calibri", sans-serif;
+    letter-spacing: 0.01em;
+  }
+}
+
+@layer components {
+  .chapter-rail,
+  .essay-section,
+  .media-card,
+  .note-card,
+  .pull-quote {
+    border-radius: var(--radius-soft);
+  }
+
+  .hero-overlay {
+    border-radius: 0;
+  }
+
+  .image-block img,
+  .stacked-card {
+    border-radius: var(--radius-inner);
+  }
+
+  .chapter-rail a {
+    border-radius: 9px;
+  }
+
+  .chapter-widget {
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.34);
+    background: rgba(255, 255, 255, 0.58);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    padding: 0.7rem;
+  }
+
+  .chapter-widget-title svg {
+    color: #475569;
+  }
+
+  .chapter-nav-list {
+    scrollbar-width: none;
+  }
+
+  .chapter-nav-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chapter-nav-shell {
+    position: relative;
+  }
+
+  .chapter-connector {
+    position: absolute;
+    z-index: 0;
+    left: 7px;
+    top: 0.42rem;
+    bottom: 0.42rem;
+    width: 2px;
+    height: auto;
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.34);
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .chapter-connector-fill {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, #2dd4bf 0%, #0f766e 65%, #0f172a 100%);
+    box-shadow: 0 0 16px rgba(15, 118, 110, 0.55);
+    transform-origin: top center;
+    transform: scaleY(0);
+    will-change: transform;
+  }
+
+  .chapter-link {
+    position: relative;
+    z-index: 1;
+    text-wrap: balance;
+    transform-origin: left center;
+    will-change: transform, color;
+  }
+
+  .chapter-link::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -1rem;
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.42);
+    transform: translateY(-50%);
+    transition: background-color 0.25s ease;
+    display: none;
+  }
+
+  .chapter-link[aria-current='true']::before {
+    background: #0f766e;
+  }
+  
+  @keyframes bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .chapter-widget {
+    border-radius: 10px;
+  }
+}
+
+@media (min-width: 768px) {
+  .chapter-link::before {
+    display: block;
+  }
+}
+
+.hero-canvas,
+.hero-static {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-liquid {
+  pointer-events: none;
+  will-change: mask-position;
+  -webkit-mask-image: radial-gradient(
+    circle 190px at var(--liquid-x, 50%) var(--liquid-y, 50%),
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.92) 36%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  mask-image: radial-gradient(
+    circle 190px at var(--liquid-x, 50%) var(--liquid-y, 50%),
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.92) 36%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.hero-liquid canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.hero-liquid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at var(--liquid-x, 50%) var(--liquid-y, 50%),
+      rgba(170, 220, 238, 0.24) 0%,
+      rgba(170, 220, 238, 0.1) 18%,
+      rgba(15, 23, 42, 0) 44%
+    );
+  mix-blend-mode: screen;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 20px 10px rgba(255, 255, 255, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
+}
+
+.glass-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.8),
+    transparent,
+    rgba(255, 255, 255, 0.3)
+  );
+}
+
+.glass-card-interactive::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)"/></svg>');
+  background-size: 100%;
+  opacity: 0.02;
+  pointer-events: none;
+  animation: grain 8s steps(10) infinite;
+}
+
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -10%); }
+  20% { transform: translate(-15%, 5%); }
+  30% { transform: translate(7%, -25%); }
+  40% { transform: translate(-5%, 25%); }
+  50% { transform: translate(-15%, 10%); }
+  60% { transform: translate(15%, 0%); }
+  70% { transform: translate(0%, 15%); }
+  80% { transform: translate(3%, 35%); }
+  90% { transform: translate(-10%, 10%); }
+}
+
+.hero-static-gradient {
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 20% 20%, #d9edea 0%, transparent 45%),
+    radial-gradient(circle at 80% 30%, #f8e9d4 0%, transparent 40%),
+    linear-gradient(140deg, #f6f4ef 0%, #ebf6fb 100%);
+}
+
+.hero-cover-fallback {
+  background-image: url("/media/cover.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hero-canvas {
+    display: none;
+  }
+
+  .essay-section,
+  .media-card,
+  .note-card {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+.reduced-motion .hero-canvas {
+  display: none;
+}
+
+.animate-bob {
+  animation: bob 2.5s ease-in-out infinite;
+}
+
+.lux-kicker {
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.subhead-spaced {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.image-container .glass-overlay {
+  height: clamp(44px, 10%, 58px);
+  background: linear-gradient(
+    to top,
+    rgba(15, 23, 42, 0.66) 0%,
+    rgba(15, 23, 42, 0.36) 60%,
+    rgba(15, 23, 42, 0.06) 100%
+  );
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 -12px 24px rgba(15, 23, 42, 0.2);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.image-container .description-text {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.4s ease 0.2s,
+    transform 0.4s ease 0.2s;
+}
+
+.image-container.is-active .glass-overlay,
+.image-container:focus-within .glass-overlay {
+  height: clamp(92px, 24%, 132px);
+  background: linear-gradient(
+    to top,
+    rgba(15, 23, 42, 0.74) 0%,
+    rgba(15, 23, 42, 0.44) 62%,
+    rgba(15, 23, 42, 0.08) 100%
+  );
+  border-top-color: rgba(255, 255, 255, 0.22);
+}
+
+.image-container.is-active .description-text,
+.image-container:focus-within .description-text {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.image-container .stage-title,
+.image-container .stage-meta {
+  text-shadow: 0 2px 10px rgba(15, 23, 42, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-container .glass-overlay {
+    transition: none;
+  }
+  .image-container .description-text {
+    transition: none;
+  }
+}
+
+@keyframes move-gradients {
+  0% {
+    background-position: 18% 16%, 84% 14%, 0% 0%;
+  }
+  50% {
+    background-position: 25% 20%, 75% 10%, 0% 0%;
+  }
+  100% {
+    background-position: 18% 16%, 84% 14%, 0% 0%;
+  }
+}
+
+.essay {
+  animation: move-gradients 30s ease-in-out infinite;
+}
