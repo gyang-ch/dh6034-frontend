@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "ship": "H.M.S. Scylla",
+    "location": "At Nagasaki",
+    "dateRange": "30th August 1864 to 2nd Sept 1864",
+    "remarksLeftPage": "At the Steam factory at Akunoura they are able to do some tolerably heavy repairs to Engines, they put new ends on to several of our tubes which had become defective, and have a regular scale of charges some thing cheaper than Shanghai but of course they take their own time about it, and make a favor of it.",
+    "remarksRightPage": "On the eastern side near the settlement or in it more properly are two building yards, and in one of them Mr Fitzgerald a vessel is building of about 250 to 300 tons. We also had a private gig built here for a boat, and the Japanese are capital carpenters. our Carpenter gave the design. The Japanese are making a nice bund for the settlement, and are fast filling."
+  },
+  "logEntries": [
+    { "id": 1, "date": "Tuesday 30th August", "time": "4 A.M.", "barom": "30.00", "tempAir": "80", "windDir": "NW", "windForce": "1", "weather": "bc" },
+    { "id": 2, "date": "Tuesday 30th August", "time": "8 A.M.", "barom": "30.02", "tempAir": "82", "windDir": "NW", "windForce": "2", "weather": "bcp" },
+    { "id": 3, "date": "Tuesday 30th August", "time": "12 A.M.", "barom": "30.04", "tempAir": "83", "windDir": "NW", "windForce": "1", "weather": "bc" },
+    { "id": 4, "date": "Tuesday 30th August", "time": "4 P.M.", "barom": "30.04", "tempAir": "84", "windDir": "NW", "windForce": "1", "weather": "bc" },
+    { "id": 5, "date": "Tuesday 30th August", "time": "8 P.M.", "barom": "30.06", "tempAir": "84", "windDir": "Calm", "windForce": "0", "weather": "bc" },
+    { "id": 6, "date": "Tuesday 30th August", "time": "12 P.M.", "barom": "30.10", "tempAir": "81.5", "windDir": "Calm", "windForce": "0", "weather": "bc" },
+
+    { "id": 7, "date": "Wednesday 31st August", "time": "4 A.M.", "barom": "30.10", "tempAir": "80", "windDir": "Calm", "windForce": "0", "weather": "bc" },
+    { "id": 8, "date": "Wednesday 31st August", "time": "8 A.M.", "barom": "30.10", "tempAir": "83", "windDir": "NW", "windForce": "1", "weather": "bc" },
+    { "id": 9, "date": "Wednesday 31st August", "time": "12 A.M.", "barom": "30.10", "tempAir": "83", "windDir": "NW", "windForce": "1", "weather": "bc" },
+    { "id": 10, "date": "Wednesday 31st August", "time": "4 P.M.", "barom": "30.11", "tempAir": "83", "windDir": "NW", "windForce": "1", "weather": "bc" },
+    { "id": 11, "date": "Wednesday 31st August", "time": "8 P.M.", "barom": "30.08", "tempAir": "82", "windDir": "Calm", "windForce": "0", "weather": "bc" },
+    { "id": 12, "date": "Wednesday 31st August", "time": "12 P.M.", "barom": "30.06", "tempAir": "81", "windDir": "Calm", "windForce": "0", "weather": "bc" },
+
+    { "id": 13, "date": "Thursday 1st September", "time": "4 A.M.", "barom": "30.10", "tempAir": "81", "windDir": "Calm", "windForce": "0", "weather": "bc" },
+    { "id": 14, "date": "Thursday 1st September", "time": "8 A.M.", "barom": "30.10", "tempAir": "83", "windDir": "NW", "windForce": "1", "weather": "bc" },
+    { "id": 15, "date": "Thursday 1st September", "time": "12 A.M.", "barom": "30.06", "tempAir": "84", "windDir": "NW", "windForce": "1", "weather": "bc" },
+    { "id": 16, "date": "Thursday 1st September", "time": "4 P.M.", "barom": "30.05", "tempAir": "83.5", "windDir": "SE to NE", "windForce": "2 to 4", "weather": "bc to cr [?]" },
+    { "id": 17, "date": "Thursday 1st September", "time": "8 P.M.", "barom": "30.06", "tempAir": "83", "windDir": "NE", "windForce": "3", "weather": "ocp" },
+    { "id": 18, "date": "Thursday 1st September", "time": "12 P.M.", "barom": "30.10", "tempAir": "82", "windDir": "Calm", "windForce": "0", "weather": "oc" },
+
+    { "id": 19, "date": "Friday 2nd September", "time": "4 A.M.", "barom": "30.08", "tempAir": "81", "windDir": "Calm", "windForce": "0", "weather": "bcp" },
+    { "id": 20, "date": "Friday 2nd September", "time": "8 A.M.", "barom": "30.10", "tempAir": "81.5", "windDir": "Calm", "windForce": "0", "weather": "cp" },
+    { "id": 21, "date": "Friday 2nd September", "time": "12 A.M.", "barom": "30.10", "tempAir": "82", "windDir": "Calm", "windForce": "0", "weather": "cp" },
+    { "id": 22, "date": "Friday 2nd September", "time": "4 P.M.", "barom": "30.10", "tempAir": "82", "windDir": "Calm", "windForce": "0", "weather": "bc" },
+    { "id": 23, "date": "Friday 2nd September", "time": "8 P.M.", "barom": "30.10", "tempAir": "81", "windDir": "NW", "windForce": "1", "weather": "bc" },
+    { "id": 24, "date": "Friday 2nd September", "time": "12 P.M.", "barom": "30.08", "tempAir": "80", "windDir": "Calm", "windForce": "0", "weather": "bc" }
+  ]
+}

@@ -1,20 +1,19 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import EssaySection from './components/EssaySection'
-import HeroDepthCanvas from './components/HeroDepthCanvas'
-import ImageCarousel from './components/ImageCarousel'
-import ProjectStatsCharts from './components/ProjectStatsCharts'
+import ArchiveViewer from './components/ArchiveViewer'
+import TranscriptionView from './components/TranscriptionView'
+import ScrollCompass from './components/ScrollCompass'
 import usePrefersReducedMotion from './hooks/usePrefersReducedMotion'
-import { useGlassEffect } from './hooks/useGlassEffect'
 
 export default function App() {
   const prefersReducedMotion = usePrefersReducedMotion()
   const heroRef = useRef(null)
   const glassRef = useRef(null)
-
-  useGlassEffect(glassRef, { prefersReducedMotion })
+  const lenisRef = useRef(null)
+  const [activeIndex, setActiveIndex] = useState(0)
 
   useEffect(() => {
     if (prefersReducedMotion) {
@@ -28,6 +27,8 @@ export default function App() {
       smoothWheel: true,
       touchMultiplier: 1.1,
     })
+
+    lenisRef.current = lenis
 
     lenis.on('scroll', ScrollTrigger.update)
 
@@ -58,22 +59,28 @@ export default function App() {
       )
     })
 
-    const mediaBlocks = gsap.utils.toArray('.media-card')
-    mediaBlocks.forEach((block) => {
+    const archiveElements = gsap.utils.toArray('.media-card, .essay-figure, .stats-card, .transcription-entrance')
+    archiveElements.forEach((el) => {
       gsap.fromTo(
-        block,
-        { opacity: 0, y: 56, scale: 0.96 },
+        el,
+        { 
+          opacity: 0, 
+          y: 30,
+          scale: 1.05,
+          filter: 'grayscale(1) brightness(0.9)'
+        },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          duration: 1,
+          filter: 'grayscale(0) brightness(1)',
+          duration: 1.6,
           ease: 'power2.out',
           scrollTrigger: {
-            trigger: block,
-            start: 'top 90%',
-            end: 'top 55%',
-            scrub: 0.7,
+            trigger: el,
+            start: 'top 95%',
+            end: 'top 70%',
+            scrub: 1.2,
           },
         },
       )
@@ -100,11 +107,10 @@ export default function App() {
     })
 
     gsap.fromTo(
-      '.hero-canvas',
-      { yPercent: -6, scale: 1.04 },
+      '.hero-bg',
+      { yPercent: 0 },
       {
-        yPercent: 8,
-        scale: 1.09,
+        yPercent: 12,
         ease: 'none',
         scrollTrigger: {
           trigger: '.hero-shell',
@@ -119,7 +125,7 @@ export default function App() {
       '.hero-overlay',
       { yPercent: 0 },
       {
-        yPercent: -16,
+        yPercent: -10,
         ease: 'none',
         scrollTrigger: {
           trigger: '.hero-shell',
@@ -130,43 +136,79 @@ export default function App() {
       },
     )
 
+    const figureTiltTargets = gsap.utils.toArray('.essay-figure--outset img')
+    const figureTiltCleanups = figureTiltTargets.map((target) => {
+      const handlePointerMove = (event) => {
+        if (event.pointerType === 'touch') {
+          return
+        }
+
+        const rect = target.getBoundingClientRect()
+        const x = event.clientX - rect.left
+        const y = event.clientY - rect.top
+        const xPercent = (x / rect.width - 0.5) * 2
+        const yPercent = (y / rect.height - 0.5) * 2
+
+        gsap.to(target, {
+          rotateY: xPercent * 2.4,
+          rotateX: -yPercent * 2.4,
+          scale: 1.015,
+          y: -4,
+          transformPerspective: 1200,
+          transformOrigin: 'center center',
+          duration: 0.35,
+          ease: 'power2.out',
+        })
+      }
+
+      const handlePointerLeave = () => {
+        gsap.to(target, {
+          rotateY: 0,
+          rotateX: 0,
+          scale: 1,
+          y: 0,
+          duration: 0.7,
+          ease: 'power2.out',
+        })
+      }
+
+      target.addEventListener('pointermove', handlePointerMove)
+      target.addEventListener('pointerleave', handlePointerLeave)
+
+      return () => {
+        target.removeEventListener('pointermove', handlePointerMove)
+        target.removeEventListener('pointerleave', handlePointerLeave)
+        gsap.killTweensOf(target)
+      }
+    })
+
     return () => {
+      figureTiltCleanups.forEach((cleanup) => cleanup())
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
       gsap.ticker.remove(tick)
       lenis.destroy()
     }
   }, [prefersReducedMotion])
 
-  const fieldPhotos = [
-    {
-      src: '/media/1-Feb_1.jpeg',
-      caption: 'Initial onboarding workflow in Monsoon Voyages.',
-      stage: 'ONBOARDING',
-      detail:
-        'Account setup, tutorial familiarization, and first-pass reading of tabular weather notation before committing any values.',
-    },
-    {
-      src: '/media/8-Feb_2.jpeg',
-      caption: 'Close reading and classification session.',
-      stage: 'CLASSIFYING',
-      detail:
-        'Line-by-line interpretation of handwriting and symbols, with cross-checking across adjacent rows to reduce transcription drift.',
-    },
-    {
-      src: '/media/13-Feb_1.jpeg',
-      caption: 'Later-stage confidence and consistency checks.',
-      stage: 'VERIFYING',
-      detail:
-        'Verification pass focused on ambiguous numerals, contextual plausibility, and alignment with expected meteorological ranges.',
-    },
-    {
-      src: '/media/Screenshot_1.jpeg',
-      caption: 'Interface state from my contribution process.',
-      stage: 'SYNTHESIS',
-      detail:
-        'Final interaction snapshot showing workflow status, completion momentum, and the interface logic guiding contribution quality.',
-    },
-  ]
+  const projectImages = [
+    "1-Feb_1.jpeg", "2-Feb_1.jpeg", "2-Feb_2.jpeg", 
+    "5-Feb_1.jpeg", "6-Feb_1.jpeg", "6-Feb_2.jpeg", "6-Feb_3.jpeg", 
+    "6-Feb_4.jpeg", "8-Feb_1.jpeg", "8-Feb_2.jpeg", "10-Feb_1.jpeg", 
+    "13-Feb_1.jpeg", "19-Feb_1.jpeg"
+  ].map((img) => ({
+    src: `${import.meta.env.BASE_URL}media/project_images/${img}`,
+    caption: `Archival ship logbook entry: ${img}`,
+    stage: 'ARCHIVAL RECORD',
+    detail: `High-resolution digitized page from the Monsoon Voyages collection, specifically showing record ${img}. These documents require precise transcription of meteorological observations.`
+  }))
+
+  const handleScrollTop = () => {
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(0, { duration: 1.8 })
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
 
   return (
     <>
@@ -175,24 +217,28 @@ export default function App() {
       >
         <header
           ref={heroRef}
-          className="hero-shell relative grid min-h-screen place-items-center overflow-clip border-b border-slate-300/70"
+          className="hero-shell relative grid min-h-screen place-items-center overflow-clip border-b border-slate-300/70 bg-slate-900"
         >
-          <HeroDepthCanvas containerRef={heroRef} reducedMotion={prefersReducedMotion} />
-          <div className="absolute inset-0 z-[1] bg-slate-900/40" aria-hidden="true" />
-          <div ref={glassRef} className="hero-overlay glass-card glass-card-interactive relative z-10 mx-auto w-[min(88ch,calc(100vw-2.5rem))] px-5 py-14 md:px-10 md:py-20">
-            <h1 className="font-title max-w-[18ch] text-[clamp(2rem,6vw,4.6rem)] font-semibold leading-[1.05] tracking-tight text-slate-50">
-              Monsoon Voyages: Seeing Data, History, and Care
+          <div className="hero-bg absolute inset-0 z-0" aria-hidden="true" />
+          <div className="absolute inset-0 z-[1] bg-slate-950/40" aria-hidden="true" />
+          <div ref={glassRef} className="hero-overlay glass-card relative z-10 mx-auto w-[min(92ch,calc(100vw-3rem))] px-8 pt-8 pb-10 md:px-16 md:pt-12 md:pb-14">
+            <div className="flex items-center gap-3 group cursor-default mb-8">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-teal-400 font-bold font-serif group-hover:bg-teal-500 group-hover:text-white transition-all duration-300">
+                DH
+              </div>
+              <span className="font-semibold text-slate-100 tracking-tight text-lg">DH6034 Assignment 1 – Guang Yang</span>
+            </div>
+            <h1 className="font-title max-w-[18ch] text-[clamp(2rem,6vw,4.6rem)] font-semibold leading-[1.15] tracking-tight text-slate-50">
+              Reflections on Monsoon Voyages: Crowdsourcing the Climate of the Past
             </h1>
-            <p className="subtitle font-subtitle mt-5 max-w-[64ch] text-[clamp(1rem,1.7vw,1.3rem)] leading-8 text-slate-100/95">
-              A reflective multimedia essay about contribution, ethics, and underrepresented archives.
-            </p>
+
             <p
               className="scroll-cue font-major lux-kicker mt-10 text-xs text-slate-100/85 animate-bob"
               aria-hidden="true"
             >
               Scroll to enter the essay
             </p>
-            <p className="font-major mt-8 border-t border-white/45 pt-4 text-[0.72rem] leading-5 text-slate-100/90">
+            <p className="font-major mt-8 border-t border-teal-400/50 pt-4 text-[0.72rem] leading-5 text-slate-100/90">
               Cover image: Two ships being repaired at Victoria Dock, Singapore in the 1890s. (Source:{' '}
               <a
                 href="https://www.nlb.gov.sg/main/image-detail?cmsuuid=881ed7a7-0224-4c9f-85c4-1e06a2f6a2bd"
@@ -207,180 +253,388 @@ export default function App() {
           </div>
         </header>
 
-        <section className="mx-auto w-[min(84ch,calc(100vw-1.25rem))] px-2 pb-24 pt-8 md:w-[min(84ch,calc(100vw-2.5rem))] md:pt-14">
+        <section className="mx-auto w-[min(96ch,calc(100vw-1.25rem))] px-2 pb-24 pt-8 md:w-[min(96ch,calc(100vw-2.5rem))] md:pt-14">
           <article className="essay-flow w-full">
           <EssaySection title="The Process" id="process">
             <p>
-              I participated in the Monsoon Voyages project on Zooniverse. At first, I compared two projects:
-              Dear Monsieur Sampaio and Monsoon Voyages. I finally selected Monsoon Voyages because the workflow
-              depended on reading and entering numerical weather observations, which matched my skills better than
-              Portuguese-language transcription.
+              I participated in the Monsoon Voyages project.
+              Initially, I was considering these two projects:
             </p>
-            <p>
-              The project asks volunteers to digitize weather records from historical ship logbooks that crossed the
-              Straits of Southeast Asia. These pages are not simple scans; they require judgement, close reading,
-              and repeated checking of handwriting, ditto marks, and column structure. The task is broken into targeted
-              workflows so each contributor can focus on one parameter at a time.
-            </p>
-            <p>
-              I approached the work as interpretive verification rather than fast clicking. I used zoom, compared adjacent
-              rows, and entered best estimates when numbers were difficult to parse. Knowing that each page is classified
-              by six people changed my behavior: my goal was not perfection in isolation, but careful contribution to a
-              collective consensus process.
-            </p>
-            <p>
-              This process clarified a core methodological point for me: crowdsourced humanities data is strongest when
-              contributors understand both the interface mechanics and the historical context behind what they are typing.
-            </p>
-          </EssaySection>
-
-          <ImageCarousel items={fieldPhotos} />
-
-          <EssaySection title="Implications of My Contribution" id="implications">
-            <p>
-              The significance of this work extends beyond one transcription exercise. Accurate rainfall reconstruction
-              matters directly to contemporary life in Southeast Asia, where both prolonged dry spells and intense rain
-              events can create severe social and infrastructural stress. Climate researchers expect extremes to increase,
-              but uncertainty remains high because pre-1960 rainfall records are sparse.
-            </p>
-            <p>
-              Monsoon Voyages contributes to closing that historical data gap. The project brings together over 200 logbooks
-              and 34,748 days of observations, with data intended to support major climate datasets such as ICOADS and
-              downstream reanalysis systems. In this sense, volunteer input participates in long-horizon infrastructure:
-              better historical baselines improve future forecasting.
-            </p>
-            <p>
-              The project also has ethical depth. Many of these records were produced by Royal Navy vessels operating within
-              colonial routes and power structures. Digitizing them does not neutralize that history. Instead, it creates
-              an opportunity to critically reuse imperial records for present-day climate resilience, while remaining explicit
-              about how and why those records were made.
-            </p>
-            <p>
-              I also noticed that many crowdsourcing projects visible on major platforms are Western-centered. Choosing a
-              Southeast Asian case was, for me, a deliberate act of regional attention.
-            </p>
-          </EssaySection>
-
-          <ProjectStatsCharts />
-
-          <section
-            className="method-panel media-card mb-12 grid grid-cols-1 gap-4 border border-slate-300/80 bg-white/70 p-4 shadow-[0_14px_42px_rgba(15,23,42,0.08)] backdrop-blur-sm motion-safe:translate-y-12 motion-safe:opacity-0 md:grid-cols-3"
-            aria-label="Method notes"
-          >
-            <article className="note-card border border-slate-300/80 bg-gradient-to-br from-teal-50 to-white p-4 motion-safe:translate-y-8 motion-safe:opacity-0">
-              <h3 className="font-major mb-2 text-sm uppercase tracking-[0.06em] text-slate-800">
-                Data Recovery Scale
-              </h3>
-              <p className="m-0 text-[0.97rem] leading-7 text-slate-600">
-                The project aggregates over 200 UKHO logbooks and 34,748 observation-days from ships that crossed the
-                Bay of Bengal, Andaman Sea, China Seas, and ports along the Malacca Strait.
-              </p>
-            </article>
-            <article className="note-card border border-slate-300/80 bg-gradient-to-br from-amber-50 to-white p-4 motion-safe:translate-y-8 motion-safe:opacity-0">
-              <h3 className="font-major mb-2 text-sm uppercase tracking-[0.06em] text-slate-800">
-                Why It Matters
-              </h3>
-              <p className="m-0 text-[0.97rem] leading-7 text-slate-600">
-                Recovering pre-1960 rainfall evidence reduces uncertainty in regional climate history and helps improve
-                projections of extreme drought and rainfall events.
-              </p>
-            </article>
-            <article className="note-card border border-slate-300/80 bg-gradient-to-br from-sky-50 to-white p-4 motion-safe:translate-y-8 motion-safe:opacity-0">
-              <h3 className="font-major mb-2 text-sm uppercase tracking-[0.06em] text-slate-800">
-                Research Context
-              </h3>
-              <p className="m-0 text-[0.97rem] leading-7 text-slate-600">
-                Monsoon Voyages is part of the OUR Project and the Water Security programme funded by Singapore MOE
-                AcRF Tier 2, focused on extending consistent regional rainfall records back to the 1900s.
-              </p>
-            </article>
-          </section>
-
-          <EssaySection title="What I Learned" id="learned">
-            <p>
-              I learned that historical logbooks are hybrid documents. They contain technical weather measures, but also
-              traces of trade routes, labor structures, and political conditions onboard ships. That dual character makes
-              them valuable for both climate science and humanities interpretation.
-            </p>
-            <p>
-              I also developed practical micro-skills: reading variable handwriting, handling uncertain values, and applying
-              internal plausibility checks against expected ranges. The platform design, especially workflow separation and
-              consensus review, helped me understand how distributed contributors can generate robust datasets over time.
-            </p>
-            <p>
-              Conceptually, this shifted my view of crowdsourcing. I now see it as structured interpretive labor rather than
-              neutral data entry. Every value typed into the interface is part of a chain that connects archives, volunteers,
-              domain experts, quality control, and eventually model-based climate knowledge.
-            </p>
-            <p>
-              The most important insight for me was that data rescue is not just retrospective archival care. It is also
-              prospective governance: how we reconstruct the past affects how well we can prepare for future climate risks.
-            </p>
-          </EssaySection>
-
-          <section className="mb-14 grid grid-cols-1 lg:grid-cols-10">
-            <blockquote className="pull-quote media-card lg:col-span-7 border-l-4 border-amber-600 bg-white/65 px-6 py-8 text-[clamp(1.5rem,3vw,2.45rem)] leading-[1.34] tracking-[0.01em] text-slate-800 shadow-[0_12px_34px_rgba(15,23,42,0.08)] motion-safe:translate-y-12 motion-safe:opacity-0">
-              "I learned that interface tasks are interpretive labor, and interpretation is never context-free."
-            </blockquote>
-            <div className="hidden lg:block lg:col-span-3" aria-hidden="true" />
-          </section>
-
-          <EssaySection title="Application to My Own Work" id="application">
-            <p>
-              I can apply this model in my own humanities research by combining annotation tasks with explicit uncertainty
-              protocols. Instead of treating transcription as a purely mechanical stage, I would design workflows that
-              record confidence, ambiguity, and rationale as part of the dataset.
-            </p>
-            <p>
-              I am also interested in adapting this approach to regional archives in Southeast Asia where documentation is
-              fragmented across languages and institutions. A community-engaged workflow, if carefully moderated, can
-              accelerate access while preserving critical awareness of context and provenance.
-            </p>
-            <p>
-              The key lesson I will carry forward is design alignment: participant capability, workflow granularity, and
-              quality-control architecture must be planned together. When those elements align, crowdsourcing can support
-              both scholarship and public knowledge in a meaningful way.
-            </p>
-          </EssaySection>
-
-          <EssaySection title="Conclusion" id="conclusion">
-            <p>
-              Monsoon Voyages demonstrates how volunteer labor, archival materials, and climate science can be linked through
-              carefully designed digital workflows. My participation made clear that even small acts of transcription can
-              contribute to large-scale scientific reconstruction when they are embedded in consensus and review.
-            </p>
-            <p>
-              This essay interface treats motion and media as argument rather than decoration. The goal is to show that
-              method, ethics, and representation are inseparable in digital humanities practice, especially when working
-              with colonial-era records and climate futures.
-            </p>
-          </EssaySection>
-
-          <EssaySection title="References" id="references">
-            <ol className="m-0 list-decimal space-y-3 pl-6">
+            <ol className="project-choice-list list-decimal pl-6">
               <li>
-                Lee, K.L. (2009) <em>Two ships being repaired at Victoria Dock, Singapore in the 1890s</em> [Online image]. Lee Kip Lin Collection, National Library Board, Singapore. Available at:{' '}
                 <a
-                  href="https://www.nlb.gov.sg/main/image-detail?cmsuuid=881ed7a7-0224-4c9f-85c4-1e06a2f6a2bd"
+                  href="https://www.zooniverse.org/projects/mhnc-dot-up/dear-monsieur-sampaio-dot-dot-dot"
                   target="_blank"
                   rel="noreferrer"
                   className="underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
                 >
-                  https://www.nlb.gov.sg/main/image-detail?cmsuuid=881ed7a7-0224-4c9f-85c4-1e06a2f6a2bd
+                  Dear Monsieur Sampaio
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.zooniverse.org/projects/p-teleti/monsoon-voyages"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
+                >
+                  Monsoon Voyages
+                </a>
+              </li>
+            </ol>
+            <p>
+              I was also initially interested in the first project, which involves transcribing the personal correspondence 
+              of the Portuguese botanist Gonçalo Sampaio from the late 1880s to 1936, since my MA research also involves 
+              botany. However, I later realised that, because I do not know Portuguese, I would not be able to transcribe the 
+              documents faithfully. Therefore, I decided to join the Monsoon Voyages project instead.
+            </p>
+            <p>
+              The Monsoon Voyages project focuses on transcribing weather records written in English from voyages in 19th- 
+              and 20th-century Singapore. I am interested in it because I have travelled to Malaysia and am familiar with 
+              the legendary Malacca Strait near Malaysia and Singapore. 
+            </p>
+            <p>
+              When I joined the project, there was mainly one type of task: transcribing wind direction data from the documents. 
+              I read the instructions in the tutorial section and then began transcribing. My input should align with the 
+              instructions; for example, wind direction data could take the forms such as “NbyE”, “SW”, or “Calm”.
+            </p>
+            <figure className="essay-figure essay-figure--outset">
+              <img
+                src={`${import.meta.env.BASE_URL}media/Figure1.jpeg`}
+                alt="Zooniverse transcription workflow"
+              />
+              <figcaption><strong>Figure 1</strong>: Zooniverse transcription workflow.</figcaption>
+            </figure>
+
+            <p>
+              To improve my transcription accuracy, I experimented with transcription tools such as{' '}
+              <a
+                href="https://www.transkribus.org/"
+                target="_blank"
+                rel="noreferrer"
+                className="underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
+              >
+                Transcribus
+              </a>
+              . However, 
+              I found that its transcribing results for this type of handwritten document were not reliable at all, so I 
+              abandoned this approach <span className="in-text-cite">(READ-COOP, n.d.)</span>.
+            </p>
+            <figure className="essay-figure essay-figure--outset">
+              <img
+                src={`${import.meta.env.BASE_URL}media/Figure2.jpeg`}
+                alt="Experiment with Transcribus"
+              />
+              <figcaption><strong>Figure 2</strong>: Experiment with Transcribus.</figcaption>
+            </figure>
+            <p>
+              I encountered several challenges during the process. For instance, some handwritten text was very unclear or 
+              used highly unique personal abbreviations that were difficult to recognise, such as abbreviations 
+              for “by” in wind direction notation. Also, sometimes the writer used an abbreviation symbol consisting of 
+              two short strokes to indicate that the value in an entry was the same as the entry above. I was unsure whether 
+              to transcribe the marks literally or to transcribe the implied content (i.e. same as the previous entry). 
+              Therefore, I posted such questions in the Talk section of the project and attached images of the relevant documents.
+            </p>
+            <figure className="essay-figure essay-figure--outset">
+              <img
+                src={`${import.meta.env.BASE_URL}media/Figure3.jpeg`}
+                alt="My post in the Talk section"
+              />
+              <figcaption><strong>Figure 3</strong>: My post in the Talk section.</figcaption>
+            </figure>
+
+          </EssaySection>
+
+          <ArchiveViewer items={projectImages} activeIndex={activeIndex} setActiveIndex={setActiveIndex} />
+
+          <EssaySection title="Implications of My Contribution" id="implications">
+            <p>
+              I contributed to the project in two main ways: first, I transcribed with care and patience which ensured my 
+              transcribing accuracy. Second, I contributed to the Talk section with questions and necessary notes on some 
+              document images, for example, in cases where parts of a document were obscured or partially covered. 
+            </p>
+            <p>
+              Beyond my individual transcription tasks, my contribution supports the interdisciplinary project that links 
+              climate history with contemporary climate science. On the{' '}
+              <a
+                href="https://urban.smu.edu.sg/projects/monsoon-voyages"
+                target="_blank"
+                rel="noreferrer"
+                className="underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
+              >
+                Monsoon Voyages’ website
+              </a>
+              , it states the project’s 
+              objective: to use historical weather data to establish climate baselines, which supports climate modelling 
+              and further helps societies prepare for climate change <span className="in-text-cite">(Singapore Management University, n.d.)</span>.
+            </p>
+            <p>
+              Although I did not have access to the full dataset available to the researchers, I developed a digital reconstruction and data 
+              visualisation based on a single logbook image, as illustrated below.
+            </p>
+            <TranscriptionView />
+            <p>
+              Additionally, many projects on Zooniverse are initiated by Western institutions and focus on European or 
+              North American archives. My work on the Monsoon Voyages project, which is managed by Singapore Management 
+              University and centred on Southeast Asia, contributes to a more geographically balanced climate history. 
+            </p>
+            <p>
+              Furthermore, my contributions support the project’s broader objective of advancing research on Singapore’s 
+              administration under the British colonial system. 
+            </p>
+            <p>
+              Regarding the <span style={{ color: '#0570ff', fontWeight: 500 }}>ethical dimensions</span> of crowdsourced work, I would like to argue from two angles. First, 
+              transcription accuracy is not guaranteed. The expertise of participants varies. This may affect the 
+              reliability of the results. Second, although volunteers on Zooniverse contribute their labour to the 
+              project, the final research outputs are typically attributed to the host institutions. This raises an 
+              ethical question: should volunteers be credited in academic contexts?
+            </p>
+            <p>
+              Computer science and digital humanities projects often require large amounts of annotation work, and 
+              researchers often recruit undergraduate students at their universities to perform the tasks. In some cases, 
+              the students are insufficiently compensated, and this raises questions about underpaid labour.
+            </p>
+            <p>
+              As a contributor, I am also aware of the responsibility I take when conducting the transcription task. 
+              I also noticed that although my contributions were recorded by Zooniverse, I still have no share on 
+              the academic authorship <span className="in-text-cite">(Zooniverse, n.d.)</span>.
+            </p>
+          </EssaySection>
+
+          <EssaySection title="What I Learnt" id="learned">
+            <p>
+              On a practical level, my transcription skills and ability to recognise handwritten cursive English scripts 
+              have improved. My overall engagement with crowdsourcing projects has increased as well. I also practised 
+              my data analysis and visualisation skills by extracting data from logbook images, reconstructing the tables digitally, and using{' '}
+              <a
+                href="https://d3js.org/"
+                target="_blank"
+                rel="noreferrer"
+                className="underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
+              >
+                d3.js
+              </a>{' '}
+              to 
+              visualise them on my website. I will explore this direction further in Assignment 2. 
+            </p>
+            <p>
+              My experience in the project has deepened my knowledge and vision in the history of scientific knowledge 
+              and practices. I realised the link between the humanities and climate science, since the project uses historical 
+              climate data to support climate modelling.
+            </p>
+            <p>
+              Furthermore, I gained deep insights into the historical colonial practices of classifying and standardising 
+              nature. I realised that these weather logbooks were not just neutral observations; they were instruments of <span style={{ color: '#0570ff', fontWeight: 500 }}>Meteorological Imperialism</span>,  
+              which the British colonial system used to classify and control maritime space around the Malacca Strait <span className="in-text-cite">(Williamson, 2015)</span>.
+            </p>
+            <p>
+              This experience has further amplified my experience with crowdsourcing, although I had participated in similar 
+              projects before.
+            </p>
+            <p>
+              I also learnt about the limitations of current AI transcription tools such as Transcribus. They struggle with 
+              such handwritten maritime logbooks. As I plan to use similar tools, such as{' '}
+              <a
+                href="https://escriptorium.rich.ru.nl/"
+                target="_blank"
+                rel="noreferrer"
+                className="underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
+              >
+                eScriptorium
+              </a>{' '}
+              and{' '}
+              <a
+                href="https://github.com/mittagessen/kraken"
+                target="_blank"
+                rel="noreferrer"
+                className="underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
+              >
+                Kraken
+              </a>
+              , in my 
+              MA research, I will need to carefully examine their effectiveness. Therefore, in such projects, domain-specific 
+              expertise and human intuition are necessary <span className="in-text-cite">(Kiessling, n.d.)</span>. 
+            </p>
+            <p>
+              I also learnt about the geographical and cultural imbalance in Zooniverse and possibly similar platforms. 
+              I am aware that this may be caused by multiple factors. One possible reason is simply that different countries 
+              tend to use different popular platforms. Nevertheless, this shows that the Global South remains underrepresented 
+              on platforms such as Zooniverse. Furthermore, to promote a more global digital humanities community, it would 
+              be beneficial to develop a more interoperable platform or mechanisms for interoperability among platforms so 
+              that DH scholarship can become more globally connected.
+            </p>
+            <p>
+              I was surprised that all image data on Zooniverse can be directly downloaded 
+              from the work window. This raises concerns about data security and potential unauthorised data 
+              scraping. Although some datasets may be in public domain, it may be better if Zooniverse 
+              could implement more rigorous access controls, where only registered or “trusted” volunteers 
+              can download full-resolution images, to mitigate these risks and ensure data safety.
+            </p>
+          </EssaySection>
+
+          <EssaySection title="Application to My Own Work" id="application">
+            <p>
+              This project has many aspects that can be applied to my own research. It is highly relevant 
+              to my MA project as they both use digital methods to examine the epistemology 
+              of science within colonial contexts.
+            </p>
+            <p>
+              My MA project, A Computational Approach to the Global Historical Botanical Visual Epistemology, uses 
+              computational methods to analyse digitised botanical books across heterogeneous global archives. It utilises 
+              the computer vision AI model YOLO to detect botanical illustrations, and uses open source transcription tool 
+              Kraken to perform OCR/HTR tasks. My participation in the Monsoon Voyages project, particularly my use of 
+              Transcribus, demonstrated that OCR/HTR outputs must be critically evaluated before they can be adopted, 
+              especially when dealing with irregular typography. Informed by this insight, I plan to 
+              employ iterative human-in-the-loop fine-tuning in my MA project to optimise model performance. Since I will use Kraken, on which eScriptorium is built, 
+              I will need to place greater emphasis on model training (or fine-tuning) and manual validation in my own 
+              research workflow to ensure robustness.
+            </p>
+            <p>
+              Regarding newly digitised materials, I am particularly passionate about digitised images of historical 
+              artefacts that can be accessed through International Image Interoperability Framework (IIIF). The 
+              standardisation provided by IIIF is invaluable to my research. I am familiar with image processing 
+              and have worked with digitised materials before. I am currently exploring the effectiveness of IIIF-based 
+              image sharing. I also appreciate that IIIF can be used to craft narratives from a series of annotated 
+              images, and this approach becomes very effective when integrated into a <span style={{ color: '#0570ff', fontWeight: 500 }}>scroll-based storytelling website</span>. 
+              In addition, I am impressed by how rigorously IIIF’s JSON manifests organize image metadata.
+            </p>
+            <p>
+              Regarding crowdsourcing, I could potentially recruit volunteers for my MA research project to annotate 
+              historical book images on platforms such as Zooniverse. Through my participation in the Monsoon Voyages 
+              project as well as my previous experiences, I have become aware that crowdsourcing can efficiently process 
+              large quantities of annotation work, far exceeding what I could accomplish alone.
+            </p>
+            <p className="essay-subheading">
+              Comparison with other platforms
+            </p>
+            <p>
+              <a
+                href="https://www.shidianguji.com/"
+                target="_blank"
+                rel="noreferrer"
+                className="underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
+              >
+                Shidianguji
+              </a>{' '}
+              is a digital humanities crowdsourcing platform launched in 2022 by Peking University and 
+              the technology company ByteDance for crowdsourced verification of OCR results from historical Chinese 
+              books. The platform uses its own backend OCR engine to transcribe historical Chinese texts, and volunteers 
+              contribute by reviewing and correcting the OCR output <span className="in-text-cite">(Peking University and ByteDance, 2022)</span>. 
+            </p>
+            <figure className="essay-figure essay-figure--outset">
+              <img
+                src={`${import.meta.env.BASE_URL}media/Figure4.png`}
+                alt="Reviewing OCR results on Shidianguji platform"
+              />
+              <figcaption><strong>Figure 4</strong>: Reviewing OCR results on the Shidianguji platform.</figcaption>
+            </figure>
+            <p>
+              Compared with newer platforms, Zooniverse’s functionality remains relatively basic, and its user interface 
+              could benefit from modernization. So, I suggest that Zooniverse consider integrating open source transcription 
+              tool Kraken into the platform, given that many projects involve transcription. This would shift the role of 
+              volunteers from primary transcribers to co-transcribers or even reviewers. By combining AI’s capability (based 
+              on large amount of training) with human intuition, the correctness and reliability of the results can be improved.
+            </p>
+            <p>
+              In addition, both the Monsoon Voyages project and my MA research focus on the history of scientific knowledge. 
+              In both cases, the imperial power used classificatory regimes to order the colonised world <span className="in-text-cite">(Williamson, 2021)</span>. 
+              Likewise, maritime weather logs and botanical books are colonial powers’ attempts to classify or standardise the natural 
+              world. My participation in Monsoon Voyages revealed how measurements and recording practices are shaped by the British 
+              colonial system. This is transferable to my study of historical botanical epistemology, which investigates taxonomic 
+              systems and imperial plant knowledge, because both projects address colonial epistemic authority and institutional 
+              standardisation, through which classificatory regimes were shaped <span className="in-text-cite">(Williamson, 2015)</span>.
+            </p>
+          </EssaySection>
+
+          <EssaySection title="References" id="references">
+            <ol className="m-0 list-decimal space-y-3 pl-6 text-[0.92rem] leading-6">
+              <li>
+                Kiessling, B., (n.d.). Kraken: a Universal Text Recognizer for the Humanities. [online] Available at:{' '}
+                <a
+                  href="https://github.com/mittagessen/kraken"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
+                >
+                  https://github.com/mittagessen/kraken
                 </a>{' '}
-                [Accessed 23 February 2026].
+                [Accessed 27 Feb. 2026].
+              </li>
+              <li>
+                Peking University and ByteDance, (2022). Shidianguji. [online] Available at:{' '}
+                <a
+                  href="https://www.shidianguji.com/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
+                >
+                  https://www.shidianguji.com/
+                </a>{' '}
+                [Accessed 27 Feb. 2026].
+              </li>
+              <li>
+                READ-COOP, (n.d.). Transkribus. [online] Available at:{' '}
+                <a
+                  href="https://www.transkribus.org/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
+                >
+                  https://www.transkribus.org/
+                </a>{' '}
+                [Accessed 27 Feb. 2026].
+              </li>
+              <li>
+                Singapore Management University, (n.d.). Monsoon Voyages. [online] Available at:{' '}
+                <a
+                  href="https://urban.smu.edu.sg/projects/monsoon-voyages"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
+                >
+                  https://urban.smu.edu.sg/projects/monsoon-voyages
+                </a>{' '}
+                [Accessed 27 Feb. 2026].
+              </li>
+              <li>
+                Williamson, F., 2015. Weathering the empire: meteorological research in the early British straits settlements. The British Journal for the History of Science, 48(3), pp.475-492.
+              </li>
+              <li>
+                Williamson, F., 2021. Framing Asian atmospheres: imperial weather science and the problem of the local c. 1880-1950. The British Journal for the History of Science, 54(3), pp.301-304.
+              </li>
+              <li>
+                Zooniverse, (n.d.). Zooniverse: People-powered research. [online] Available at:{' '}
+                <a
+                  href="https://www.zooniverse.org/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline decoration-slate-400 underline-offset-2 hover:text-slate-900"
+                >
+                  https://www.zooniverse.org/
+                </a>{' '}
+                [Accessed 27 Feb. 2026].
               </li>
             </ol>
           </EssaySection>
           </article>
         </section>
-        <footer className="border-t border-slate-300/80 bg-white/55 px-4 py-6 backdrop-blur-sm">
-          <div className="mx-auto w-[min(110rem,calc(100vw-1.25rem))] text-center md:w-[min(110rem,calc(100vw-2.5rem))] md:text-left">
-            <p className="font-major m-0 text-xs tracking-[0.08em] text-slate-700 md:text-sm">
-              © 2026 John Smith. All Rights Reserved.
+        <footer className="border-t border-slate-300/80 bg-white/55 px-4 py-8 backdrop-blur-sm">
+          <div className="mx-auto w-[min(96ch,calc(100vw-1.25rem))] md:w-[min(96ch,calc(100vw-2.5rem))] flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3 group cursor-default">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-teal-700 font-bold font-serif group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
+                DH
+              </div>
+              <div className="flex flex-col">
+                <span className="font-semibold text-slate-900 tracking-tight text-sm">DH6034 Assignment 1 – Guang Yang</span>
+                <span className="text-[10px] text-slate-500 uppercase tracking-widest font-major mt-0.5">Humanities & New Technologies</span>
+              </div>
+            </div>
+            <p className="font-major m-0 text-xs tracking-[0.08em] text-slate-500">
+              © 2026 Guang Yang. All Rights Reserved.
             </p>
           </div>
         </footer>
+        <ScrollCompass onScrollTop={handleScrollTop} />
       </main>
     </>
   )
