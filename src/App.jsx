@@ -6,7 +6,25 @@ import EssaySection from './components/EssaySection'
 import ArchiveViewer from './components/ArchiveViewer'
 import TranscriptionView from './components/TranscriptionView'
 import ScrollCompass from './components/ScrollCompass'
+import AssignmentTwoNarrative from './components/AssignmentTwoNarrative'
+import PhotoArchive from './components/PhotoArchive'
 import usePrefersReducedMotion from './hooks/usePrefersReducedMotion'
+import { assignmentOneMediaUrl } from './lib/photographs'
+
+function getAssignmentFromPath(pathname) {
+  if (pathname === '/archive' || pathname.startsWith('/archive/')) {
+    return 'archive'
+  }
+  if (pathname === '/assignment2' || pathname.startsWith('/assignment2/')) {
+    return 'assignment2'
+  }
+
+  return 'assignment1'
+}
+
+function getAssignmentOneMediaPath(filename) {
+  return assignmentOneMediaUrl(filename)
+}
 
 export default function App() {
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -14,6 +32,28 @@ export default function App() {
   const glassRef = useRef(null)
   const lenisRef = useRef(null)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [activeAssignment, setActiveAssignment] = useState(() => getAssignmentFromPath(window.location.pathname))
+
+  useEffect(() => {
+    const pathname = window.location.pathname
+    const isAssignmentOnePath = pathname === '/assignment1' || pathname.startsWith('/assignment1/')
+    const isAssignmentTwoPath = pathname === '/assignment2' || pathname.startsWith('/assignment2/')
+    const isArchivePath = pathname === '/archive' || pathname.startsWith('/archive/')
+
+    if (
+      pathname === '/' ||
+      (!isAssignmentOnePath && !isAssignmentTwoPath && !isArchivePath)
+    ) {
+      window.history.replaceState({}, '', '/assignment1')
+    }
+
+    const handlePopState = () => {
+      setActiveAssignment(getAssignmentFromPath(window.location.pathname))
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
 
   useEffect(() => {
     if (prefersReducedMotion) {
@@ -188,7 +228,7 @@ export default function App() {
       gsap.ticker.remove(tick)
       lenis.destroy()
     }
-  }, [prefersReducedMotion])
+  }, [prefersReducedMotion, activeAssignment])
 
   const projectImages = [
     "1-Feb_1.jpeg", "2-Feb_1.jpeg", "2-Feb_2.jpeg", 
@@ -196,7 +236,7 @@ export default function App() {
     "6-Feb_4.jpeg", "8-Feb_1.jpeg", "8-Feb_2.jpeg", "10-Feb_1.jpeg", 
     "13-Feb_1.jpeg", "19-Feb_1.jpeg"
   ].map((img) => ({
-    src: `${import.meta.env.BASE_URL}media/project_images/${img}`,
+    src: getAssignmentOneMediaPath(`project_images/${img}`),
     caption: `Archival ship logbook entry: ${img}`,
     stage: 'ARCHIVAL RECORD',
     detail: `High-resolution digitized page from the Monsoon Voyages collection, specifically showing record ${img}. These documents require precise transcription of meteorological observations.`
@@ -210,24 +250,71 @@ export default function App() {
     }
   }
 
+  const handleAssignmentChange = (assignment) => {
+    setActiveAssignment(assignment)
+    const nextPath = assignment === 'assignment2' ? '/assignment2' : assignment === 'archive' ? '/archive' : '/assignment1'
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState({}, '', nextPath)
+    }
+    handleScrollTop()
+  }
+
   return (
     <>
       <main
         className={`essay min-h-screen bg-[radial-gradient(circle_at_18%_16%,#f8f4de_0%,transparent_42%),radial-gradient(circle_at_84%_14%,#d7ebe8_0%,transparent_44%),linear-gradient(155deg,#f7f6f1_0%,#f0f7fb_100%)] text-slate-800 ${prefersReducedMotion ? 'reduced-motion' : ''}`}
       >
+        <nav className="assignment-tabs z-40">
+          <div className="assignment-tabs-inner mx-auto flex w-[min(112rem,calc(100vw-1.5rem))] items-center gap-4 px-3 md:w-[min(112rem,calc(100vw-3rem))] md:px-6">
+            <a className="assignment-nav-brand" href="/assignment1" onClick={(event) => {
+              event.preventDefault()
+              handleAssignmentChange('assignment1')
+            }}>
+              <div className="assignment-nav-logo">DH</div>
+              <span className="assignment-nav-title">DH6034 – John Smith</span>
+            </a>
+            <div className="assignment-tablist">
+              <button
+                type="button"
+                onClick={() => handleAssignmentChange('assignment1')}
+                className={`assignment-tab ${activeAssignment === 'assignment1' ? 'is-active' : ''}`}
+                aria-pressed={activeAssignment === 'assignment1'}
+              >
+                Assignment 1
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAssignmentChange('assignment2')}
+                className={`assignment-tab ${activeAssignment === 'assignment2' ? 'is-active' : ''}`}
+                aria-pressed={activeAssignment === 'assignment2'}
+              >
+                Assignment 2
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAssignmentChange('archive')}
+                className={`assignment-tab ${activeAssignment === 'archive' ? 'is-active' : ''}`}
+                aria-pressed={activeAssignment === 'archive'}
+              >
+                Photo Archive
+              </button>
+            </div>
+          </div>
+        </nav>
+
+        {activeAssignment === 'assignment1' ? (
+          <>
         <header
           ref={heroRef}
           className="hero-shell relative grid min-h-screen place-items-center overflow-clip border-b border-slate-300/70 bg-slate-900"
         >
-          <div className="hero-bg absolute inset-0 z-0" aria-hidden="true" />
+          <div
+            className="hero-bg absolute inset-0 z-0"
+            style={{ backgroundImage: `url("${getAssignmentOneMediaPath('hero.jpg')}")` }}
+            aria-hidden="true"
+          />
           <div className="absolute inset-0 z-[1] bg-slate-950/40" aria-hidden="true" />
           <div ref={glassRef} className="hero-overlay glass-card relative z-10 mx-auto w-[min(92ch,calc(100vw-3rem))] px-8 pt-8 pb-10 md:px-16 md:pt-12 md:pb-14">
-            <div className="flex items-center gap-3 group cursor-default mb-8">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-teal-400 font-bold font-serif group-hover:bg-teal-500 group-hover:text-white transition-all duration-300">
-                DH
-              </div>
-              <span className="font-semibold text-slate-100 tracking-tight text-lg">DH6034 Assignment 1 – Guang Yang</span>
-            </div>
             <h1 className="font-title max-w-[18ch] text-[clamp(2rem,6vw,4.6rem)] font-semibold leading-[1.15] tracking-tight text-slate-50">
               Reflections on Monsoon Voyages: Crowdsourcing the Climate of the Past
             </h1>
@@ -300,7 +387,7 @@ export default function App() {
             </p>
             <figure className="essay-figure essay-figure--outset">
               <img
-                src={`${import.meta.env.BASE_URL}media/Figure1.jpeg`}
+                src={getAssignmentOneMediaPath('Figure1.jpeg')}
                 alt="Zooniverse transcription workflow"
               />
               <figcaption><strong>Figure 1</strong>: Zooniverse transcription workflow.</figcaption>
@@ -322,7 +409,7 @@ export default function App() {
             </p>
             <figure className="essay-figure essay-figure--outset">
               <img
-                src={`${import.meta.env.BASE_URL}media/Figure2.jpeg`}
+                src={getAssignmentOneMediaPath('Figure2.jpeg')}
                 alt="Experiment with Transcribus"
               />
               <figcaption><strong>Figure 2</strong>: Experiment with Transcribus.</figcaption>
@@ -337,7 +424,7 @@ export default function App() {
             </p>
             <figure className="essay-figure essay-figure--outset">
               <img
-                src={`${import.meta.env.BASE_URL}media/Figure3.jpeg`}
+                src={getAssignmentOneMediaPath('Figure3.jpeg')}
                 alt="My post in the Talk section"
               />
               <figcaption><strong>Figure 3</strong>: My post in the Talk section.</figcaption>
@@ -523,7 +610,7 @@ export default function App() {
             </p>
             <figure className="essay-figure essay-figure--outset">
               <img
-                src={`${import.meta.env.BASE_URL}media/Figure4.png`}
+                src={getAssignmentOneMediaPath('Figure4.jpeg')}
                 alt="Reviewing OCR results on Shidianguji platform"
               />
               <figcaption><strong>Figure 4</strong>: Reviewing OCR results on the Shidianguji platform.</figcaption>
@@ -618,6 +705,12 @@ export default function App() {
           </EssaySection>
           </article>
         </section>
+          </>
+        ) : activeAssignment === 'assignment2' ? (
+          <AssignmentTwoNarrative />
+        ) : (
+          <PhotoArchive />
+        )}
         <footer className="border-t border-slate-300/80 bg-white/55 px-4 py-8 backdrop-blur-sm">
           <div className="mx-auto w-[min(96ch,calc(100vw-1.25rem))] md:w-[min(96ch,calc(100vw-2.5rem))] flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3 group cursor-default">
@@ -625,12 +718,18 @@ export default function App() {
                 DH
               </div>
               <div className="flex flex-col">
-                <span className="font-semibold text-slate-900 tracking-tight text-sm">DH6034 Assignment 1 – Guang Yang</span>
+                <span className="font-semibold text-slate-900 tracking-tight text-sm">
+                  {activeAssignment === 'assignment1'
+                    ? 'DH6034 Assignment 1 – John Smith'
+                    : activeAssignment === 'assignment2'
+                    ? 'DH6034 Assignment 2 – John Smith'
+                    : 'DH6034 Photo Archive – John Smith'}
+                </span>
                 <span className="text-[10px] text-slate-500 uppercase tracking-widest font-major mt-0.5">Humanities & New Technologies</span>
               </div>
             </div>
             <p className="font-major m-0 text-xs tracking-[0.08em] text-slate-500">
-              © 2026 Guang Yang. All Rights Reserved.
+              © 2026 John Smith. All Rights Reserved.
             </p>
           </div>
         </footer>

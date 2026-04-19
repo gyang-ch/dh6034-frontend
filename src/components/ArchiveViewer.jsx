@@ -17,6 +17,19 @@ const ArchiveViewer = ({ items, activeIndex, setActiveIndex }) => {
   const [showBottomFade, setShowBottomFade] = useState(true);
   const containerId = "osd-viewer-comparison";
 
+  const syncViewerLayout = () => {
+    const viewer = osdRef.current;
+    if (!viewer) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      viewer.forceRedraw();
+      viewer.viewport?.goHome(true);
+      viewer.viewport?.applyConstraints();
+    });
+  };
+
   const createPointRect = (x, y) => ({
     width: 0,
     height: 0,
@@ -250,6 +263,8 @@ const ArchiveViewer = ({ items, activeIndex, setActiveIndex }) => {
       });
     }
 
+    osdRef.current?.addHandler('open', syncViewerLayout);
+
     // Lightweight thumbnail hint: transform-only and motion-safe.
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (scrollContainerRef.current && !prefersReducedMotion) {
@@ -297,6 +312,7 @@ const ArchiveViewer = ({ items, activeIndex, setActiveIndex }) => {
       const currentItem = items[activeIndex];
       clearOverlays();
       osdRef.current.addOnceHandler('open', () => {
+        syncViewerLayout();
         drawOverlaysForItem(currentItem);
       });
       osdRef.current.open({

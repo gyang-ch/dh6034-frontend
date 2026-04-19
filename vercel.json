@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/assignment1",
+      "destination": "/"
+    },
+    {
+      "source": "/assignment2",
+      "destination": "/"
+    },
+    {
+      "source": "/assignment1/(.*)",
+      "destination": "/"
+    },
+    {
+      "source": "/assignment2/(.*)",
+      "destination": "/"
+    }
+  ]
+}
