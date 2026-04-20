@@ -7,17 +7,18 @@ import ArchiveViewer from './components/ArchiveViewer'
 import TranscriptionView from './components/TranscriptionView'
 import ScrollCompass from './components/ScrollCompass'
 import AssignmentTwoNarrative from './components/AssignmentTwoNarrative'
-import PhotoArchive from './components/PhotoArchive'
 import PhotoArchiveWindowed from './components/PhotoArchiveWindowed'
 import usePrefersReducedMotion from './hooks/usePrefersReducedMotion'
 import { assignmentOneMediaUrl } from './lib/photographs'
 
 function getAssignmentFromPath(pathname) {
-  if (pathname === '/archive-windowed' || pathname.startsWith('/archive-windowed/')) {
+  if (
+    pathname === '/archive' ||
+    pathname.startsWith('/archive/') ||
+    pathname === '/archive-windowed' ||
+    pathname.startsWith('/archive-windowed/')
+  ) {
     return 'archive-windowed'
-  }
-  if (pathname === '/archive' || pathname.startsWith('/archive/')) {
-    return 'archive'
   }
   if (pathname === '/assignment2' || pathname.startsWith('/assignment2/')) {
     return 'assignment2'
@@ -42,12 +43,15 @@ export default function App() {
     const pathname = window.location.pathname
     const isAssignmentOnePath = pathname === '/assignment1' || pathname.startsWith('/assignment1/')
     const isAssignmentTwoPath = pathname === '/assignment2' || pathname.startsWith('/assignment2/')
-    const isArchivePath = pathname === '/archive' || pathname.startsWith('/archive/')
-    const isArchiveWindowedPath = pathname === '/archive-windowed' || pathname.startsWith('/archive-windowed/')
+    const isArchiveWindowedPath =
+      pathname === '/archive' ||
+      pathname.startsWith('/archive/') ||
+      pathname === '/archive-windowed' ||
+      pathname.startsWith('/archive-windowed/')
 
     if (
       pathname === '/' ||
-      (!isAssignmentOnePath && !isAssignmentTwoPath && !isArchivePath && !isArchiveWindowedPath)
+      (!isAssignmentOnePath && !isAssignmentTwoPath && !isArchiveWindowedPath)
     ) {
       window.history.replaceState({}, '', '/assignment1')
     }
@@ -260,8 +264,6 @@ export default function App() {
     setActiveAssignment(assignment)
     const nextPath = assignment === 'assignment2'
       ? '/assignment2'
-      : assignment === 'archive'
-      ? '/archive'
       : assignment === 'archive-windowed'
       ? '/archive-windowed'
       : '/assignment1'
@@ -304,19 +306,11 @@ export default function App() {
               </button>
               <button
                 type="button"
-                onClick={() => handleAssignmentChange('archive')}
-                className={`assignment-tab ${activeAssignment === 'archive' ? 'is-active' : ''}`}
-                aria-pressed={activeAssignment === 'archive'}
-              >
-                Photo Archive
-              </button>
-              <button
-                type="button"
                 onClick={() => handleAssignmentChange('archive-windowed')}
                 className={`assignment-tab ${activeAssignment === 'archive-windowed' ? 'is-active' : ''}`}
                 aria-pressed={activeAssignment === 'archive-windowed'}
               >
-                Photo Archive V2
+                Photo Archive
               </button>
             </div>
           </div>
@@ -728,12 +722,10 @@ export default function App() {
           </>
         ) : activeAssignment === 'assignment2' ? (
           <AssignmentTwoNarrative />
-        ) : activeAssignment === 'archive' ? (
-          <PhotoArchive />
         ) : (
           <PhotoArchiveWindowed />
         )}
-        {activeAssignment !== 'archive' && activeAssignment !== 'archive-windowed' ? (
+        {activeAssignment !== 'archive-windowed' ? (
           <footer className="border-t border-slate-300/80 bg-white/55 px-4 py-8 backdrop-blur-sm">
             <div className="mx-auto w-[min(96ch,calc(100vw-1.25rem))] md:w-[min(96ch,calc(100vw-2.5rem))] flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-3 group cursor-default">

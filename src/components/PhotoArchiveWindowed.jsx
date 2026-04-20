@@ -4,6 +4,7 @@ import Lightbox from 'yet-another-react-lightbox'
 import Inline from 'yet-another-react-lightbox/plugins/inline'
 import 'yet-another-react-lightbox/styles.css'
 import { galleryData } from '../data/galleryData'
+import { photoNearestNeighbours } from '../data/photoNearestNeighbours'
 import { photographFullUrl, photographThumbnailUrl } from '../lib/photographs'
 
 const YEAR_ROW_HEIGHT = 46
@@ -236,6 +237,7 @@ export default function PhotoArchiveWindowed() {
   }, [listRef, rowIndexByFilename, selectedFilename])
 
   const coords = selectedPhoto ? fmtCoord(selectedPhoto.lat, selectedPhoto.lng) : null
+  const nearestNeighbours = selectedPhoto ? photoNearestNeighbours[selectedPhoto.filename] ?? [] : []
 
   const handleToggleYear = (year) => {
     setOpenYears((prev) => {
@@ -253,7 +255,7 @@ export default function PhotoArchiveWindowed() {
       data-lenis-prevent-wheel
       style={{
         display: 'grid',
-        gridTemplateColumns: isNarrow ? '1fr' : 'minmax(20rem, 32rem) minmax(0, 1fr)',
+        gridTemplateColumns: isNarrow ? '1fr' : 'minmax(15rem, 18rem) minmax(0, 0.92fr) 14rem',
         gridTemplateRows: isNarrow ? 'minmax(18rem, 38vh) minmax(0, 1fr)' : '1fr',
         height: 'calc(100vh - 88px)',
         overflow: 'hidden',
@@ -293,44 +295,48 @@ export default function PhotoArchiveWindowed() {
       </aside>
 
       <main style={{ display: 'grid', gridTemplateRows: 'minmax(0,1fr) auto', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
-        <div style={{ minHeight: 0, overflow: 'hidden', padding: '1rem', background: 'radial-gradient(circle at 14% 12%, rgba(62,91,113,0.08), transparent 24%), linear-gradient(180deg, rgba(255,255,255,0.58), rgba(238,244,247,0.72))' }}>
+        <div style={{ minHeight: 0, overflow: 'hidden', padding: '0.65rem', background: 'radial-gradient(circle at 14% 12%, rgba(62,91,113,0.08), transparent 24%), linear-gradient(180deg, rgba(255,255,255,0.58), rgba(238,244,247,0.72))' }}>
           {selectedPhoto ? (
-            <div style={{ height: '100%', minHeight: 0, border: '1px solid rgba(29,35,41,0.08)', background: 'rgba(11,18,32,0.92)', boxShadow: '0 32px 70px -42px rgba(15,23,42,0.6)' }}>
-              <Lightbox
-                plugins={[Inline]}
-                index={selectedIndex}
-                slides={slides}
-                inline={{
-                  style: {
-                    width: '100%',
-                    height: '100%',
-                  },
-                }}
-                carousel={{
-                  finite: true,
-                  preload: 3,
-                  padding: '24px',
-                  spacing: '12%',
-                  imageFit: 'contain',
-                }}
-                animation={{
-                  fade: 180,
-                  swipe: 320,
-                  navigation: 260,
-                }}
-                controller={{
-                  aria: true,
-                  closeOnBackdropClick: false,
-                }}
-                on={{
-                  view: ({ index }) => setSelectedFilename(galleryData[index]?.filename ?? null),
-                }}
-                render={{
-                  buttonPrev: slides.length > 1 ? undefined : () => null,
-                  buttonNext: slides.length > 1 ? undefined : () => null,
-                }}
-                toolbar={{ buttons: [] }}
-              />
+            <div style={{ height: '100%', minHeight: 0, display: 'grid' }}>
+              <div style={{ minWidth: 0, minHeight: 0, background: 'rgba(11,18,32,0.92)', boxShadow: '0 32px 70px -42px rgba(15,23,42,0.6)', display: 'grid', placeItems: 'center', overflow: 'hidden' }}>
+                <div style={{ width: 'min(100%, 42rem)', maxHeight: '100%', aspectRatio: '4 / 3', overflow: 'hidden' }}>
+                  <Lightbox
+                    plugins={[Inline]}
+                    index={selectedIndex}
+                    slides={slides}
+                    inline={{
+                      style: {
+                        width: '100%',
+                        height: '100%',
+                      },
+                    }}
+                    carousel={{
+                      finite: true,
+                      preload: 3,
+                      padding: '18px',
+                      spacing: '10%',
+                      imageFit: 'contain',
+                    }}
+                    animation={{
+                      fade: 180,
+                      swipe: 320,
+                      navigation: 260,
+                    }}
+                    controller={{
+                      aria: true,
+                      closeOnBackdropClick: false,
+                    }}
+                    on={{
+                      view: ({ index }) => setSelectedFilename(galleryData[index]?.filename ?? null),
+                    }}
+                    render={{
+                      buttonPrev: slides.length > 1 ? undefined : () => null,
+                      buttonNext: slides.length > 1 ? undefined : () => null,
+                    }}
+                    toolbar={{ buttons: [] }}
+                  />
+                </div>
+              </div>
             </div>
           ) : (
             <div style={{ height: '100%', minHeight: 0, border: '1px solid rgba(29,35,41,0.08)', background: 'linear-gradient(180deg, rgba(11,18,32,0.94), rgba(15,23,42,0.9))', boxShadow: '0 32px 70px -42px rgba(15,23,42,0.6)', display: 'grid', placeItems: 'center', padding: '2rem' }}>
@@ -401,6 +407,44 @@ export default function PhotoArchiveWindowed() {
           </section>
         ) : null}
       </main>
+
+      {!isNarrow ? (
+        <aside
+          data-lenis-prevent
+          data-lenis-prevent-wheel
+          style={{ minWidth: 0, minHeight: 0, overflowY: 'auto', borderLeft: '1px solid var(--archive-color-rule)', background: 'rgba(250,248,243,0.86)', padding: '0.75rem 0.5rem' }}
+        >
+          {selectedPhoto && nearestNeighbours.length > 0 ? (
+            <>
+              <p style={{ margin: '0 0 0.55rem', font: '600 0.64rem/1 var(--archive-font-ui)', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+                Similar Images
+              </p>
+              <div style={{ display: 'grid', gap: '0.5rem' }}>
+                {nearestNeighbours.map((neighbor) => (
+                  <button
+                    key={neighbor.filename}
+                    type="button"
+                    onClick={() => setSelectedFilename(neighbor.filename)}
+                    style={{ display: 'grid', gap: '0.4rem', width: '100%', border: '1px solid rgba(29,35,41,0.08)', background: 'rgba(255,255,255,0.76)', padding: '0.28rem', textAlign: 'left', cursor: 'pointer' }}
+                  >
+                    <div style={{ width: '100%', aspectRatio: '1 / 1', overflow: 'hidden', background: 'rgba(29,35,41,0.08)' }}>
+                      <img
+                        src={photographThumbnailUrl(neighbor.filename)}
+                        alt=""
+                        loading="lazy"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      />
+                    </div>
+                    <p style={{ margin: 0, font: '500 0.72rem/1.3 var(--archive-font-ui)', color: 'var(--archive-color-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {neighbor.filename}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : null}
+        </aside>
+      ) : null}
     </div>
   )
 }

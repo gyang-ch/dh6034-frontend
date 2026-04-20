@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { galleryData } from '../data/galleryData'
+import { photoNearestNeighbours } from '../data/photoNearestNeighbours'
 import { photographFullUrl, photographThumbnailUrl } from '../lib/photographs'
 
 const detailImageUrl = photographFullUrl
@@ -36,7 +37,7 @@ function MetaSection({ title, children }) {
   )
 }
 
-function GalleryDetail({ photo }) {
+function GalleryDetail({ photo, onSelect }) {
   if (!photo) {
     return (
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', color: 'var(--archive-color-muted)' }}>
@@ -51,6 +52,7 @@ function GalleryDetail({ photo }) {
   }
 
   const coords = fmtCoord(photo.lat, photo.lng)
+  const nearestNeighbours = photoNearestNeighbours[photo.filename] ?? []
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -142,6 +144,38 @@ function GalleryDetail({ photo }) {
                   {photo.tags.map((tag) => (
                     <span key={tag} style={{ font: '0.7rem/1.3 var(--archive-font-ui)', color: 'var(--archive-color-copy)', background: 'rgba(29,35,41,0.07)', border: '1px solid rgba(29,35,41,0.1)', borderRadius: '4px', padding: '2px 8px' }}>{tag}</span>
                   ))}
+                </div>
+              </MetaSection>
+            </>
+          )}
+
+          {nearestNeighbours.length > 0 && (
+            <>
+              <hr style={{ height: '1px', background: 'var(--archive-color-rule)', border: 'none', margin: '0 18px' }} />
+              <MetaSection title="Similar Images">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(7.5rem, 1fr))', gap: '10px' }}>
+                  {nearestNeighbours.map((neighbor) => {
+                    return (
+                      <button
+                        key={neighbor.filename}
+                        type="button"
+                        onClick={() => onSelect(neighbor.filename)}
+                        style={{ display: 'grid', gap: '0.45rem', width: '100%', border: '1px solid rgba(29,35,41,0.08)', background: 'rgba(255,255,255,0.76)', padding: '0.4rem', textAlign: 'left', cursor: 'pointer' }}
+                      >
+                        <div style={{ width: '100%', aspectRatio: '1 / 1', overflow: 'hidden', background: 'rgba(29,35,41,0.08)' }}>
+                          <img
+                            src={explorerThumbnailUrl(neighbor.filename)}
+                            alt=""
+                            loading="lazy"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          />
+                        </div>
+                        <p style={{ margin: 0, font: '500 0.72rem/1.35 var(--archive-font-ui)', color: 'var(--archive-color-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {neighbor.filename}
+                        </p>
+                      </button>
+                    )
+                  })}
                 </div>
               </MetaSection>
             </>
@@ -242,7 +276,7 @@ export default function PhotoArchive() {
         </div>
       </aside>
       <main style={{ minWidth: 0, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <GalleryDetail photo={selectedPhoto} />
+        <GalleryDetail photo={selectedPhoto} onSelect={setSelectedFilename} />
       </main>
     </div>
   )
