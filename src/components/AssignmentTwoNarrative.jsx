@@ -1,10 +1,10 @@
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { assignment2Data } from '../data/assignment2Data'
 import AssignmentTwoGraph from './AssignmentTwoGraph'
 import AssignmentTwoSonification from './AssignmentTwoSonification'
-import ChromaticSwarm from './ChromaticSwarm'
+import ChromaticSwarm, { STEPS as SWARM_STEPS } from './ChromaticSwarm'
 import PeoplePanel from './PeoplePanel'
 import SemanticTimeline from './SemanticTimeline'
 import PlaceSubjectAtlas from './PlaceSubjectAtlas'
@@ -12,6 +12,7 @@ import TemporalRibbon from './TemporalRibbon'
 import GlobeView from './GlobeView'
 import PhotoMap from './PhotoMap'
 import StagedVisual from './StagedVisual'
+import JsonScrollExplainer from './JsonScrollExplainer'
 import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 import { photographUrl } from '../lib/photographs'
 
@@ -179,6 +180,10 @@ export default function AssignmentTwoNarrative() {
   const railTracksRef = useRef([])
   const tilesRef = useRef([])
   const tileFramesRef = useRef([])
+
+  // Beeswarm scroll-driven step
+  const [swarmStep, setSwarmStep] = useState(0)
+  const swarmStepRefs = useRef([])
   const heroStats = [
     { label: 'Corpus', value: `${totals.images.toLocaleString()} images`, note: 'Photographs drawn from the personal image archive.' },
     { label: 'Clusters', value: `${totals.clusters} groups`, note: 'Visual families inferred from CLIP and DINO embeddings.' },
@@ -245,6 +250,20 @@ export default function AssignmentTwoNarrative() {
     }
 
   }, { scope: heroRef, dependencies: [prefersReducedMotion] })
+
+  // IntersectionObserver: advance beeswarm step as right-panel cards scroll into view
+  useEffect(() => {
+    const observers = swarmStepRefs.current.map((el, i) => {
+      if (!el) return null
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setSwarmStep(i) },
+        { rootMargin: '-20% 0px -70% 0px' },
+      )
+      obs.observe(el)
+      return obs
+    })
+    return () => observers.forEach(o => o?.disconnect())
+  }, [])
 
   let tileIndex = 0
 
@@ -419,6 +438,10 @@ export default function AssignmentTwoNarrative() {
             photograph to support chromatic visualisations. I also manually labelled the number of
             people in each photo, where YOLO was used for assistance.
           </p>
+          <p style={S.body}>
+            I stored all the metadata in a structured JSON file, as shown below.
+          </p>
+          <JsonScrollExplainer />
         </ScrollSection>
 
         <VisBlock>
@@ -576,19 +599,76 @@ export default function AssignmentTwoNarrative() {
           </StagedVisual>
         </VisBlock>
 
-        {/* 8 – Beeswarm */}
-        <ScrollSection id="swarm" kicker="Scroll-Driven Beeswarm" title="The same corpus read as freely moving circles.">
-          <p style={S.body}>
-            The stripes above collapse each photograph into a one-dimensional mark. Here the same data expands into two dimensions: each circle can drift, cluster, or align along an axis. Scroll down through four arrangements — free scatter, chronological beeswarm, visual family columns, and an energy gradient — to feel how the archive reorganises itself when the constraint of the stripe is removed.
-          </p>
-          <p style={S.body}>
-            Hover any circle to inspect the photograph and click to pin a detail strip below the visualisation. The radius remains the same proxy for style energy, and the colour still comes from the dominant hue of the photograph.
-          </p>
-        </ScrollSection>
+        {/* 8 – Beeswarm: sticky viz left, scrollable text right */}
+        <div id="swarm" style={{ display: 'flex', gap: '2.5rem', alignItems: 'flex-start', padding: '4.5rem 0 2rem' }}>
 
-        <VisBlock>
-          <ChromaticSwarm />
-        </VisBlock>
+          {/* Left: sticky canvas */}
+          <div style={{ flex: '0 0 64%', position: 'sticky', top: '1.5rem' }}>
+            <ChromaticSwarm step={swarmStep} />
+          </div>
+
+          {/* Right: scrollable step cards */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+
+            {/* Section header */}
+            <div style={{ padding: '0 0 1rem' }}>
+              <p style={S.kicker}>Scroll-Driven Beeswarm</p>
+              <h2 style={S.h2}>The same corpus read as freely moving circles.</h2>
+              <p style={S.body}>
+                The stripes above collapse each photograph into a one-dimensional mark. Here the same data expands into two dimensions: each circle can drift, cluster, or align along an axis.
+              </p>
+              <p style={S.body}>
+                Hover any circle to inspect the photograph and click to pin a detail strip. Radius encodes style energy; colour is the dominant hue.
+              </p>
+            </div>
+
+            {/* One card per beeswarm step */}
+            {SWARM_STEPS.map((s, i) => (
+              <div
+                key={s.key}
+                ref={el => { swarmStepRefs.current[i] = el }}
+                style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', padding: '1rem 0' }}
+              >
+                <div style={{
+                  width: '100%',
+                  borderRadius: '1rem',
+                  padding: '1.5rem 1.6rem',
+                  border: `1px solid ${swarmStep === i ? 'rgba(29,35,41,0.25)' : 'var(--archive-color-rule)'}`,
+                  background: swarmStep === i ? 'rgba(255,255,255,0.82)' : 'rgba(255,255,255,0.42)',
+                  boxShadow: swarmStep === i ? '0 8px 32px -8px rgba(15,23,42,0.14)' : 'none',
+                  opacity: swarmStep === i ? 1 : 0.4,
+                  transform: swarmStep === i ? 'translateX(0)' : 'translateX(6px)',
+                  transition: 'opacity 0.35s ease, transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease',
+                }}>
+                  <p style={{
+                    margin: '0 0 0.4rem',
+                    font: '600 0.68rem/1 var(--archive-font-ui)',
+                    letterSpacing: '0.16em',
+                    textTransform: 'uppercase',
+                    color: 'var(--archive-color-muted)',
+                  }}>
+                    Step {i + 1} of {SWARM_STEPS.length}
+                  </p>
+                  <h3 style={{
+                    margin: '0 0 0.75rem',
+                    font: '500 1.2rem/1.25 var(--archive-font-display)',
+                    color: 'var(--archive-color-ink)',
+                  }}>
+                    {s.title}
+                  </h3>
+                  <p style={{
+                    margin: 0,
+                    font: '0.9rem/1.75 var(--archive-font-ui)',
+                    color: 'var(--archive-color-copy)',
+                  }}>
+                    {s.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+
+          </div>
+        </div>
 
         {/* Notes */}
         <ScrollSection id="endnotes" kicker="Notes" title="Reading the archive as evidence.">

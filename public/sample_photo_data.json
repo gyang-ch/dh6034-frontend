@@ -1,0 +1,344 @@
+[
+  {
+    "filename": "2004-04-25_Lanzhou_001.JPG",
+    "date": "2004-04-25",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "person_count": 1,
+    "BLIP_Caption": "a young boy with his arms outstretched in the air",
+    "BLIP_Keywords": [
+      "young",
+      "boy",
+      "his",
+      "arms"
+    ],
+    "BLIP_VQA_Scene": "indoors",
+    "BLIP_VQA_Subject": "boy",
+    "dominant_colours": [
+      {
+        "hex": "#a3bcd1",
+        "rgb": [
+          163,
+          188,
+          209
+        ],
+        "hsl_saturation": 0.333
+      },
+      {
+        "hex": "#8ba4ba",
+        "rgb": [
+          139,
+          164,
+          186
+        ],
+        "hsl_saturation": 0.254
+      },
+      {
+        "hex": "#640815",
+        "rgb": [
+          100,
+          8,
+          21
+        ],
+        "hsl_saturation": 0.852
+      }
+    ],
+    "clip_tags": [
+      {
+        "tag": "bright image",
+        "score": 0.02
+      },
+      {
+        "tag": "portrait",
+        "score": 0.0199
+      },
+      {
+        "tag": "park",
+        "score": 0.0199
+      },
+      {
+        "tag": "motion blur",
+        "score": 0.0197
+      }
+    ],
+    "image_stats": {
+      "width": 1632,
+      "height": 1224,
+      "aspect_ratio": 1.3333,
+      "mean_rgb": [
+        134.59,
+        138.1,
+        156.68
+      ],
+      "std_rgb": [
+        33.64,
+        64.8,
+        68.43
+      ]
+    },
+    "cluster_id": 3,
+    "cluster_label": "cluster_3",
+    "umap_x": 0.3585,
+    "umap_y": 0.3645,
+    "style_energy": 0.4933,
+    "nearest_neighbours": [
+      {
+        "filename": "2004-04-25_Lanzhou_002.JPG",
+        "distance": 0.1499
+      },
+      {
+        "filename": "2006-07-27_Beidaihe_009.JPG",
+        "distance": 0.3479
+      },
+      {
+        "filename": "2006-07-27_Beidaihe_008.JPG",
+        "distance": 0.3564
+      }
+    ],
+    "pca_features": {
+      "structure": 0.7768,
+      "palette": 0.4819,
+      "texture": 0.4744
+    },
+    "hdbscan_cluster": 53,
+    "hdbscan_neighbours": [
+      {
+        "filename": "2006-07-27_Beidaihe_020.JPG",
+        "distance": 0.0273
+      },
+      {
+        "filename": "2006-07-27_Beidaihe_019.JPG",
+        "distance": 0.0276
+      }
+    ]
+  },
+  {
+    "filename": "2004-04-25_Lanzhou_002.JPG",
+    "date": "2004-04-25",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "person_count": 1,
+    "BLIP_Caption": "a young boy that is waving his hand",
+    "BLIP_Keywords": [
+      "young",
+      "boy",
+      "waving",
+      "his"
+    ],
+    "BLIP_VQA_Scene": "indoors",
+    "BLIP_VQA_Subject": "boy",
+    "dominant_colours": [
+      {
+        "hex": "#a1bacf",
+        "rgb": [
+          161,
+          186,
+          207
+        ],
+        "hsl_saturation": 0.324
+      },
+      {
+        "hex": "#889fb3",
+        "rgb": [
+          136,
+          159,
+          179
+        ],
+        "hsl_saturation": 0.221
+      },
+      {
+        "hex": "#810819",
+        "rgb": [
+          129,
+          8,
+          25
+        ],
+        "hsl_saturation": 0.883
+      }
+    ],
+    "clip_tags": [
+      {
+        "tag": "bright image",
+        "score": 0.02
+      },
+      {
+        "tag": "portrait",
+        "score": 0.0198
+      },
+      {
+        "tag": "motion blur",
+        "score": 0.0198
+      },
+      {
+        "tag": "park",
+        "score": 0.0197
+      }
+    ],
+    "image_stats": {
+      "width": 1632,
+      "height": 1224,
+      "aspect_ratio": 1.3333,
+      "mean_rgb": [
+        132.54,
+        132.07,
+        148.96
+      ],
+      "std_rgb": [
+        35.75,
+        67.43,
+        72.13
+      ]
+    },
+    "cluster_id": 3,
+    "cluster_label": "cluster_3",
+    "umap_x": 0.3586,
+    "umap_y": 0.3647,
+    "style_energy": 0.4309,
+    "nearest_neighbours": [
+      {
+        "filename": "2004-04-25_Lanzhou_001.JPG",
+        "distance": 0.1499
+      },
+      {
+        "filename": "2006-07-27_Beidaihe_009.JPG",
+        "distance": 0.2913
+      },
+      {
+        "filename": "2006-07-27_Beidaihe_023.JPG",
+        "distance": 0.3136
+      }
+    ],
+    "pca_features": {
+      "structure": 0.7731,
+      "palette": 0.4851,
+      "texture": 0.5124
+    },
+    "hdbscan_cluster": 53,
+    "hdbscan_neighbours": [
+      {
+        "filename": "2006-07-27_Beidaihe_023.JPG",
+        "distance": 0.0152
+      },
+      {
+        "filename": "2006-07-27_Beidaihe_009.JPG",
+        "distance": 0.0179
+      }
+    ]
+  },
+  {
+    "filename": "2004-06-03_Lanzhou_001.jpg",
+    "date": "2004-06-03",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "person_count": 12,
+    "BLIP_Caption": "a man and a boy standing in front of a train station",
+    "BLIP_Keywords": [
+      "man",
+      "boy",
+      "standing",
+      "train"
+    ],
+    "BLIP_VQA_Scene": "outdoors",
+    "BLIP_VQA_Subject": "man and child",
+    "dominant_colours": [
+      {
+        "hex": "#494742",
+        "rgb": [
+          73,
+          71,
+          66
+        ],
+        "hsl_saturation": 0.05
+      },
+      {
+        "hex": "#15171c",
+        "rgb": [
+          21,
+          23,
+          28
+        ],
+        "hsl_saturation": 0.143
+      },
+      {
+        "hex": "#967668",
+        "rgb": [
+          150,
+          118,
+          104
+        ],
+        "hsl_saturation": 0.181
+      }
+    ],
+    "clip_tags": [
+      {
+        "tag": "bright image",
+        "score": 0.0199
+      },
+      {
+        "tag": "park",
+        "score": 0.0199
+      },
+      {
+        "tag": "outdoor scene",
+        "score": 0.0199
+      },
+      {
+        "tag": "people",
+        "score": 0.0198
+      }
+    ],
+    "image_stats": {
+      "width": 1536,
+      "height": 2048,
+      "aspect_ratio": 0.75,
+      "mean_rgb": [
+        124.96,
+        124.68,
+        122.82
+      ],
+      "std_rgb": [
+        54.75,
+        54.69,
+        54.49
+      ]
+    },
+    "cluster_id": 0,
+    "cluster_label": "cluster_0",
+    "umap_x": 0.4295,
+    "umap_y": 0.4068,
+    "style_energy": 0.4736,
+    "nearest_neighbours": [
+      {
+        "filename": "2004-06-03_Lanzhou_002.JPG",
+        "distance": 0.2194
+      },
+      {
+        "filename": "2004-06-03_Lanzhou_003.JPG",
+        "distance": 0.2507
+      },
+      {
+        "filename": "2004-06-03_Lanzhou_004.JPG",
+        "distance": 0.3219
+      }
+    ],
+    "pca_features": {
+      "structure": 0.8405,
+      "palette": 0.6571,
+      "texture": 0.5629
+    },
+    "hdbscan_cluster": 44,
+    "hdbscan_neighbours": [
+      {
+        "filename": "2004-06-03_Lanzhou_003.JPG",
+        "distance": 0.0591
+      },
+      {
+        "filename": "2004-06-03_Lanzhou_002.JPG",
+        "distance": 0.0667
+      }
+    ]
+  }
+]
