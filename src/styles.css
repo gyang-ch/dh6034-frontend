@@ -457,7 +457,7 @@
   position: absolute;
   inset: -10% -4%;
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   column-gap: 0.36rem;
   padding: 0.36rem;
   overflow: hidden;

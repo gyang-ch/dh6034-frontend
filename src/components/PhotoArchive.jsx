@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { galleryData } from '../data/galleryData'
-import { photographFullUrl } from '../lib/photographs'
+import { photographFullUrl, photographThumbnailUrl } from '../lib/photographs'
 
-const imageUrl = photographFullUrl
+const detailImageUrl = photographFullUrl
+const explorerThumbnailUrl = photographThumbnailUrl
 
 function fmtCoord(lat, lng) {
   if (lat == null || lng == null) return null
@@ -55,7 +56,7 @@ function GalleryDetail({ photo }) {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {/* Image */}
       <div style={{ flex: '0 0 56%', position: 'relative', overflow: 'hidden', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <img key={photo.filename} src={imageUrl(photo.filename)} alt={photo.blipCaption ?? photo.filename} loading="lazy"
+        <img key={photo.filename} src={detailImageUrl(photo.filename)} alt={photo.blipCaption ?? photo.filename} loading="lazy"
           style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }} />
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '8px 14px', background: 'linear-gradient(transparent,rgba(0,0,0,0.55))', pointerEvents: 'none' }}>
           <span style={{ font: '0.7rem/1.4 var(--archive-font-ui)', color: 'rgba(255,255,255,0.75)', letterSpacing: '0.02em' }}>{photo.filename}</span>
@@ -63,7 +64,11 @@ function GalleryDetail({ photo }) {
       </div>
 
       {/* Scrollable metadata */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div
+        data-lenis-prevent
+        data-lenis-prevent-wheel
+        style={{ flex: 1, overflowY: 'auto' }}
+      >
         <div style={{ paddingBottom: '24px' }}>
           <MetaSection title="Basic Info">
             <dl style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -159,8 +164,7 @@ function GalleryExplorer({ photos, selectedFilename, onSelect }) {
   }, [photos])
 
   const [openYears, setOpenYears] = useState(() => {
-    const years = [...byYear.keys()]
-    return new Set(years.slice(0, 1))
+    return new Set()
   })
 
   function toggleYear(year) {
@@ -173,7 +177,11 @@ function GalleryExplorer({ photos, selectedFilename, onSelect }) {
   }
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto', borderRight: '1px solid var(--archive-color-rule)' }}>
+    <div
+      data-lenis-prevent
+      data-lenis-prevent-wheel
+      style={{ height: '100%', overflowY: 'auto', borderRight: '1px solid var(--archive-color-rule)' }}
+    >
       {[...byYear.entries()].map(([year, yearPhotos]) => {
         const isOpen = openYears.has(year)
         return (
@@ -194,7 +202,7 @@ function GalleryExplorer({ photos, selectedFilename, onSelect }) {
                     <button key={photo.filename} type="button" onClick={() => onSelect(photo.filename)}
                       style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '8px 12px 8px 28px', background: isSelected ? 'rgba(62,91,113,0.1)' : 'transparent', border: 'none', borderBottom: '1px solid rgba(29,35,41,0.04)', cursor: 'pointer', textAlign: 'left', transition: 'background 120ms ease' }}>
                       <div style={{ flexShrink: 0, width: '36px', height: '36px', borderRadius: '4px', overflow: 'hidden', background: 'rgba(29,35,41,0.08)' }}>
-                        <img src={imageUrl(photo.filename)} alt="" loading="lazy"
+                        <img src={explorerThumbnailUrl(photo.filename)} alt="" loading="lazy"
                           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
@@ -218,18 +226,22 @@ export default function PhotoArchive() {
   const selectedPhoto = selectedFilename ? galleryData.find((p) => p.filename === selectedFilename) ?? null : null
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '480px 1fr', height: 'calc(100vh - 88px)', overflow: 'hidden' }}>
+    <div
+      data-lenis-prevent
+      data-lenis-prevent-wheel
+      style={{ display: 'grid', gridTemplateColumns: '480px 1fr', height: 'calc(100vh - 88px)', minHeight: 0, overflow: 'hidden' }}
+    >
       <aside style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--archive-color-rule)' }}>
         <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--archive-color-rule)', background: 'rgba(247,244,237,0.95)', backdropFilter: 'blur(8px)', flexShrink: 0 }}>
           <p style={{ margin: 0, font: '600 0.72rem/1 var(--archive-font-ui)', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
             Photo Archive · {galleryData.length.toLocaleString()} images
           </p>
         </div>
-        <div style={{ flex: 1, overflow: 'hidden' }}>
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <GalleryExplorer photos={galleryData} selectedFilename={selectedFilename} onSelect={setSelectedFilename} />
         </div>
       </aside>
-      <main style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <main style={{ minWidth: 0, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <GalleryDetail photo={selectedPhoto} />
       </main>
     </div>

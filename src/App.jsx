@@ -8,10 +8,14 @@ import TranscriptionView from './components/TranscriptionView'
 import ScrollCompass from './components/ScrollCompass'
 import AssignmentTwoNarrative from './components/AssignmentTwoNarrative'
 import PhotoArchive from './components/PhotoArchive'
+import PhotoArchiveWindowed from './components/PhotoArchiveWindowed'
 import usePrefersReducedMotion from './hooks/usePrefersReducedMotion'
 import { assignmentOneMediaUrl } from './lib/photographs'
 
 function getAssignmentFromPath(pathname) {
+  if (pathname === '/archive-windowed' || pathname.startsWith('/archive-windowed/')) {
+    return 'archive-windowed'
+  }
   if (pathname === '/archive' || pathname.startsWith('/archive/')) {
     return 'archive'
   }
@@ -39,10 +43,11 @@ export default function App() {
     const isAssignmentOnePath = pathname === '/assignment1' || pathname.startsWith('/assignment1/')
     const isAssignmentTwoPath = pathname === '/assignment2' || pathname.startsWith('/assignment2/')
     const isArchivePath = pathname === '/archive' || pathname.startsWith('/archive/')
+    const isArchiveWindowedPath = pathname === '/archive-windowed' || pathname.startsWith('/archive-windowed/')
 
     if (
       pathname === '/' ||
-      (!isAssignmentOnePath && !isAssignmentTwoPath && !isArchivePath)
+      (!isAssignmentOnePath && !isAssignmentTwoPath && !isArchivePath && !isArchiveWindowedPath)
     ) {
       window.history.replaceState({}, '', '/assignment1')
     }
@@ -66,6 +71,7 @@ export default function App() {
       duration: 1.15,
       smoothWheel: true,
       touchMultiplier: 1.1,
+      prevent: (node) => node?.closest?.('[data-lenis-prevent]') != null,
     })
 
     lenisRef.current = lenis
@@ -252,7 +258,13 @@ export default function App() {
 
   const handleAssignmentChange = (assignment) => {
     setActiveAssignment(assignment)
-    const nextPath = assignment === 'assignment2' ? '/assignment2' : assignment === 'archive' ? '/archive' : '/assignment1'
+    const nextPath = assignment === 'assignment2'
+      ? '/assignment2'
+      : assignment === 'archive'
+      ? '/archive'
+      : assignment === 'archive-windowed'
+      ? '/archive-windowed'
+      : '/assignment1'
     if (window.location.pathname !== nextPath) {
       window.history.pushState({}, '', nextPath)
     }
@@ -297,6 +309,14 @@ export default function App() {
                 aria-pressed={activeAssignment === 'archive'}
               >
                 Photo Archive
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAssignmentChange('archive-windowed')}
+                className={`assignment-tab ${activeAssignment === 'archive-windowed' ? 'is-active' : ''}`}
+                aria-pressed={activeAssignment === 'archive-windowed'}
+              >
+                Photo Archive V2
               </button>
             </div>
           </div>
@@ -708,31 +728,37 @@ export default function App() {
           </>
         ) : activeAssignment === 'assignment2' ? (
           <AssignmentTwoNarrative />
-        ) : (
+        ) : activeAssignment === 'archive' ? (
           <PhotoArchive />
+        ) : (
+          <PhotoArchiveWindowed />
         )}
-        <footer className="border-t border-slate-300/80 bg-white/55 px-4 py-8 backdrop-blur-sm">
-          <div className="mx-auto w-[min(96ch,calc(100vw-1.25rem))] md:w-[min(96ch,calc(100vw-2.5rem))] flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3 group cursor-default">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-teal-700 font-bold font-serif group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
-                DH
+        {activeAssignment !== 'archive' && activeAssignment !== 'archive-windowed' ? (
+          <footer className="border-t border-slate-300/80 bg-white/55 px-4 py-8 backdrop-blur-sm">
+            <div className="mx-auto w-[min(96ch,calc(100vw-1.25rem))] md:w-[min(96ch,calc(100vw-2.5rem))] flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-3 group cursor-default">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-teal-700 font-bold font-serif group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
+                  DH
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-slate-900 tracking-tight text-sm">
+                    {activeAssignment === 'assignment1'
+                      ? 'DH6034 Assignment 1 – John Smith'
+                      : activeAssignment === 'assignment2'
+                      ? 'DH6034 Assignment 2 – John Smith'
+                      : activeAssignment === 'archive-windowed'
+                      ? 'DH6034 Photo Archive V2 – John Smith'
+                      : 'DH6034 Photo Archive – John Smith'}
+                  </span>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-widest font-major mt-0.5">Humanities & New Technologies</span>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <span className="font-semibold text-slate-900 tracking-tight text-sm">
-                  {activeAssignment === 'assignment1'
-                    ? 'DH6034 Assignment 1 – John Smith'
-                    : activeAssignment === 'assignment2'
-                    ? 'DH6034 Assignment 2 – John Smith'
-                    : 'DH6034 Photo Archive – John Smith'}
-                </span>
-                <span className="text-[10px] text-slate-500 uppercase tracking-widest font-major mt-0.5">Humanities & New Technologies</span>
-              </div>
+              <p className="font-major m-0 text-xs tracking-[0.08em] text-slate-500">
+                © 2026 John Smith. All Rights Reserved.
+              </p>
             </div>
-            <p className="font-major m-0 text-xs tracking-[0.08em] text-slate-500">
-              © 2026 John Smith. All Rights Reserved.
-            </p>
-          </div>
-        </footer>
+          </footer>
+        ) : null}
         <ScrollCompass onScrollTop={handleScrollTop} />
       </main>
     </>
