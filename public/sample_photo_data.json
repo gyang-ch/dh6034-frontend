@@ -5,112 +5,53 @@
     "place": "Lanzhou",
     "lat": 36.0526223,
     "lng": 103.8394984,
-    "person_count": 1,
-    "BLIP_Caption": "a young boy with his arms outstretched in the air",
-    "BLIP_Keywords": [
-      "young",
-      "boy",
-      "his",
-      "arms"
+    "personCount": 1,
+    "brightness": 139.2,
+    "entropy": 6.95,
+    "styleEnergy": 0.493,
+    "width": 1632,
+    "height": 1224,
+    "aspectRatio": 1.333,
+    "tags": [
+      "bright image",
+      "portrait",
+      "park",
+      "motion blur"
     ],
-    "BLIP_VQA_Scene": "indoors",
-    "BLIP_VQA_Subject": "boy",
-    "dominant_colours": [
+    "dominant": [
       {
         "hex": "#a3bcd1",
-        "rgb": [
-          163,
-          188,
-          209
-        ],
-        "hsl_saturation": 0.333
+        "hslSaturation": 0.333
       },
       {
         "hex": "#8ba4ba",
-        "rgb": [
-          139,
-          164,
-          186
-        ],
-        "hsl_saturation": 0.254
+        "hslSaturation": 0.254
       },
       {
         "hex": "#640815",
-        "rgb": [
-          100,
-          8,
-          21
-        ],
-        "hsl_saturation": 0.852
+        "hslSaturation": 0.852
       }
     ],
-    "clip_tags": [
-      {
-        "tag": "bright image",
-        "score": 0.02
-      },
-      {
-        "tag": "portrait",
-        "score": 0.0199
-      },
-      {
-        "tag": "park",
-        "score": 0.0199
-      },
-      {
-        "tag": "motion blur",
-        "score": 0.0197
-      }
+    "clusterId": 3,
+    "hdbscanClusterId": 53,
+    "x": 0.3585,
+    "y": 0.3645,
+    "blipCaption": "a young boy with his arms outstretched in the air",
+    "blipKeywords": [
+      "young",
+      "boy",
+      "his",
+      "arms",
+      "outstretched",
+      "air"
     ],
-    "image_stats": {
-      "width": 1632,
-      "height": 1224,
-      "aspect_ratio": 1.3333,
-      "mean_rgb": [
-        134.59,
-        138.1,
-        156.68
-      ],
-      "std_rgb": [
-        33.64,
-        64.8,
-        68.43
-      ]
-    },
-    "cluster_id": 3,
-    "cluster_label": "cluster_3",
-    "umap_x": 0.3585,
-    "umap_y": 0.3645,
-    "style_energy": 0.4933,
-    "nearest_neighbours": [
-      {
-        "filename": "2004-04-25_Lanzhou_002.JPG",
-        "distance": 0.1499
-      },
-      {
-        "filename": "2006-07-27_Beidaihe_009.JPG",
-        "distance": 0.3479
-      },
-      {
-        "filename": "2006-07-27_Beidaihe_008.JPG",
-        "distance": 0.3564
-      }
-    ],
-    "pca_features": {
-      "structure": 0.7768,
-      "palette": 0.4819,
-      "texture": 0.4744
-    },
-    "hdbscan_cluster": 53,
-    "hdbscan_neighbours": [
-      {
-        "filename": "2006-07-27_Beidaihe_020.JPG",
-        "distance": 0.0273
-      },
-      {
-        "filename": "2006-07-27_Beidaihe_019.JPG",
-        "distance": 0.0276
-      }
+    "gemmaCaption": "A young boy in a red shirt poses against a white wall.",
+    "gemmaKeywords": [
+      "boy",
+      "red shirt",
+      "shaved head",
+      "wall",
+      "pose"
     ]
   },
   {
@@ -119,112 +60,52 @@
     "place": "Lanzhou",
     "lat": 36.0526223,
     "lng": 103.8394984,
-    "person_count": 1,
-    "BLIP_Caption": "a young boy that is waving his hand",
-    "BLIP_Keywords": [
-      "young",
-      "boy",
-      "waving",
-      "his"
+    "personCount": 1,
+    "brightness": 134.1,
+    "entropy": 7.032,
+    "styleEnergy": 0.431,
+    "width": 1632,
+    "height": 1224,
+    "aspectRatio": 1.333,
+    "tags": [
+      "bright image",
+      "portrait",
+      "motion blur",
+      "park"
     ],
-    "BLIP_VQA_Scene": "indoors",
-    "BLIP_VQA_Subject": "boy",
-    "dominant_colours": [
+    "dominant": [
       {
         "hex": "#a1bacf",
-        "rgb": [
-          161,
-          186,
-          207
-        ],
-        "hsl_saturation": 0.324
+        "hslSaturation": 0.324
       },
       {
         "hex": "#889fb3",
-        "rgb": [
-          136,
-          159,
-          179
-        ],
-        "hsl_saturation": 0.221
+        "hslSaturation": 0.221
       },
       {
         "hex": "#810819",
-        "rgb": [
-          129,
-          8,
-          25
-        ],
-        "hsl_saturation": 0.883
+        "hslSaturation": 0.883
       }
     ],
-    "clip_tags": [
-      {
-        "tag": "bright image",
-        "score": 0.02
-      },
-      {
-        "tag": "portrait",
-        "score": 0.0198
-      },
-      {
-        "tag": "motion blur",
-        "score": 0.0198
-      },
-      {
-        "tag": "park",
-        "score": 0.0197
-      }
+    "clusterId": 3,
+    "hdbscanClusterId": 53,
+    "x": 0.3586,
+    "y": 0.3647,
+    "blipCaption": "a young boy that is waving his hand",
+    "blipKeywords": [
+      "young",
+      "boy",
+      "waving",
+      "his",
+      "hand"
     ],
-    "image_stats": {
-      "width": 1632,
-      "height": 1224,
-      "aspect_ratio": 1.3333,
-      "mean_rgb": [
-        132.54,
-        132.07,
-        148.96
-      ],
-      "std_rgb": [
-        35.75,
-        67.43,
-        72.13
-      ]
-    },
-    "cluster_id": 3,
-    "cluster_label": "cluster_3",
-    "umap_x": 0.3586,
-    "umap_y": 0.3647,
-    "style_energy": 0.4309,
-    "nearest_neighbours": [
-      {
-        "filename": "2004-04-25_Lanzhou_001.JPG",
-        "distance": 0.1499
-      },
-      {
-        "filename": "2006-07-27_Beidaihe_009.JPG",
-        "distance": 0.2913
-      },
-      {
-        "filename": "2006-07-27_Beidaihe_023.JPG",
-        "distance": 0.3136
-      }
-    ],
-    "pca_features": {
-      "structure": 0.7731,
-      "palette": 0.4851,
-      "texture": 0.5124
-    },
-    "hdbscan_cluster": 53,
-    "hdbscan_neighbours": [
-      {
-        "filename": "2006-07-27_Beidaihe_023.JPG",
-        "distance": 0.0152
-      },
-      {
-        "filename": "2006-07-27_Beidaihe_009.JPG",
-        "distance": 0.0179
-      }
+    "gemmaCaption": "A child with a shaved head wearing a red shirt holds up one hand.",
+    "gemmaKeywords": [
+      "child",
+      "red shirt",
+      "shaved head",
+      "hand",
+      "white wall"
     ]
   },
   {
@@ -233,112 +114,972 @@
     "place": "Lanzhou",
     "lat": 36.0526223,
     "lng": 103.8394984,
-    "person_count": 12,
-    "BLIP_Caption": "a man and a boy standing in front of a train station",
-    "BLIP_Keywords": [
-      "man",
-      "boy",
-      "standing",
-      "train"
+    "personCount": 12,
+    "brightness": 124.6,
+    "entropy": 7.408,
+    "styleEnergy": 0.474,
+    "width": 1536,
+    "height": 2048,
+    "aspectRatio": 0.75,
+    "tags": [
+      "bright image",
+      "park",
+      "outdoor scene",
+      "people"
     ],
-    "BLIP_VQA_Scene": "outdoors",
-    "BLIP_VQA_Subject": "man and child",
-    "dominant_colours": [
+    "dominant": [
       {
         "hex": "#494742",
-        "rgb": [
-          73,
-          71,
-          66
-        ],
-        "hsl_saturation": 0.05
+        "hslSaturation": 0.05
       },
       {
         "hex": "#15171c",
-        "rgb": [
-          21,
-          23,
-          28
-        ],
-        "hsl_saturation": 0.143
+        "hslSaturation": 0.143
       },
       {
         "hex": "#967668",
-        "rgb": [
-          150,
-          118,
-          104
-        ],
-        "hsl_saturation": 0.181
+        "hslSaturation": 0.181
       }
     ],
-    "clip_tags": [
+    "clusterId": 0,
+    "hdbscanClusterId": 44,
+    "x": 0.4295,
+    "y": 0.4068,
+    "blipCaption": "a man and a boy standing in front of a train station",
+    "blipKeywords": [
+      "man",
+      "boy",
+      "standing",
+      "train",
+      "station"
+    ],
+    "gemmaCaption": "A man and a boy wearing white hard hats stand on a paved path with rails in front of a building.",
+    "gemmaKeywords": [
+      "man",
+      "boy",
+      "hard hats",
+      "rails",
+      "building"
+    ]
+  },
+  {
+    "filename": "2004-06-03_Lanzhou_002.JPG",
+    "date": "2004-06-03",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 4,
+    "brightness": 123.3,
+    "entropy": 7.332,
+    "styleEnergy": 0.384,
+    "width": 1536,
+    "height": 2048,
+    "aspectRatio": 0.75,
+    "tags": [
+      "outdoor scene",
+      "indoor scene",
+      "park",
+      "rural scene"
+    ],
+    "dominant": [
       {
-        "tag": "bright image",
-        "score": 0.0199
+        "hex": "#776b5a",
+        "hslSaturation": 0.139
       },
       {
-        "tag": "park",
-        "score": 0.0199
+        "hex": "#1c1d1e",
+        "hslSaturation": 0.034
       },
       {
-        "tag": "outdoor scene",
-        "score": 0.0199
-      },
-      {
-        "tag": "people",
-        "score": 0.0198
+        "hex": "#454236",
+        "hslSaturation": 0.122
       }
     ],
-    "image_stats": {
-      "width": 1536,
-      "height": 2048,
-      "aspect_ratio": 0.75,
-      "mean_rgb": [
-        124.96,
-        124.68,
-        122.82
-      ],
-      "std_rgb": [
-        54.75,
-        54.69,
-        54.49
-      ]
-    },
-    "cluster_id": 0,
-    "cluster_label": "cluster_0",
-    "umap_x": 0.4295,
-    "umap_y": 0.4068,
-    "style_energy": 0.4736,
-    "nearest_neighbours": [
+    "clusterId": 0,
+    "hdbscanClusterId": 44,
+    "x": 0.4317,
+    "y": 0.4103,
+    "blipCaption": "a young boy standing in front of a bus in a tunnel",
+    "blipKeywords": [
+      "young",
+      "boy",
+      "standing",
+      "bus",
+      "tunnel"
+    ],
+    "gemmaCaption": "A child wearing a white hard hat and a blue shirt stands in front of a building with a tunnel and train tracks.",
+    "gemmaKeywords": [
+      "child",
+      "hard hat",
+      "train tracks",
+      "building",
+      "tunnel"
+    ]
+  },
+  {
+    "filename": "2004-06-03_Lanzhou_003.JPG",
+    "date": "2004-06-03",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 5,
+    "brightness": 124.1,
+    "entropy": 7.489,
+    "styleEnergy": 0.411,
+    "width": 2048,
+    "height": 1536,
+    "aspectRatio": 1.333,
+    "tags": [
+      "outdoor scene",
+      "rural scene",
+      "park",
+      "low contrast"
+    ],
+    "dominant": [
       {
-        "filename": "2004-06-03_Lanzhou_002.JPG",
-        "distance": 0.2194
+        "hex": "#7a6d59",
+        "hslSaturation": 0.156
       },
       {
-        "filename": "2004-06-03_Lanzhou_003.JPG",
-        "distance": 0.2507
+        "hex": "#4e4538",
+        "hslSaturation": 0.164
       },
       {
-        "filename": "2004-06-03_Lanzhou_004.JPG",
-        "distance": 0.3219
+        "hex": "#a18f74",
+        "hslSaturation": 0.193
       }
     ],
-    "pca_features": {
-      "structure": 0.8405,
-      "palette": 0.6571,
-      "texture": 0.5629
-    },
-    "hdbscan_cluster": 44,
-    "hdbscan_neighbours": [
+    "clusterId": 0,
+    "hdbscanClusterId": 44,
+    "x": 0.4329,
+    "y": 0.4097,
+    "blipCaption": "a young boy wearing a helmet standing in front of a building",
+    "blipKeywords": [
+      "young",
+      "boy",
+      "wearing",
+      "helmet",
+      "standing",
+      "building"
+    ],
+    "gemmaCaption": "A young boy wearing a white hard hat stands in front of a large grey building.",
+    "gemmaKeywords": [
+      "boy",
+      "hard hat",
+      "building",
+      "tunnel",
+      "outdoors"
+    ]
+  },
+  {
+    "filename": "2004-06-03_Lanzhou_004.JPG",
+    "date": "2004-06-03",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 11,
+    "brightness": 121.2,
+    "entropy": 7.727,
+    "styleEnergy": 0.44,
+    "width": 1536,
+    "height": 2048,
+    "aspectRatio": 0.75,
+    "tags": [
+      "outdoor scene",
+      "crowd",
+      "people",
+      "bright image"
+    ],
+    "dominant": [
       {
-        "filename": "2004-06-03_Lanzhou_003.JPG",
-        "distance": 0.0591
+        "hex": "#222324",
+        "hslSaturation": 0.029
       },
       {
-        "filename": "2004-06-03_Lanzhou_002.JPG",
-        "distance": 0.0667
+        "hex": "#af9887",
+        "hslSaturation": 0.2
+      },
+      {
+        "hex": "#5f5852",
+        "hslSaturation": 0.073
       }
+    ],
+    "clusterId": 0,
+    "hdbscanClusterId": 44,
+    "x": 0.4332,
+    "y": 0.4117,
+    "blipCaption": "many people standing outside of a building with a car",
+    "blipKeywords": [
+      "many",
+      "people",
+      "standing",
+      "outside",
+      "building",
+      "car"
+    ],
+    "gemmaCaption": "A group of men and a child stand in front of a building entrance.",
+    "gemmaKeywords": [
+      "group of people",
+      "building",
+      "outdoors",
+      "men",
+      "child"
+    ]
+  },
+  {
+    "filename": "2004-06-03_Lanzhou_005.JPG",
+    "date": "2004-06-03",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 2,
+    "brightness": 129.4,
+    "entropy": 7.398,
+    "styleEnergy": 0.58,
+    "width": 2048,
+    "height": 1536,
+    "aspectRatio": 1.333,
+    "tags": [
+      "mountain",
+      "park",
+      "outdoor scene",
+      "bright image"
+    ],
+    "dominant": [
+      {
+        "hex": "#d3dae4",
+        "hslSaturation": 0.239
+      },
+      {
+        "hex": "#5c5c50",
+        "hslSaturation": 0.07
+      },
+      {
+        "hex": "#868477",
+        "hslSaturation": 0.059
+      }
+    ],
+    "clusterId": 0,
+    "hdbscanClusterId": 51,
+    "x": 0.5854,
+    "y": 0.5196,
+    "blipCaption": "a boy that is standing on a boat in the water",
+    "blipKeywords": [
+      "boy",
+      "standing",
+      "boat",
+      "water"
+    ],
+    "gemmaCaption": "A smiling boy stands on a boat in front of rocky mountains and water.",
+    "gemmaKeywords": [
+      "boy",
+      "boat",
+      "mountains",
+      "water",
+      "smiling"
+    ]
+  },
+  {
+    "filename": "2004-06-03_Lanzhou_006.JPG",
+    "date": "2004-06-03",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 2,
+    "brightness": 134.8,
+    "entropy": 7.004,
+    "styleEnergy": 0.535,
+    "width": 2048,
+    "height": 1536,
+    "aspectRatio": 1.333,
+    "tags": [
+      "outdoor scene",
+      "mountain",
+      "desert landscape",
+      "landscape"
+    ],
+    "dominant": [
+      {
+        "hex": "#3d392f",
+        "hslSaturation": 0.13
+      },
+      {
+        "hex": "#665748",
+        "hslSaturation": 0.172
+      },
+      {
+        "hex": "#1a1a24",
+        "hslSaturation": 0.161
+      }
+    ],
+    "clusterId": 0,
+    "hdbscanClusterId": 51,
+    "x": 0.5888,
+    "y": 0.5221,
+    "blipCaption": "a boy that is standing on a boat in the water",
+    "blipKeywords": [
+      "boy",
+      "standing",
+      "boat",
+      "water"
+    ],
+    "gemmaCaption": "A boy leans on a blue railing by a body of water with mountains and a boat in the background.",
+    "gemmaKeywords": [
+      "boy",
+      "water",
+      "mountains",
+      "boat",
+      "railing"
+    ]
+  },
+  {
+    "filename": "2004-06-03_Lanzhou_007.JPG",
+    "date": "2004-06-03",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 10,
+    "brightness": 123.5,
+    "entropy": 7.458,
+    "styleEnergy": 0.571,
+    "width": 2048,
+    "height": 1536,
+    "aspectRatio": 1.333,
+    "tags": [
+      "outdoor scene",
+      "people",
+      "mountain",
+      "rural scene"
+    ],
+    "dominant": [
+      {
+        "hex": "#d9dee4",
+        "hslSaturation": 0.169
+      },
+      {
+        "hex": "#3d3429",
+        "hslSaturation": 0.196
+      },
+      {
+        "hex": "#131014",
+        "hslSaturation": 0.111
+      }
+    ],
+    "clusterId": 0,
+    "hdbscanClusterId": 51,
+    "x": 0.5884,
+    "y": 0.518,
+    "blipCaption": "several people sitting on a boat with a table and water bottles",
+    "blipKeywords": [
+      "several",
+      "people",
+      "sitting",
+      "boat",
+      "table",
+      "water",
+      "bottles"
+    ],
+    "gemmaCaption": "A group of men sit on a boat in front of rocky cliffs.",
+    "gemmaKeywords": [
+      "men",
+      "boat",
+      "rocky cliffs",
+      "water",
+      "outdoors"
+    ]
+  },
+  {
+    "filename": "2004-06-03_Lanzhou_008.JPG",
+    "date": "2004-06-03",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 5,
+    "brightness": 135.5,
+    "entropy": 7.391,
+    "styleEnergy": 0.458,
+    "width": 2048,
+    "height": 1536,
+    "aspectRatio": 1.333,
+    "tags": [
+      "outdoor scene",
+      "beach",
+      "mountain",
+      "rural scene"
+    ],
+    "dominant": [
+      {
+        "hex": "#817661",
+        "hslSaturation": 0.142
+      },
+      {
+        "hex": "#685e48",
+        "hslSaturation": 0.182
+      },
+      {
+        "hex": "#a29885",
+        "hslSaturation": 0.135
+      }
+    ],
+    "clusterId": 5,
+    "hdbscanClusterId": 41,
+    "x": 0.5824,
+    "y": 0.5876,
+    "blipCaption": "a small child sitting on a rocky hill with a kite",
+    "blipKeywords": [
+      "small",
+      "child",
+      "sitting",
+      "rocky",
+      "hill",
+      "kite"
+    ],
+    "gemmaCaption": "A boy sits on a field of grey stones with people standing on a ridge above him.",
+    "gemmaKeywords": [
+      "boy",
+      "rocks",
+      "stones",
+      "outdoor",
+      "hillside"
+    ]
+  },
+  {
+    "filename": "2004-06-03_Lanzhou_009.JPG",
+    "date": "2004-06-03",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 1,
+    "brightness": 133.5,
+    "entropy": 7.327,
+    "styleEnergy": 0.593,
+    "width": 2048,
+    "height": 1536,
+    "aspectRatio": 1.333,
+    "tags": [
+      "outdoor scene",
+      "beach",
+      "mountain",
+      "landscape"
+    ],
+    "dominant": [
+      {
+        "hex": "#655f4e",
+        "hslSaturation": 0.128
+      },
+      {
+        "hex": "#79715e",
+        "hslSaturation": 0.126
+      },
+      {
+        "hex": "#4d402f",
+        "hslSaturation": 0.242
+      }
+    ],
+    "clusterId": 5,
+    "hdbscanClusterId": 41,
+    "x": 0.5863,
+    "y": 0.5876,
+    "blipCaption": "a boy standing on a rocky beach next to the water",
+    "blipKeywords": [
+      "boy",
+      "standing",
+      "rocky",
+      "beach",
+      "water"
+    ],
+    "gemmaCaption": "A young boy in a blue shirt and tan pants stands on a rocky shore next to a body of water.",
+    "gemmaKeywords": [
+      "boy",
+      "blue shirt",
+      "rocky shore",
+      "water",
+      "outdoors"
+    ]
+  },
+  {
+    "filename": "2004-06-03_Lanzhou_010.JPG",
+    "date": "2004-06-03",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 4,
+    "brightness": 141.6,
+    "entropy": 7.207,
+    "styleEnergy": 0.527,
+    "width": 2048,
+    "height": 1536,
+    "aspectRatio": 1.333,
+    "tags": [
+      "beach",
+      "outdoor scene",
+      "park",
+      "motion blur"
+    ],
+    "dominant": [
+      {
+        "hex": "#a59984",
+        "hslSaturation": 0.155
+      },
+      {
+        "hex": "#907f65",
+        "hslSaturation": 0.176
+      },
+      {
+        "hex": "#6c5b37",
+        "hslSaturation": 0.325
+      }
+    ],
+    "clusterId": 5,
+    "hdbscanClusterId": 3,
+    "x": 0.8608,
+    "y": 0.5108,
+    "blipCaption": "a young boy playing with a frisbee on the beach",
+    "blipKeywords": [
+      "young",
+      "boy",
+      "playing",
+      "frisbee",
+      "beach"
+    ],
+    "gemmaCaption": "A boy in a blue shirt and beige pants kneels on a sandy surface.",
+    "gemmaKeywords": [
+      "boy",
+      "sand",
+      "blue shirt",
+      "beige pants",
+      "outdoors"
+    ]
+  },
+  {
+    "filename": "2004-07-22_Lanzhou_001.JPG",
+    "date": "2004-07-22",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 7,
+    "brightness": 124.0,
+    "entropy": 7.558,
+    "styleEnergy": 0.425,
+    "width": 1632,
+    "height": 1224,
+    "aspectRatio": 1.333,
+    "tags": [
+      "park",
+      "bright image",
+      "outdoor scene",
+      "colourful image"
+    ],
+    "dominant": [
+      {
+        "hex": "#353225",
+        "hslSaturation": 0.178
+      },
+      {
+        "hex": "#7b2420",
+        "hslSaturation": 0.587
+      },
+      {
+        "hex": "#e9edf2",
+        "hslSaturation": 0.257
+      }
+    ],
+    "clusterId": 3,
+    "hdbscanClusterId": 32,
+    "x": 0.3566,
+    "y": 0.4565,
+    "blipCaption": "a boy standing in front of a display of power rangers",
+    "blipKeywords": [
+      "boy",
+      "standing",
+      "display",
+      "power",
+      "rangers"
+    ],
+    "gemmaCaption": "A young boy in a red shirt stands in front of a row of people wearing silver and red robotic costumes and a grey creature costume.",
+    "gemmaKeywords": [
+      "boy",
+      "costumes",
+      "robotic",
+      "flowers",
+      "outdoors"
+    ]
+  },
+  {
+    "filename": "2004-07-22_Lanzhou_002.JPG",
+    "date": "2004-07-22",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 3,
+    "brightness": 118.7,
+    "entropy": 7.514,
+    "styleEnergy": 0.448,
+    "width": 1632,
+    "height": 1224,
+    "aspectRatio": 1.333,
+    "tags": [
+      "park",
+      "crowd",
+      "people",
+      "bright image"
+    ],
+    "dominant": [
+      {
+        "hex": "#282e29",
+        "hslSaturation": 0.07
+      },
+      {
+        "hex": "#dfecf3",
+        "hslSaturation": 0.455
+      },
+      {
+        "hex": "#551929",
+        "hslSaturation": 0.545
+      }
+    ],
+    "clusterId": 3,
+    "hdbscanClusterId": 32,
+    "x": 0.3549,
+    "y": 0.4556,
+    "blipCaption": "a young girl standing in front of a display of power rangers",
+    "blipKeywords": [
+      "young",
+      "girl",
+      "standing",
+      "display",
+      "power",
+      "rangers"
+    ],
+    "gemmaCaption": "A child stands in front of a group of life-sized red and silver robotic figures.",
+    "gemmaKeywords": [
+      "child",
+      "robotic figures",
+      "red suits",
+      "potted flowers",
+      "outdoors"
+    ]
+  },
+  {
+    "filename": "2004-07-22_Lanzhou_003.JPG",
+    "date": "2004-07-22",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 2,
+    "brightness": 112.9,
+    "entropy": 7.623,
+    "styleEnergy": 0.332,
+    "width": 1632,
+    "height": 1224,
+    "aspectRatio": 1.333,
+    "tags": [
+      "park",
+      "outdoor scene",
+      "bright image",
+      "dark image"
+    ],
+    "dominant": [
+      {
+        "hex": "#201e1a",
+        "hslSaturation": 0.103
+      },
+      {
+        "hex": "#e2eef7",
+        "hslSaturation": 0.568
+      },
+      {
+        "hex": "#3b463e",
+        "hslSaturation": 0.085
+      }
+    ],
+    "clusterId": 3,
+    "hdbscanClusterId": 32,
+    "x": 0.3648,
+    "y": 0.4589,
+    "blipCaption": "a young boy standing in front of a statue of a dinosaur",
+    "blipKeywords": [
+      "young",
+      "boy",
+      "standing",
+      "statue",
+      "dinosaur"
+    ],
+    "gemmaCaption": "A young boy stands between a silver robot statue and a large green monster statue.",
+    "gemmaKeywords": [
+      "boy",
+      "robot statue",
+      "monster statue",
+      "outdoor",
+      "park"
+    ]
+  },
+  {
+    "filename": "2004-07-22_Lanzhou_004.JPG",
+    "date": "2004-07-22",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 3,
+    "brightness": 75.3,
+    "entropy": 7.279,
+    "styleEnergy": 0.36,
+    "width": 1632,
+    "height": 1224,
+    "aspectRatio": 1.333,
+    "tags": [
+      "park",
+      "dark image",
+      "outdoor scene",
+      "bright image"
+    ],
+    "dominant": [
+      {
+        "hex": "#2e2d21",
+        "hslSaturation": 0.165
+      },
+      {
+        "hex": "#5a5d3d",
+        "hslSaturation": 0.208
+      },
+      {
+        "hex": "#bba5a4",
+        "hslSaturation": 0.145
+      }
+    ],
+    "clusterId": 3,
+    "hdbscanClusterId": 32,
+    "x": 0.3633,
+    "y": 0.4582,
+    "blipCaption": "a young boy standing in front of a statue of a dinosaur",
+    "blipKeywords": [
+      "young",
+      "boy",
+      "standing",
+      "statue",
+      "dinosaur"
+    ],
+    "gemmaCaption": "A boy stands between a pink dinosaur statue and a person in a silver and red costume.",
+    "gemmaKeywords": [
+      "boy",
+      "statue",
+      "costume",
+      "outdoors",
+      "dinosaur"
+    ]
+  },
+  {
+    "filename": "2004-07-22_Lanzhou_005.JPG",
+    "date": "2004-07-22",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 2,
+    "brightness": 101.7,
+    "entropy": 7.545,
+    "styleEnergy": 0.464,
+    "width": 1632,
+    "height": 1224,
+    "aspectRatio": 1.333,
+    "tags": [
+      "park",
+      "outdoor scene",
+      "bright image",
+      "dark image"
+    ],
+    "dominant": [
+      {
+        "hex": "#2d3629",
+        "hslSaturation": 0.137
+      },
+      {
+        "hex": "#576750",
+        "hslSaturation": 0.126
+      },
+      {
+        "hex": "#b3b0c3",
+        "hslSaturation": 0.137
+      }
+    ],
+    "clusterId": 3,
+    "hdbscanClusterId": 32,
+    "x": 0.3558,
+    "y": 0.4572,
+    "blipCaption": "a young boy standing in front of a statue of a man",
+    "blipKeywords": [
+      "young",
+      "boy",
+      "standing",
+      "statue",
+      "man"
+    ],
+    "gemmaCaption": "A boy in a red shirt stands next to a silver and gold superhero statue outdoors.",
+    "gemmaKeywords": [
+      "boy",
+      "statue",
+      "red shirt",
+      "trees",
+      "outdoor"
+    ]
+  },
+  {
+    "filename": "2004-07-22_Lanzhou_006.JPG",
+    "date": "2004-07-22",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 2,
+    "brightness": 85.4,
+    "entropy": 7.301,
+    "styleEnergy": 0.281,
+    "width": 1632,
+    "height": 1224,
+    "aspectRatio": 1.333,
+    "tags": [
+      "park",
+      "outdoor scene",
+      "bright image",
+      "dark image"
+    ],
+    "dominant": [
+      {
+        "hex": "#1a1e13",
+        "hslSaturation": 0.224
+      },
+      {
+        "hex": "#373a21",
+        "hslSaturation": 0.275
+      },
+      {
+        "hex": "#585c36",
+        "hslSaturation": 0.26
+      }
+    ],
+    "clusterId": 3,
+    "hdbscanClusterId": 32,
+    "x": 0.362,
+    "y": 0.4598,
+    "blipCaption": "a boy standing in front of a statue of a dinosaur",
+    "blipKeywords": [
+      "boy",
+      "standing",
+      "statue",
+      "dinosaur"
+    ],
+    "gemmaCaption": "A boy in a red shirt stands outdoors between two large statues.",
+    "gemmaKeywords": [
+      "boy",
+      "statues",
+      "park",
+      "red shirt",
+      "trees"
+    ]
+  },
+  {
+    "filename": "2004-07-22_Lanzhou_007.JPG",
+    "date": "2004-07-22",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 1,
+    "brightness": 117.3,
+    "entropy": 7.425,
+    "styleEnergy": 0.389,
+    "width": 1632,
+    "height": 1224,
+    "aspectRatio": 1.333,
+    "tags": [
+      "park",
+      "outdoor scene",
+      "bright image",
+      "colourful image"
+    ],
+    "dominant": [
+      {
+        "hex": "#4e5e5a",
+        "hslSaturation": 0.093
+      },
+      {
+        "hex": "#333735",
+        "hslSaturation": 0.038
+      },
+      {
+        "hex": "#978987",
+        "hslSaturation": 0.071
+      }
+    ],
+    "clusterId": 3,
+    "hdbscanClusterId": 32,
+    "x": 0.3617,
+    "y": 0.4569,
+    "blipCaption": "a boy standing in front of a statue of a robot",
+    "blipKeywords": [
+      "boy",
+      "standing",
+      "statue",
+      "robot"
+    ],
+    "gemmaCaption": "A young boy in a red shirt stands between a large red monster statue and a silver humanoid statue.",
+    "gemmaKeywords": [
+      "boy",
+      "statues",
+      "park",
+      "red monster",
+      "silver robot"
+    ]
+  },
+  {
+    "filename": "2004-07-22_Lanzhou_008.JPG",
+    "date": "2004-07-22",
+    "place": "Lanzhou",
+    "lat": 36.0526223,
+    "lng": 103.8394984,
+    "personCount": 2,
+    "brightness": 99.9,
+    "entropy": 7.454,
+    "styleEnergy": 0.301,
+    "width": 1632,
+    "height": 1224,
+    "aspectRatio": 1.333,
+    "tags": [
+      "outdoor scene",
+      "park",
+      "bright image",
+      "colourful image"
+    ],
+    "dominant": [
+      {
+        "hex": "#373f30",
+        "hslSaturation": 0.135
+      },
+      {
+        "hex": "#7a4933",
+        "hslSaturation": 0.41
+      },
+      {
+        "hex": "#abafae",
+        "hslSaturation": 0.024
+      }
+    ],
+    "clusterId": 3,
+    "hdbscanClusterId": 32,
+    "x": 0.3623,
+    "y": 0.4593,
+    "blipCaption": "a boy standing in front of a statue of a red devil",
+    "blipKeywords": [
+      "boy",
+      "standing",
+      "statue",
+      "red",
+      "devil"
+    ],
+    "gemmaCaption": "A boy in a red t-shirt and black shorts stands between two character statues in an outdoor setting.",
+    "gemmaKeywords": [
+      "boy",
+      "statues",
+      "red t-shirt",
+      "outdoor",
+      "trees"
     ]
   }
 ]

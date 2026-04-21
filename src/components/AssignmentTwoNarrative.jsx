@@ -13,10 +13,13 @@ import GlobeView from './GlobeView'
 import PhotoMap from './PhotoMap'
 import StagedVisual from './StagedVisual'
 import JsonScrollExplainer from './JsonScrollExplainer'
+import YoloObjectTimeline from './YoloObjectTimeline'
 import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 import { photographUrl } from '../lib/photographs'
 
 gsap.registerPlugin(useGSAP)
+
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 const CLUSTER_COLOURS = [
   '#274c77', '#6096ba', '#e09f3e', '#9c6644',
@@ -165,6 +168,95 @@ function TagPanelInline() {
             <span style={{ marginLeft: '0.5rem', font: '0.7rem/1 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>{tag.count}</span>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+function SeasonalHistogramPanel() {
+  const monthTotals = MONTH_LABELS.map((label, monthIndex) => {
+    const matchingBins = assignment2Data.temporalBins.filter((bin) => Number(bin.month.slice(5, 7)) === monthIndex + 1)
+    const count = matchingBins.reduce((sum, bin) => sum + bin.count, 0)
+    const places = [...new Set(matchingBins.flatMap((bin) => bin.places))].slice(0, 4)
+    return { label, count, places }
+  })
+
+  const maxCount = Math.max(...monthTotals.map((bin) => bin.count), 1)
+  const chartHeight = 320
+  const chartWidth = 760
+  const padding = { top: 16, right: 20, bottom: 54, left: 54 }
+  const innerWidth = chartWidth - padding.left - padding.right
+  const innerHeight = chartHeight - padding.top - padding.bottom
+  const barWidth = innerWidth / monthTotals.length
+  const yTicks = Array.from({ length: 5 }, (_, i) => Math.round((maxCount / 4) * (4 - i)))
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        display: 'grid',
+        gap: '1rem',
+        padding: '1.2rem',
+        border: '1px solid var(--archive-color-rule)',
+        borderRadius: '1.75rem',
+        background: 'linear-gradient(180deg,rgba(255,255,255,0.86),rgba(247,244,237,0.9)),radial-gradient(circle at 14% 18%,rgba(62,91,113,0.08),transparent 34%)',
+      }}
+      role="region"
+      aria-label="Seasonal histogram"
+    >
+      <div style={{ display: 'grid', gap: '0.75rem' }}>
+        <div>
+          <p style={{ margin: 0, font: '600 0.72rem/1.2 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>Seasonal Distribution</p>
+          <h3 style={{ margin: '0.3rem 0 0', font: '500 clamp(1.45rem,1.2vw + 1rem,1.95rem)/1.12 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>How the archive clusters by month, regardless of year.</h3>
+        </div>
+        <p style={{ margin: 0, maxWidth: '52rem', fontSize: '0.98rem', lineHeight: '1.7', color: 'var(--archive-color-copy)' }}>
+          Each bar gathers all photographs taken in the same month across the full archive, making the seasonal rhythm legible without separating years.
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gap: '0.7rem' }}>
+        <div style={{ overflowX: 'auto', paddingBottom: '0.45rem', border: '1px solid var(--archive-color-rule)', borderRadius: '1.35rem' }}>
+          <div style={{ minWidth: '100%', width: `${chartWidth}px`, padding: '0.9rem 0.9rem 0.35rem' }}>
+            <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-label="Histogram of photographs by month across all years" style={{ display: 'block', width: '100%', height: 'auto', overflow: 'visible' }}>
+              <g transform={`translate(${padding.left},${padding.top})`}>
+                {yTicks.map((tick) => {
+                  const y = maxCount > 0 ? innerHeight - (tick / maxCount) * innerHeight : innerHeight
+                  return (
+                    <g key={tick}>
+                      <line x1="0" x2={innerWidth} y1={y} y2={y} stroke="rgba(29,35,41,0.1)" strokeWidth="1" strokeDasharray="4 4" shapeRendering="crispEdges" />
+                      <text x="-12" y={y + 4} textAnchor="end" style={{ font: '0.7rem/1 var(--archive-font-ui)', fill: 'var(--archive-color-muted)' }}>{tick}</text>
+                    </g>
+                  )
+                })}
+
+                {monthTotals.map((bin, index) => {
+                  const height = maxCount > 0 ? (bin.count / maxCount) * innerHeight : 0
+                  const x = index * barWidth + barWidth * 0.08
+                  const y = innerHeight - height
+                  const width = barWidth * 0.84
+                  const placeLabel = bin.places.length ? ` Places include ${bin.places.join(', ')}.` : ''
+
+                  return (
+                    <g key={bin.label}>
+                      <rect x={x} y={y} width={width} height={height} rx="6" fill="#5c7c92" fillOpacity="0.78">
+                        <title>{`${bin.label}: ${bin.count} photographs.${placeLabel}`}</title>
+                      </rect>
+                      <text x={x + width / 2} y={innerHeight + 26} textAnchor="middle" style={{ font: '600 12px/1 var(--archive-font-ui)', fill: 'var(--archive-color-muted)' }}>
+                        {bin.label}
+                      </text>
+                      <text x={x + width / 2} y={y - 8} textAnchor="middle" style={{ font: '600 11px/1 var(--archive-font-ui)', fill: 'var(--archive-color-copy)' }}>
+                        {bin.count}
+                      </text>
+                    </g>
+                  )
+                })}
+              </g>
+            </svg>
+          </div>
+        </div>
+        <p style={{ margin: 0, font: '0.78rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>
+          Monthly totals are merged across all years · hover any bar for detail
+        </p>
       </div>
     </div>
   )
@@ -473,7 +565,7 @@ export default function AssignmentTwoNarrative() {
         </ScrollSection>
 
         <VisBlock>
-          <StagedVisual label="Preparing visual constellation" minHeight="min(75vh,44rem)" eager>
+          <StagedVisual label="Preparing visual constellation" minHeight="min(75vh,44rem)">
             <AssignmentTwoGraph />
           </StagedVisual>
         </VisBlock>
@@ -497,6 +589,16 @@ export default function AssignmentTwoNarrative() {
         <VisBlock>
           <StagedVisual label="Preparing temporal ribbon" minHeight="min(60vh,28rem)">
             <TemporalRibbon bins={assignment2Data.temporalBins} />
+          </StagedVisual>
+        </VisBlock>
+
+        <VisBlock>
+          <SeasonalHistogramPanel />
+        </VisBlock>
+
+        <VisBlock>
+          <StagedVisual label="Preparing object timeline" minHeight="28rem">
+            <YoloObjectTimeline />
           </StagedVisual>
         </VisBlock>
 
@@ -604,7 +706,9 @@ export default function AssignmentTwoNarrative() {
 
           {/* Left: sticky canvas */}
           <div style={{ flex: '0 0 64%', position: 'sticky', top: '1.5rem' }}>
-            <ChromaticSwarm step={swarmStep} />
+            <StagedVisual label="Preparing beeswarm" minHeight="100vh">
+              <ChromaticSwarm step={swarmStep} />
+            </StagedVisual>
           </div>
 
           {/* Right: scrollable step cards */}

@@ -51,7 +51,8 @@ export const STEPS = [
 
 const LERP      = 0.072          // slightly slower for more fluid feel
 const WANDER    = 0.14           // per-frame random drift ("breathing")
-const SIM_TICKS = 260            // more ticks → better-settled layouts
+const SIM_TICKS = 30             // LERP animation covers the rest; 80 still blocked briefly
+const MAX_SWARM = 1000           // ~14 ms at 30 ticks; 2000 was still noticeable
 
 const imageUrl = photographUrl
 
@@ -155,8 +156,8 @@ export default function ChromaticSwarm({ step = 0 }) {
   const [mousePos,     setMousePos]     = useState({ x: 0, y: 0 })
   const [selectedItem, setSelectedItem] = useState(null)
 
-  const items = useMemo(() =>
-    assignment2Data.clusterGroups.flatMap(group =>
+  const items = useMemo(() => {
+    const all = assignment2Data.clusterGroups.flatMap(group =>
       group.images.map(img => ({
         ...img,
         clusterId:    group.clusterId,
@@ -164,8 +165,12 @@ export default function ChromaticSwarm({ step = 0 }) {
         greyColor:    hexToGrey(img.dominant[0]?.hex ?? '#94a3b8'),
         r:            circleR(img.styleEnergy),
       }))
-    ),
-  [])
+    )
+    if (all.length <= MAX_SWARM) return all
+    // Proportional stride sample — preserves cluster distribution
+    const stride = all.length / MAX_SWARM
+    return Array.from({ length: MAX_SWARM }, (_, i) => all[Math.round(i * stride)])
+  }, [])
 
   // ── canvas init + render loop ─────────────────────────────────────────────
   useEffect(() => {

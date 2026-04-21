@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import * as Tone from 'tone'
 import { assignment2Data } from '../data/assignment2Data'
 import { photographUrl } from '../lib/photographs'
 
@@ -13,6 +14,37 @@ const SORT_MODES = [
 const PENTATONIC = [220.0, 246.94, 277.18, 329.63, 369.99, 440.0, 493.88, 554.37, 659.25]
 
 const imageUrl = photographUrl
+const TOOLTIP_WIDTH = 288
+const TOOLTIP_HEIGHT = 220
+const TOOLTIP_GAP = 18
+const TOOLTIP_MARGIN = 12
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
+
+function tooltipPointFromEvent(event, container) {
+  const rect = event.currentTarget.getBoundingClientRect()
+  const cursorX = event.clientX ?? rect.left + rect.width / 2
+  const cursorY = event.clientY ?? rect.top + rect.height / 2
+  const containerRect = container?.getBoundingClientRect()
+  const bounds = containerRect ?? {
+    left: 0,
+    top: 0,
+    width: window.innerWidth || document.documentElement.clientWidth,
+    height: window.innerHeight || document.documentElement.clientHeight,
+  }
+  const localX = cursorX - bounds.left
+  const localY = cursorY - bounds.top
+
+  const opensLeft = localX + TOOLTIP_GAP + TOOLTIP_WIDTH > bounds.width - TOOLTIP_MARGIN
+  const opensDown = localY - TOOLTIP_HEIGHT - TOOLTIP_GAP < TOOLTIP_MARGIN
+  const left = opensLeft ? localX - TOOLTIP_WIDTH - TOOLTIP_GAP : localX + TOOLTIP_GAP
+  const top = opensDown ? localY + TOOLTIP_GAP : localY - TOOLTIP_HEIGHT - TOOLTIP_GAP
+
+  return {
+    x: clamp(left, TOOLTIP_MARGIN, Math.max(TOOLTIP_MARGIN, bounds.width - TOOLTIP_WIDTH - TOOLTIP_MARGIN)),
+    y: clamp(top, TOOLTIP_MARGIN, Math.max(TOOLTIP_MARGIN, bounds.height - TOOLTIP_HEIGHT - TOOLTIP_MARGIN)),
+  }
+}
 
 function hexToRgb(hex) {
   return {
@@ -66,80 +98,110 @@ function stripeHeight(item) {
   return Math.max(12, Math.round(22 + item.styleEnergy * 96))
 }
 
-function useAudioEngine() {
-  const ctxRef = useRef(null)
+function audioValues(item) {
+  const brightness = Number.isFinite(item.brightness) ? item.brightness : Math.round(item.lightness * 255)
+  const energy = Number.isFinite(item.styleEnergy) ? item.styleEnergy : 0.35
+  const saturation = Number.isFinite(item.saturation) ? item.saturation : 0.35
+  const hue = Number.isFinite(item.hue) ? item.hue : 0
 
-  const ensureContext = () => {
+  return { brightness, energy, saturation, hue }
+}
+
+function useAudioEngine() {
+  const synthRef = useRef(null)
+  const filterRef = useRef(null)
+  const gainRef = useRef(null)
+  const startedRef = useRef(false)
+
+  const ensureEngine = () => {
     if (typeof window === 'undefined') {
       return null
     }
 
-    if (!ctxRef.current) {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext
-      if (!AudioContextClass) {
-        return null
-      }
-      ctxRef.current = new AudioContextClass()
+    if (!synthRef.current) {
+      gainRef.current = new Tone.Gain(0.22).toDestination()
+      filterRef.current = new Tone.Filter({
+        frequency: 1800,
+        type: 'lowpass',
+        rolloff: -12,
+        Q: 1.2,
+      }).connect(gainRef.current)
+      synthRef.current = new Tone.PolySynth(Tone.FMSynth, {
+        maxPolyphony: 5,
+        options: {
+          harmonicity: 1.4,
+          modulationIndex: 8,
+          oscillator: { type: 'sine' },
+          envelope: {
+            attack: 0.008,
+            decay: 0.18,
+            sustain: 0.03,
+            release: 0.12,
+          },
+          modulationEnvelope: {
+            attack: 0.01,
+            decay: 0.12,
+            sustain: 0,
+            release: 0.08,
+          },
+        },
+      }).connect(filterRef.current)
     }
 
-    if (ctxRef.current.state === 'suspended') {
-      ctxRef.current.resume()
-    }
-
-    return ctxRef.current
+    return synthRef.current
   }
 
-  const playStripe = (item) => {
-    const context = ensureContext()
-    if (!context) {
+  const primeAudio = async () => {
+    ensureEngine()
+    if (Tone.getContext().state !== 'running') {
+      try {
+        await Tone.start()
+      } catch {
+        return false
+      }
+    }
+    startedRef.current = true
+    return true
+  }
+
+  const playStripe = async (item) => {
+    const synth = ensureEngine()
+    if (!synth || !filterRef.current) {
       return
     }
 
-    const primary = item.primaryColor
-    const [hue, saturation] = hexToHsl(primary.hex)
+    if (!startedRef.current || Tone.getContext().state !== 'running') {
+      const started = await primeAudio()
+      if (!started) {
+        return
+      }
+    }
+
+    const { brightness, energy, saturation, hue } = audioValues(item)
     const note = PENTATONIC[Math.min(PENTATONIC.length - 1, Math.round(hue * (PENTATONIC.length - 1)))]
-    const now = context.currentTime
+    const now = Tone.now()
+    const velocity = clamp(0.16 + saturation * 0.48, 0.16, 0.58)
+    const duration = 0.08 + energy * 0.18
 
-    const gain = context.createGain()
-    const filter = context.createBiquadFilter()
-    const carrier = context.createOscillator()
-    const modulator = context.createOscillator()
-    const modGain = context.createGain()
-
-    filter.type = 'lowpass'
-    filter.frequency.value = 900 + item.brightness * 14
-    filter.Q.value = 0.8 + saturation * 3
-
-    carrier.type = saturation > 0.45 ? 'triangle' : 'sine'
-    carrier.frequency.value = note
-
-    modulator.type = 'sine'
-    modulator.frequency.value = 2 + item.clusterId * 0.8
-    modGain.gain.value = 6 + item.styleEnergy * 28
-
-    modulator.connect(modGain)
-    modGain.connect(carrier.frequency)
-
-    const attack = 0.01
-    const decay = 0.24 + item.styleEnergy * 0.26
-    const sustain = 0.0001
-    const peak = 0.03 + saturation * 0.08
-
-    gain.gain.setValueAtTime(0.0001, now)
-    gain.gain.exponentialRampToValueAtTime(peak, now + attack)
-    gain.gain.exponentialRampToValueAtTime(sustain, now + attack + decay)
-
-    carrier.connect(filter)
-    filter.connect(gain)
-    gain.connect(context.destination)
-
-    carrier.start(now)
-    modulator.start(now)
-    carrier.stop(now + attack + decay + 0.08)
-    modulator.stop(now + attack + decay + 0.08)
+    filterRef.current.frequency.rampTo(700 + brightness * 12, 0.015)
+    synth.set({
+      modulationIndex: 5 + energy * 28,
+      harmonicity: 1 + (item.clusterId % 5) * 0.22,
+      oscillator: { type: saturation > 0.45 ? 'triangle' : 'sine' },
+    })
+    synth.triggerAttackRelease(note, duration, now, velocity)
   }
 
-  return playStripe
+  useEffect(() => () => {
+    synthRef.current?.dispose()
+    filterRef.current?.dispose()
+    gainRef.current?.dispose()
+    synthRef.current = null
+    filterRef.current = null
+    gainRef.current = null
+  }, [])
+
+  return { playStripe, primeAudio }
 }
 
 export default function AssignmentTwoSonification() {
@@ -148,7 +210,8 @@ export default function AssignmentTwoSonification() {
   const [selectedItem, setSelectedItem] = useState(null)
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
   const hoverTimerRef = useRef(null)
-  const playStripe = useAudioEngine()
+  const gridWrapRef = useRef(null)
+  const { playStripe, primeAudio } = useAudioEngine()
 
   const items = useMemo(() => {
     const flattened = assignment2Data.clusterGroups.flatMap((group) =>
@@ -213,13 +276,15 @@ export default function AssignmentTwoSonification() {
 
   const handleEnter = (item, event) => {
     setHoveredItem(item)
-    setTooltipPosition({ x: event.clientX, y: event.clientY })
+    setTooltipPosition(tooltipPointFromEvent(event, gridWrapRef.current))
     clearTimeout(hoverTimerRef.current)
-    hoverTimerRef.current = setTimeout(() => playStripe(item), 35)
+    hoverTimerRef.current = setTimeout(() => {
+      playStripe(item)
+    }, 35)
   }
 
   const handleMove = (event) => {
-    setTooltipPosition({ x: event.clientX, y: event.clientY })
+    setTooltipPosition(tooltipPointFromEvent(event, gridWrapRef.current))
   }
 
   const handleLeave = () => {
@@ -227,7 +292,11 @@ export default function AssignmentTwoSonification() {
   }
 
   return (
-    <section className="assignment2-panel overflow-hidden rounded-[1.6rem] border border-slate-300/70 bg-white/72 shadow-[0_30px_80px_-36px_rgba(15,23,42,0.45)] backdrop-blur-sm">
+    <section
+      className="assignment2-panel overflow-hidden rounded-[1.6rem] border border-slate-300/70 bg-white/72 shadow-[0_30px_80px_-36px_rgba(15,23,42,0.45)] backdrop-blur-sm"
+      onPointerDown={primeAudio}
+      onKeyDown={primeAudio}
+    >
       <div className="assignment2-fugue-controls border-b border-slate-300/60 px-5 py-4 md:px-7">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -260,7 +329,7 @@ export default function AssignmentTwoSonification() {
       </div>
 
       <div className="assignment2-fugue-layout grid gap-0 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="assignment2-fugue-grid-wrap relative p-4 md:p-6">
+        <div ref={gridWrapRef} className="assignment2-fugue-grid-wrap relative p-4 md:p-6">
           <div className="assignment2-fugue-grid">
             {sortedItems.map((item) => (
               <button
@@ -274,9 +343,14 @@ export default function AssignmentTwoSonification() {
                 onMouseEnter={(event) => handleEnter(item, event)}
                 onMouseMove={handleMove}
                 onMouseLeave={handleLeave}
+                onPointerDown={primeAudio}
                 onFocus={(event) => handleEnter(item, event)}
                 onBlur={handleLeave}
-                onClick={() => setSelectedItem(item)}
+                onClick={() => {
+                  primeAudio()
+                  setSelectedItem(item)
+                  playStripe(item)
+                }}
                 aria-label={`Open detail for ${item.filename}`}
               >
                 <span
@@ -291,15 +365,15 @@ export default function AssignmentTwoSonification() {
             <div
               className="assignment2-fugue-tooltip"
               style={{
-                left: `min(calc(100% - 19rem), ${tooltipPosition.x + 18}px)`,
-                top: `max(0.75rem, ${tooltipPosition.y - 220}px)`,
+                left: `${tooltipPosition.x}px`,
+                top: `${tooltipPosition.y}px`,
               }}
             >
               <img src={imageUrl(hoveredItem.filename)} alt={hoveredItem.filename} className="h-28 w-full object-cover" />
               <div className="space-y-2 p-3">
                 <div className="h-1.5 rounded-full" style={{ backgroundColor: hoveredItem.primaryColor.hex }} />
                 <p className="font-title text-base leading-tight text-slate-950">{clipText(hoveredItem.filename, 30)}</p>
-                <p className="text-xs text-slate-600">Cluster {hoveredItem.clusterId} · Energy {hoveredItem.styleEnergy} · Brightness {hoveredItem.brightness}</p>
+                <p className="text-xs text-slate-600">Cluster {hoveredItem.clusterId} · Energy {hoveredItem.styleEnergy} · Brightness {audioValues(hoveredItem).brightness}</p>
               </div>
             </div>
           )}

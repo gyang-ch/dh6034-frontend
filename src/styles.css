@@ -916,7 +916,7 @@
 }
 
 .assignment2-fugue-tooltip {
-  position: fixed;
+  position: absolute;
   z-index: 30;
   width: min(18rem, calc(100vw - 1.5rem));
   border: 1px solid rgba(148, 163, 184, 0.28);

@@ -26,6 +26,7 @@
     "react-window": "^2.2.7",
     "sigma": "^3.0.2",
     "tippy.js": "^6.3.7",
+    "tone": "^15.1.22",
     "yet-another-react-lightbox": "^3.31.0"
   },
   "devDependencies": {

@@ -59,6 +59,25 @@ const TOP_HDBSCAN_CLUSTERS = [...hdbscanClusterCounts.entries()]
   .slice(0, 10)
   .map(([id]) => id)
 
+// Cluster name maps derived from node attributes
+const KMEANS_NAMES = (() => {
+  const map = {}
+  for (const node of assignment2GraphData.nodes) {
+    if (node.clusterId != null && node.clusterName && !(node.clusterId in map))
+      map[node.clusterId] = node.clusterName
+  }
+  return map
+})()
+
+const HDBSCAN_NAMES = (() => {
+  const map = { [-1]: 'noise / outlier' }
+  for (const node of assignment2GraphData.nodes) {
+    if (node.hdbscanClusterId != null && node.hdbscanClusterName && !(node.hdbscanClusterId in map))
+      map[node.hdbscanClusterId] = node.hdbscanClusterName
+  }
+  return map
+})()
+
 export default function AssignmentTwoGraph() {
   const containerRef = useRef(null)
   const sigmaRef = useRef(null)
@@ -79,7 +98,7 @@ export default function AssignmentTwoGraph() {
     const neighborMap = new Map()
 
     // Build neighbour map for both edge sets (union)
-    for (const edgeSet of [assignment2GraphData.edges, assignment2GraphData.hdbscanEdges]) {
+    for (const edgeSet of [assignment2GraphData.edges, assignment2GraphData.hdbscanEdges ?? []]) {
       for (const edge of edgeSet) {
         if (!neighborMap.has(edge.source)) neighborMap.set(edge.source, new Set())
         if (!neighborMap.has(edge.target)) neighborMap.set(edge.target, new Set())
@@ -108,7 +127,7 @@ export default function AssignmentTwoGraph() {
         distance: edge.distance,
       })
     }
-    for (const edge of assignment2GraphData.hdbscanEdges) {
+    for (const edge of (assignment2GraphData.hdbscanEdges ?? [])) {
       graph.addEdge(edge.source, edge.target, {
         mode: 'hdbscan',
         size: Math.max(0.35, 1.2 - edge.distance),
@@ -228,13 +247,16 @@ export default function AssignmentTwoGraph() {
 
   // ── Legend content ────────────────────────────────────────────────────────
   const legendItems = clusterMode === 'kmeans'
-    ? KMEANS_COLOURS.map((colour, i) => ({ colour, label: `Cluster ${i}` }))
+    ? KMEANS_COLOURS.map((colour, i) => ({
+        colour,
+        label: KMEANS_NAMES[i] ?? `Cluster ${i}`,
+      }))
     : [
         ...TOP_HDBSCAN_CLUSTERS.map((id) => ({
           colour: hdbscanColour(id),
-          label: `Cluster ${id} (${hdbscanClusterCounts.get(id)})`,
+          label: HDBSCAN_NAMES[id] ?? `Cluster ${id}`,
         })),
-        { colour: HDBSCAN_NOISE_COLOUR, label: `Noise / outlier (${hdbscanClusterCounts.get(-1) ?? 0})` },
+        { colour: HDBSCAN_NOISE_COLOUR, label: `noise / outlier (${hdbscanClusterCounts.get(-1) ?? 0})` },
       ]
 
   return (
@@ -304,8 +326,8 @@ export default function AssignmentTwoGraph() {
                 <div>
                   <p className="font-data text-[0.68rem] uppercase tracking-[0.22em] text-slate-500">
                     {clusterMode === 'hdbscan'
-                      ? (hoveredNode.hdbscanClusterId === -1 ? 'Noise / outlier' : `HDBSCAN Cluster ${hoveredNode.hdbscanClusterId}`)
-                      : `K-Means Cluster ${hoveredNode.clusterId}`}
+                      ? (HDBSCAN_NAMES[hoveredNode.hdbscanClusterId] ?? `HDBSCAN Cluster ${hoveredNode.hdbscanClusterId}`)
+                      : (KMEANS_NAMES[hoveredNode.clusterId] ?? `K-Means Cluster ${hoveredNode.clusterId}`)}
                   </p>
                   <h4 className="mt-1 font-title text-xl leading-tight text-slate-950">{hoveredNode.filename}</h4>
                 </div>
