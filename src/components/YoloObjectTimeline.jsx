@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useCallback } from 'react'
 import { assignment2Data } from '../data/assignment2Data'
+import { gemmaKeywordsData } from '../data/gemmaKeywordsData'
 
 // ── Stable color palette ──────────────────────────────────────────────────────
 const PALETTE = [
@@ -29,20 +30,19 @@ const IH = H - PAD.top - PAD.bottom
 // ── Shared chart component ────────────────────────────────────────────────────
 
 function TimelineChart({ items, series, months, groups, colorOf }) {
-  const [enabled, setEnabled] = useState(() => new Set(
-    // initialise from parent's defaultVisible via items order — caller sets items
-    items.slice(0, 8)
-  ))
+  const [enabled, setEnabled] = useState(() => new Set(items.slice(0, 8)))
   const [hoveredIdx, setHoveredIdx] = useState(null)
+  const [legendSearch, setLegendSearch] = useState('')
   const svgRef = useRef(null)
+  const searchRef = useRef(null)
 
-  // Reset enabled when dataset switches (items array reference changes)
+  // Reset enabled + search when dataset switches
   const prevItemsRef = useRef(items)
   if (prevItemsRef.current !== items) {
     prevItemsRef.current = items
-    // Synchronously reset — safe because this runs during render before commit
     enabled.clear()
     items.slice(0, 8).forEach(i => enabled.add(i))
+    setLegendSearch('')
   }
 
   const colorOfItem = useCallback(
@@ -217,43 +217,125 @@ function TimelineChart({ items, series, months, groups, colorOf }) {
       </div>
 
       {/* Legend */}
-      <div style={{ display: 'grid', gap: '0.55rem' }}>
-        {Object.entries(groups).map(([group, members]) => {
-          const available = members.filter(o => items.includes(o))
-          if (!available.length) return null
-          const allOn = available.every(o => enabled.has(o))
-          return (
-            <div key={group} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.35rem' }}>
-              <button onClick={() => toggleGroup(available)} style={{
-                background: 'none', border: '1px solid rgba(29,35,41,0.18)',
-                borderRadius: '999px', padding: '0.2rem 0.6rem',
-                font: '600 0.62rem/1.3 var(--archive-font-ui)', letterSpacing: '0.1em',
-                textTransform: 'uppercase', cursor: 'pointer', flexShrink: 0,
-                color: allOn ? 'var(--archive-color-ink)' : 'var(--archive-color-muted)',
-              }}>
-                {group}
-              </button>
-              {available.map(item => {
-                const on = enabled.has(item)
-                const color = colorOfItem(item)
-                return (
-                  <button key={item} onClick={() => toggle(item)} style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
-                    padding: '0.22rem 0.55rem', borderRadius: '999px',
-                    border: `1.5px solid ${on ? color : 'rgba(29,35,41,0.12)'}`,
-                    background: on ? `color-mix(in srgb,${color} 14%,white)` : 'transparent',
-                    cursor: 'pointer', font: '0.72rem/1 var(--archive-font-ui)',
-                    color: on ? color : 'var(--archive-color-muted)', transition: 'all 0.13s',
+      <div style={{ display: 'grid', gap: '0.5rem' }}>
+
+        {/* Search input — only shown when there are many keywords */}
+        {items.length > 40 && (
+          <div style={{ position: 'relative' }}>
+            <input
+              ref={searchRef}
+              type="text"
+              placeholder={`Search ${items.length} keywords…`}
+              value={legendSearch}
+              onChange={(e) => setLegendSearch(e.target.value)}
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                padding: '0.38rem 2.2rem 0.38rem 0.75rem',
+                border: '1px solid rgba(29,35,41,0.18)',
+                borderRadius: '999px',
+                font: '0.78rem/1.4 var(--archive-font-ui)',
+                color: 'var(--archive-color-ink)',
+                background: 'rgba(255,255,255,0.7)',
+                outline: 'none',
+              }}
+            />
+            {legendSearch && (
+              <button
+                onClick={() => setLegendSearch('')}
+                style={{
+                  position: 'absolute', right: '0.55rem', top: '50%',
+                  transform: 'translateY(-50%)', background: 'none', border: 'none',
+                  cursor: 'pointer', color: 'var(--archive-color-muted)',
+                  font: '0.8rem/1 var(--archive-font-ui)', padding: '0.1rem',
+                }}
+              >✕</button>
+            )}
+          </div>
+        )}
+
+        {/* Legend pills — scrollable container */}
+        <div
+          data-lenis-prevent
+          style={{
+            maxHeight: items.length > 40 ? '16rem' : 'none',
+            overflowY: items.length > 40 ? 'auto' : 'visible',
+            display: 'grid', gap: '0.45rem',
+            paddingRight: items.length > 40 ? '0.25rem' : 0,
+          }}>
+          {(() => {
+            const q = legendSearch.trim().toLowerCase()
+
+            // ── Search mode: flat filtered list ───────────────────────────
+            if (q) {
+              const matches = items.filter((i) => i.toLowerCase().includes(q))
+              if (!matches.length) return (
+                <p style={{ margin: 0, font: '0.78rem/1.5 var(--archive-font-ui)', color: 'var(--archive-color-muted)', padding: '0.4rem 0.2rem' }}>
+                  No keywords match "{legendSearch}".
+                </p>
+              )
+              return (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                  {matches.map((item) => {
+                    const on = enabled.has(item)
+                    const color = colorOfItem(item)
+                    return (
+                      <button key={item} onClick={() => toggle(item)} style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                        padding: '0.22rem 0.55rem', borderRadius: '999px',
+                        border: `1.5px solid ${on ? color : 'rgba(29,35,41,0.12)'}`,
+                        background: on ? `color-mix(in srgb,${color} 14%,white)` : 'transparent',
+                        cursor: 'pointer', font: '0.72rem/1 var(--archive-font-ui)',
+                        color: on ? color : 'var(--archive-color-muted)', transition: 'all 0.13s',
+                      }}>
+                        <span style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                          background: on ? color : 'rgba(29,35,41,0.18)' }} />
+                        {item}
+                      </button>
+                    )
+                  })}
+                </div>
+              )
+            }
+
+            // ── Normal mode: grouped list ──────────────────────────────────
+            return Object.entries(groups).map(([group, members]) => {
+              const available = members.filter((o) => items.includes(o))
+              if (!available.length) return null
+              const allOn = available.every((o) => enabled.has(o))
+              return (
+                <div key={group} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.35rem' }}>
+                  <button onClick={() => toggleGroup(available)} style={{
+                    background: 'none', border: '1px solid rgba(29,35,41,0.18)',
+                    borderRadius: '999px', padding: '0.2rem 0.6rem',
+                    font: '600 0.62rem/1.3 var(--archive-font-ui)', letterSpacing: '0.1em',
+                    textTransform: 'uppercase', cursor: 'pointer', flexShrink: 0,
+                    color: allOn ? 'var(--archive-color-ink)' : 'var(--archive-color-muted)',
                   }}>
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-                      background: on ? color : 'rgba(29,35,41,0.18)' }} />
-                    {item}
+                    {group}
                   </button>
-                )
-              })}
-            </div>
-          )
-        })}
+                  {available.map((item) => {
+                    const on = enabled.has(item)
+                    const color = colorOfItem(item)
+                    return (
+                      <button key={item} onClick={() => toggle(item)} style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                        padding: '0.22rem 0.55rem', borderRadius: '999px',
+                        border: `1.5px solid ${on ? color : 'rgba(29,35,41,0.12)'}`,
+                        background: on ? `color-mix(in srgb,${color} 14%,white)` : 'transparent',
+                        cursor: 'pointer', font: '0.72rem/1 var(--archive-font-ui)',
+                        color: on ? color : 'var(--archive-color-muted)', transition: 'all 0.13s',
+                      }}>
+                        <span style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                          background: on ? color : 'rgba(29,35,41,0.18)' }} />
+                        {item}
+                      </button>
+                    )
+                  })}
+                </div>
+              )
+            })
+          })()}
+        </div>
       </div>
     </>
   )
@@ -263,7 +345,6 @@ function TimelineChart({ items, series, months, groups, colorOf }) {
 
 export default function YoloObjectTimeline() {
   const tl = assignment2Data.yoloTimeline
-  const gt = assignment2Data.gemmaKeywordTimeline
   if (!tl) return null
 
   const [tab, setTab] = useState('yolo')
@@ -279,14 +360,14 @@ export default function YoloObjectTimeline() {
       subtitle:       'Share of photos each month containing each YOLO-detected object class.',
     },
     gemma: {
-      items:          gt?.keywords ?? [],
-      series:         gt?.series   ?? {},
-      months:         gt?.months   ?? tl.months,
-      defaultVisible: gt?.defaultVisible ?? [],
-      groups:         gt?.groups   ?? {},
-      subtitle:       'Share of photos each month in which each Gemma keyword appears.',
+      items:          gemmaKeywordsData.keywords,
+      series:         gemmaKeywordsData.series,
+      months:         gemmaKeywordsData.months,
+      defaultVisible: gemmaKeywordsData.defaultVisible,
+      groups:         gemmaKeywordsData.groups,
+      subtitle:       `Share of photos each month in which each Gemma keyword appears. ${gemmaKeywordsData.keywords.length} keywords total — search below to find specific terms.`,
     },
-  }), [tl, gt])
+  }), [tl])
 
   const ds = datasets[tab]
 

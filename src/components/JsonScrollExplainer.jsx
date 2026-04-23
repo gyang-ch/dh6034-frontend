@@ -99,23 +99,38 @@ const STEPS = [
   {
     id: 'person',
     label: 'Social Metadata',
-    title: 'Person Count',
+    title: 'Person Count & Identity',
     color: '#fbbf24',
-    lines: ['    "person_count": 1,'],
-    explanation: 'Number of visible people, YOLO-detected then manually verified. Tracks the shift from family portraits to solo photography over time.',
+    lines: [
+      '    "person_count": 1,',
+      '    "myself": true,',
+      '    "main_people": 1,',
+      '    "category": "neither",',
+    ],
+    explanation: 'person_count is the total number of visible people, YOLO-assisted then manually verified. myself flags whether I appear in the photo. main_people counts the primary subjects. category classifies the social context — "family", "friends", or "neither".',
   },
   {
-    id: 'blip',
+    id: 'captions',
     label: 'AI-Generated Descriptions',
-    title: 'BLIP Captions & VQA',
+    title: 'BLIP & Gemma Captions',
     color: '#f472b6',
     lines: [
       '    "BLIP_Caption": "a young boy with his arms outstretched in the air",',
-      '    "BLIP_Keywords": ["young", "boy", "his", "arms"],',
-      '    "BLIP_VQA_Scene": "indoors",',
-      '    "BLIP_VQA_Subject": "boy",',
+      '    "BLIP_Keywords": ["young", "boy", "his", "arms", "outstretched", "air"],',
+      '    "Gemma_caption": "A young boy in a red shirt poses against a white wall.",',
+      '    "Gemma_keywords": ["boy", "red shirt", "shaved head", "wall", "pose"],',
     ],
-    explanation: 'BLIP generates a free-form caption, keyword list, and VQA answers for scene type and subject — enabling the semantic timeline.',
+    explanation: 'Two caption passes from different vision-language models. BLIP produces a short free-form sentence and keyword list. Gemma tends to be more precise about colour, clothing, and spatial detail. Both feed the semantic timeline and subject-family groupings.',
+  },
+  {
+    id: 'yolo',
+    label: 'Object Detection',
+    title: 'YOLO Objects',
+    color: '#f97316',
+    lines: [
+      '    "yolo_objects": { "car": 1 },',
+    ],
+    explanation: 'Object classes detected by YOLO, stored as a count map. An empty object means no detected objects. Powers the YOLO Object Timeline — showing which object categories appear across the archive over time.',
   },
   {
     id: 'colours',
@@ -126,10 +141,12 @@ const STEPS = [
       '    "dominant_colours": [',
       '      { "hex": "#a3bcd1", "rgb": [163, 188, 209], "hsl_saturation": 0.333 },',
       '      { "hex": "#8ba4ba", "rgb": [139, 164, 186], "hsl_saturation": 0.254 },',
-      '      { "hex": "#640815", "rgb": [100, 8, 21], "hsl_saturation": 0.852 }',
+      '      { "hex": "#640815", "rgb": [100,   8,  21], "hsl_saturation": 0.852 },',
+      '      { "hex": "#76889c", "rgb": [118, 136, 156], "hsl_saturation": 0.161 },',
+      '      { "hex": "#4d4856", "rgb": [ 77,  72,  86], "hsl_saturation": 0.089 }',
       '    ],',
     ],
-    explanation: 'Top colours extracted by k-means on the pixel palette, stored as hex, RGB, and HSL saturation. Used in the Chromatic Fugue stripes.',
+    explanation: 'Top five colours extracted by k-means on the pixel palette, stored as hex, RGB triplet, and HSL saturation. The five-colour palette gives a richer chromatic fingerprint used in the Chromatic Fugue stripes.',
   },
   {
     id: 'clip',
@@ -138,13 +155,13 @@ const STEPS = [
     color: '#2dd4bf',
     lines: [
       '    "clip_tags": [',
-      '      { "tag": "bright image", "score": 0.02 },',
-      '      { "tag": "portrait",     "score": 0.0199 },',
-      '      { "tag": "park",         "score": 0.0199 },',
-      '      { "tag": "motion blur",  "score": 0.0197 }',
+      '      { "tag": "bright image",  "score": 0.02   },',
+      '      { "tag": "portrait",      "score": 0.0199 },',
+      '      { "tag": "park",          "score": 0.0199 },',
+      '      { "tag": "motion blur",   "score": 0.0197 }',
       '    ],',
     ],
-    explanation: 'Candidate tags scored by cosine similarity between the image embedding and each tag\'s text embedding in CLIP space.',
+    explanation: 'Candidate tags scored by cosine similarity between the image embedding and each tag\'s text embedding in CLIP space. The top tags drive the tag-frequency panel and the semantic timeline.',
   },
   {
     id: 'stats',
@@ -153,23 +170,12 @@ const STEPS = [
     color: '#38bdf8',
     lines: [
       '    "image_stats": {',
-      '      "width": 1632,  "height": 1224,  "aspect_ratio": 1.3333,',
-      '      "mean_rgb": [134.59, 138.1, 156.68],',
-      '      "std_rgb": [33.64, 64.8, 68.43]',
+      '      "width": 1632, "height": 1224, "aspect_ratio": 1.3333,',
+      '      "mean_rgb": [134.59, 138.1, 156.68], "std_rgb": [33.64, 64.8, 68.43],',
+      '      "brightness": 139.16, "contrast": 54.04, "entropy": 6.9496',
       '    },',
     ],
-    explanation: 'Pixel dimensions, aspect ratio, per-channel mean (brightness proxy), and standard deviation (contrast proxy).',
-  },
-  {
-    id: 'cluster',
-    label: 'Visual Clustering',
-    title: 'Cluster Assignment',
-    color: '#fb923c',
-    lines: [
-      '    "cluster_id": 3,',
-      '    "cluster_label": "cluster_3",',
-    ],
-    explanation: 'K-means cluster from CLIP embeddings. Photos in the same cluster share visual themes and share a colour in the constellation graph.',
+    explanation: 'Pixel dimensions, aspect ratio, per-channel mean and standard deviation, scalar brightness (luminance-weighted mean), RMS contrast, and Shannon entropy. These feed the brightness area chart and style-energy calculations.',
   },
   {
     id: 'umap',
@@ -180,7 +186,7 @@ const STEPS = [
       '    "umap_x": 0.3585,',
       '    "umap_y": 0.3645,',
     ],
-    explanation: 'Position in a UMAP projection of the 768-d CLIP space — visually similar images cluster together. Used to place nodes in the constellation.',
+    explanation: 'Position in a UMAP projection of the 768-d CLIP space — visually similar images cluster together. Used to place nodes in the constellation graph.',
   },
   {
     id: 'style',
@@ -188,21 +194,7 @@ const STEPS = [
     title: 'Style Energy',
     color: '#f87171',
     lines: ['    "style_energy": 0.4933,'],
-    explanation: 'Edge-gradient magnitude normalised 0–1. Higher values mean busier, more textured images. Encodes stripe height in the Chromatic Fugue.',
-  },
-  {
-    id: 'neighbours',
-    label: 'Visual Similarity',
-    title: 'Nearest Neighbours',
-    color: '#22d3ee',
-    lines: [
-      '    "nearest_neighbours": [',
-      '      { "filename": "2004-04-25_Lanzhou_002.JPG", "distance": 0.1499 },',
-      '      { "filename": "2006-07-27_Beidaihe_009.JPG", "distance": 0.3479 },',
-      '      { "filename": "2006-07-27_Beidaihe_008.JPG", "distance": 0.3564 }',
-      '    ],',
-    ],
-    explanation: 'Five most similar photos by cosine distance in CLIP space. These links form the edges of the constellation graph.',
+    explanation: 'Edge-gradient magnitude normalised 0–1. Higher values mean busier, more textured images. Encodes stripe height in the Chromatic Fugue and radius in the beeswarm.',
   },
   {
     id: 'pca',
@@ -215,18 +207,45 @@ const STEPS = [
     explanation: 'Three PCA scores summarising compositional geometry, colour breadth, and texture complexity — each normalised across the archive.',
   },
   {
+    id: 'kmeans-cluster',
+    label: 'K-Means Clustering',
+    title: 'K-Means Cluster',
+    color: '#fb923c',
+    lines: [
+      '    "kmeans_cluster": 3,',
+      '    "kmeans_cluster_label": "cluster_3",',
+      '    "kmeans_cluster_name": "indoor · stage · table",',
+    ],
+    explanation: 'K-means cluster from CLIP embeddings, plus a human-readable name derived from the most representative BLIP keywords in that cluster. Photos in the same cluster share visual themes and a colour in the constellation graph.',
+  },
+  {
+    id: 'kmeans-neighbours',
+    label: 'K-Means Visual Similarity',
+    title: 'K-Means Neighbours',
+    color: '#fdba74',
+    lines: [
+      '    "kmeans_neighbours": [',
+      '      { "filename": "2004-04-25_Lanzhou_002.JPG", "distance": 0.1499 },',
+      '      { "filename": "2006-07-27_Beidaihe_009.JPG", "distance": 0.3479 },',
+      '      { "filename": "2006-07-27_Beidaihe_008.JPG", "distance": 0.3564 }',
+      '    ],',
+    ],
+    explanation: 'Five most similar photos by cosine distance in CLIP space. These links form the edges of the constellation graph.',
+  },
+  {
     id: 'hdbscan',
-    label: 'Density-Based Clustering',
+    label: 'HDBSCAN Clustering',
     title: 'HDBSCAN Cluster',
     color: '#c084fc',
     lines: [
       '    "hdbscan_cluster": 53,',
+      '    "hdbscan_cluster_name": "butterflies · marks · practice",',
       '    "hdbscan_neighbours": [',
       '      { "filename": "2006-07-27_Beidaihe_020.JPG", "distance": 0.0273 },',
       '      { "filename": "2006-07-27_Beidaihe_019.JPG", "distance": 0.0276 }',
       '    ]',
     ],
-    explanation: 'Finer-grained density cluster (HDBSCAN) that allows outliers; neighbours are the closest members of the same local group.',
+    explanation: 'Finer-grained density cluster (HDBSCAN) that allows outliers, with a human-readable name from the cluster\'s top keywords. Neighbours are the closest members of the same local group in embedding space.',
   },
 ]
 
@@ -253,7 +272,7 @@ export default function JsonScrollExplainer() {
       if (!el) return null
       const obs = new IntersectionObserver(
         ([entry]) => { if (entry.isIntersecting) setActiveId(STEPS[i].id) },
-        { rootMargin: '-15% 0px -75% 0px' },
+        { rootMargin: '-49% 0px -49% 0px' },
       )
       obs.observe(el)
       return obs
@@ -333,18 +352,22 @@ export default function JsonScrollExplainer() {
       </div>
 
       {/* ── Right: scrollable explanation cards ──────────────────────────── */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, paddingBottom: 'calc(50vh - 11rem - 2rem)' }}>
         {STEPS.map((step, i) => (
           <div
             key={step.id}
-            ref={el => { sentinelRefs.current[i] = el }}
             style={{
               minHeight: '22rem',
+              position: 'relative',
               display: 'flex',
               alignItems: 'center',
               padding: '2rem 0',
             }}
           >
+            {/* Sentinel at vertical centre of this card */}
+            <div ref={el => { sentinelRefs.current[i] = el }}
+              style={{ position: 'absolute', top: '50%', left: 0, width: '1px', height: '1px',
+                       transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             <div style={{
               width: '100%',
               borderRadius: '1rem',

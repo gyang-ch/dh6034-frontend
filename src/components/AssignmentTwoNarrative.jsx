@@ -14,6 +14,8 @@ import PhotoMap from './PhotoMap'
 import StagedVisual from './StagedVisual'
 import JsonScrollExplainer from './JsonScrollExplainer'
 import YoloObjectTimeline from './YoloObjectTimeline'
+import CentralityNetwork from './CentralityNetwork'
+import GemmaSearch from './GemmaSearch'
 import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 import { photographUrl } from '../lib/photographs'
 
@@ -133,24 +135,202 @@ function VisBlock({ children }) {
 
 // ── Panel components ──────────────────────────────────────────────────────────
 
-function HistogramPanel() {
-  const maxCount = Math.max(...assignment2Data.brightnessHistogram.map((b) => b.count))
+function BrightnessAreaChart() {
+  const dist = assignment2Data.brightnessDistribution
+  const avg  = assignment2Data.totals.avgBrightness
+  if (!dist?.length) return null
+
+  const W = 700, H = 180
+  const PAD = { top: 18, right: 18, bottom: 34, left: 44 }
+  const IW = W - PAD.left - PAD.right
+  const IH = H - PAD.top - PAD.bottom
+  const maxCount = Math.max(...dist.map(b => b.count), 1)
+
+  const xOf = (brightness) => PAD.left + (brightness / 255) * IW
+  const yOf = (count)      => PAD.top  + IH - (count / maxCount) * IH
+
+  // Catmull-Rom → cubic Bézier smooth path through all bin midpoints
+  const pts = dist.map(b => ({ x: xOf(b.mid), y: yOf(b.count) }))
+  function crPath(points) {
+    let d = `M${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[Math.max(0, i - 1)]
+      const p1 = points[i]
+      const p2 = points[i + 1]
+      const p3 = points[Math.min(points.length - 1, i + 2)]
+      const cp1x = (p1.x + (p2.x - p0.x) / 6).toFixed(1)
+      const cp1y = (p1.y + (p2.y - p0.y) / 6).toFixed(1)
+      const cp2x = (p2.x - (p3.x - p1.x) / 6).toFixed(1)
+      const cp2y = (p2.y - (p3.y - p1.y) / 6).toFixed(1)
+      d += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`
+    }
+    return d
+  }
+  const linePath = crPath(pts)
+  const areaPath = `${linePath} L${pts.at(-1).x.toFixed(1)},${(PAD.top + IH).toFixed(1)} L${pts[0].x.toFixed(1)},${(PAD.top + IH).toFixed(1)} Z`
+
+  const meanX   = xOf(avg)
+  const xTicks  = [0, 64, 128, 192, 255]
+  const yTicks  = [0, 0.5, 1].map(t => ({ y: yOf(maxCount * t), label: Math.round(maxCount * t).toLocaleString() }))
+
   return (
     <div style={{ borderRadius: '1.6rem', border: '1px solid var(--archive-color-rule)', background: 'rgba(255,255,255,0.72)', padding: '1.4rem 1.6rem', boxShadow: '0 30px 80px -36px rgba(15,23,42,0.38)' }}>
-      <p style={{ margin: '0 0 0.35rem', font: '600 0.72rem/1 var(--archive-font-ui)', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>Brightness Distribution</p>
-      <h3 style={{ margin: '0 0 1.1rem', font: '500 1.35rem/1.2 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>Most images sit in a restrained middle register</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-        {assignment2Data.brightnessHistogram.map((bin, i) => (
-          <div key={bin.label}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.28rem', font: '0.78rem/1 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
-              <span>{bin.label}</span><span>{bin.count}</span>
-            </div>
-            <div style={{ height: '10px', borderRadius: '999px', background: 'rgba(29,35,41,0.08)' }}>
-              <div style={{ height: '100%', borderRadius: '999px', width: `${(bin.count / maxCount) * 100}%`, background: `linear-gradient(90deg,rgba(39,76,119,0.85),${CLUSTER_COLOURS[i % CLUSTER_COLOURS.length]})` }} />
-            </div>
-          </div>
+      <p style={{ margin: '0 0 0.25rem', font: '600 0.72rem/1 var(--archive-font-ui)', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+        Brightness Distribution
+      </p>
+      <h3 style={{ margin: '0 0 1rem', font: '500 1.35rem/1.2 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
+        Most images sit in a restrained middle register
+      </h3>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+        <defs>
+          {/* Horizontal gradient dark → bright mirrors the brightness axis */}
+          <linearGradient id="brt-area" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor="#1a1a1a" stopOpacity="0.55" />
+            <stop offset="45%"  stopColor="#6b7a8d" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#e8e2d5" stopOpacity="0.30" />
+          </linearGradient>
+          <linearGradient id="brt-stroke" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor="#2c3e50" />
+            <stop offset="100%" stopColor="#8a9aaa" />
+          </linearGradient>
+        </defs>
+
+        {/* Y grid lines */}
+        {yTicks.map(({ y, label }) => (
+          <g key={label}>
+            <line x1={PAD.left} y1={y} x2={PAD.left + IW} y2={y}
+              stroke="rgba(29,35,41,0.07)" strokeWidth="1" />
+            <text x={PAD.left - 6} y={y} textAnchor="end" dominantBaseline="middle"
+              style={{ font: '10px var(--archive-font-ui)', fill: 'rgba(29,35,41,0.38)' }}>
+              {label}
+            </text>
+          </g>
         ))}
+
+        {/* Axes */}
+        <line x1={PAD.left} y1={PAD.top} x2={PAD.left} y2={PAD.top + IH}
+          stroke="rgba(29,35,41,0.12)" strokeWidth="1" />
+        <line x1={PAD.left} y1={PAD.top + IH} x2={PAD.left + IW} y2={PAD.top + IH}
+          stroke="rgba(29,35,41,0.12)" strokeWidth="1" />
+
+        {/* X axis ticks + labels */}
+        {xTicks.map(v => (
+          <g key={v}>
+            <line x1={xOf(v)} y1={PAD.top + IH} x2={xOf(v)} y2={PAD.top + IH + 4}
+              stroke="rgba(29,35,41,0.2)" strokeWidth="1" />
+            <text x={xOf(v)} y={PAD.top + IH + 14} textAnchor="middle"
+              style={{ font: '10px var(--archive-font-ui)', fill: 'rgba(29,35,41,0.45)' }}>
+              {v}
+            </text>
+          </g>
+        ))}
+
+        {/* Filled area */}
+        <path d={areaPath} fill="url(#brt-area)" />
+
+        {/* Outline */}
+        <path d={linePath} fill="none" stroke="url(#brt-stroke)" strokeWidth="1.8"
+          strokeLinejoin="round" strokeLinecap="round" />
+
+        {/* Mean line */}
+        <line x1={meanX} y1={PAD.top - 2} x2={meanX} y2={PAD.top + IH}
+          stroke="rgba(29,35,41,0.45)" strokeWidth="1.2" strokeDasharray="4 3" />
+        <text x={meanX} y={PAD.top - 6} textAnchor="middle"
+          style={{ font: '600 9.5px var(--archive-font-ui)', fill: 'rgba(29,35,41,0.55)' }}>
+          μ = {avg}
+        </text>
+      </svg>
+    </div>
+  )
+}
+
+function SocialPresenceChart() {
+  const bins        = assignment2Data.personCountHistogram
+  const { withPeople, images: totalImages } = assignment2Data.totals
+  const [hovered, setHovered] = useState(null)
+
+  const W = 560, H = 210
+  const PAD = { top: 38, right: 16, bottom: 42, left: 16 }
+  const IW  = W - PAD.left - PAD.right
+  const IH  = H - PAD.top  - PAD.bottom
+
+  const maxCount = Math.max(...bins.map(b => b.count), 1)
+  const slotW    = IW / bins.length
+  const barW     = slotW * 0.58
+  const barOff   = (slotW - barW) / 2
+
+  // Grey → warm amber — encodes "no people" → "crowd"
+  const COLORS = ['#8a9aaa', '#7d8f7e', '#b09070', '#c28d5b', '#7f5539']
+
+  const withPeoplePct = totalImages > 0 ? ((withPeople / totalImages) * 100).toFixed(1) : '0'
+
+  return (
+    <div style={{ borderRadius: '1.6rem', border: '1px solid var(--archive-color-rule)', background: 'rgba(255,255,255,0.72)', padding: '1.4rem 1.6rem', boxShadow: '0 30px 80px -36px rgba(15,23,42,0.38)' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.6rem', marginBottom: '0.8rem' }}>
+        <div>
+          <p style={{ margin: '0 0 0.25rem', font: '600 0.72rem/1 var(--archive-font-ui)', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+            Social Presence
+          </p>
+          <h3 style={{ margin: 0, font: '500 1.35rem/1.2 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
+            How many people appear in each photograph.
+          </h3>
+        </div>
+        {/* Stat badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem 0.9rem', borderRadius: '999px', background: 'rgba(159,111,69,0.1)', border: '1px solid rgba(159,111,69,0.25)', flexShrink: 0 }}>
+          <span style={{ font: '700 1.1rem/1 var(--archive-font-ui)', color: '#9f6f45' }}>{withPeoplePct}%</span>
+          <span style={{ font: '0.75rem/1.3 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>of photos<br/>feature people</span>
+        </div>
       </div>
+
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
+        {/* Subtle horizontal grid */}
+        {[0.25, 0.5, 0.75, 1].map(t => {
+          const y = PAD.top + IH - t * IH
+          return (
+            <line key={t} x1={PAD.left} y1={y} x2={PAD.left + IW} y2={y}
+              stroke="rgba(29,35,41,0.06)" strokeWidth="1" />
+          )
+        })}
+
+        {/* Bars */}
+        {bins.map((bin, i) => {
+          const bh   = (bin.count / maxCount) * IH
+          const x    = PAD.left + i * slotW + barOff
+          const y    = PAD.top + IH - bh
+          const pct  = ((bin.count / totalImages) * 100).toFixed(1)
+          const isHov = hovered === i
+          const color = COLORS[i]
+
+          return (
+            <g key={bin.label}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
+              style={{ cursor: 'default' }}
+            >
+              {/* Bar */}
+              <rect x={x} y={y} width={barW} height={bh}
+                fill={color} rx="5" ry="5"
+                opacity={hovered !== null && !isHov ? 0.3 : 1}
+                style={{ transition: 'opacity 0.18s' }}
+              />
+              {/* Label above bar: % normally, count on hover */}
+              <text x={x + barW / 2} y={y - 7} textAnchor="middle"
+                style={{ font: `${isHov ? '600' : '500'} 11px var(--archive-font-ui)`, fill: isHov ? color : 'rgba(29,35,41,0.7)', transition: 'fill 0.18s' }}>
+                {isHov ? bin.count.toLocaleString() : `${pct}%`}
+              </text>
+              {/* Category label below axis */}
+              <text x={x + barW / 2} y={PAD.top + IH + 16} textAnchor="middle"
+                style={{ font: '10.5px var(--archive-font-ui)', fill: 'rgba(29,35,41,0.5)' }}>
+                {bin.label}
+              </text>
+            </g>
+          )
+        })}
+
+        {/* Baseline */}
+        <line x1={PAD.left} y1={PAD.top + IH} x2={PAD.left + IW} y2={PAD.top + IH}
+          stroke="rgba(29,35,41,0.12)" strokeWidth="1" />
+      </svg>
     </div>
   )
 }
@@ -173,91 +353,119 @@ function TagPanelInline() {
   )
 }
 
-function SeasonalHistogramPanel() {
+// Which months belong to each story step (0-based month index Jan=0…Dec=11)
+const SEASONAL_STEPS = [
+  {
+    key:   'overview',
+    title: 'The full year at a glance',
+    desc:  'Twelve months, merged across every year in the archive. The variation is striking — some months are packed while others are near-empty. Scroll to unpack the pattern.',
+    highlight: null,          // all bars equal
+  },
+  {
+    key:   'summer',
+    title: 'Summer dominates',
+    desc:  'July and August together hold more than a third of the entire archive. These are the months of extended travel, family reunions, and outdoor exploration — the conditions most likely to prompt a camera.',
+    highlight: [6, 7],        // Jul, Aug
+    color:     '#c28d5b',
+  },
+  {
+    key:   'secondary',
+    title: 'February and October also stand out',
+    desc:  'Two shorter peaks break the quiet of the rest. February aligns with Chinese New Year — a season of family gatherings and celebrations. October corresponds to Golden Week, China\'s national holiday, which reliably produces travel photographs.',
+    highlight: [1, 9],        // Feb, Oct
+    color:     '#7b6f9c',
+  },
+  {
+    key:   'quiet',
+    title: 'The quiet months',
+    desc:  'Spring and late autumn are sparse. March, April, May, September, November, and December together hold fewer photos than August alone. These months represent routine rather than occasion — commutes, deadlines, and the undocumented pace of ordinary weeks.',
+    highlight: [0, 2, 3, 4, 8, 10, 11],   // Jan, Mar–May, Sep, Nov, Dec
+    color:     '#8a9aaa',
+  },
+]
+
+function SeasonalHistogramPanel({ activeStep = 0 }) {
   const monthTotals = MONTH_LABELS.map((label, monthIndex) => {
-    const matchingBins = assignment2Data.temporalBins.filter((bin) => Number(bin.month.slice(5, 7)) === monthIndex + 1)
+    const matchingBins = assignment2Data.temporalBins.filter(
+      (bin) => Number(bin.month.slice(5, 7)) === monthIndex + 1
+    )
     const count = matchingBins.reduce((sum, bin) => sum + bin.count, 0)
-    const places = [...new Set(matchingBins.flatMap((bin) => bin.places))].slice(0, 4)
-    return { label, count, places }
+    return { label, count, monthIndex }
   })
 
-  const maxCount = Math.max(...monthTotals.map((bin) => bin.count), 1)
-  const chartHeight = 320
-  const chartWidth = 760
-  const padding = { top: 16, right: 20, bottom: 54, left: 54 }
-  const innerWidth = chartWidth - padding.left - padding.right
-  const innerHeight = chartHeight - padding.top - padding.bottom
-  const barWidth = innerWidth / monthTotals.length
-  const yTicks = Array.from({ length: 5 }, (_, i) => Math.round((maxCount / 4) * (4 - i)))
+  const maxCount  = Math.max(...monthTotals.map((b) => b.count), 1)
+  const W = 440, H = 280
+  const PAD = { top: 16, right: 16, bottom: 48, left: 48 }
+  const IW  = W - PAD.left - PAD.right
+  const IH  = H - PAD.top  - PAD.bottom
+  const slotW = IW / monthTotals.length
+  const bw    = slotW * 0.72
+  const bOff  = (slotW - bw) / 2
+  const yTicks = [0, 0.25, 0.5, 0.75, 1].map(t => Math.round(maxCount * t))
+
+  const step = SEASONAL_STEPS[activeStep] ?? SEASONAL_STEPS[0]
+
+  function barStyle(monthIndex) {
+    if (!step.highlight) return { fill: '#5c7c92', opacity: 0.82 }
+    const isHighlighted = step.highlight.includes(monthIndex)
+    return isHighlighted
+      ? { fill: step.color, opacity: 1 }
+      : { fill: '#5c7c92', opacity: 0.15 }
+  }
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        display: 'grid',
-        gap: '1rem',
-        padding: '1.2rem',
-        border: '1px solid var(--archive-color-rule)',
-        borderRadius: '1.75rem',
-        background: 'linear-gradient(180deg,rgba(255,255,255,0.86),rgba(247,244,237,0.9)),radial-gradient(circle at 14% 18%,rgba(62,91,113,0.08),transparent 34%)',
-      }}
-      role="region"
-      aria-label="Seasonal histogram"
-    >
-      <div style={{ display: 'grid', gap: '0.75rem' }}>
-        <div>
-          <p style={{ margin: 0, font: '600 0.72rem/1.2 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>Seasonal Distribution</p>
-          <h3 style={{ margin: '0.3rem 0 0', font: '500 clamp(1.45rem,1.2vw + 1rem,1.95rem)/1.12 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>How the archive clusters by month, regardless of year.</h3>
-        </div>
-        <p style={{ margin: 0, maxWidth: '52rem', fontSize: '0.98rem', lineHeight: '1.7', color: 'var(--archive-color-copy)' }}>
-          Each bar gathers all photographs taken in the same month across the full archive, making the seasonal rhythm legible without separating years.
-        </p>
-      </div>
+    <div style={{
+      padding: '1.2rem',
+      border: '1px solid var(--archive-color-rule)',
+      borderRadius: '1.75rem',
+      background: 'linear-gradient(180deg,rgba(255,255,255,0.86),rgba(247,244,237,0.9))',
+    }}>
+      <p style={{ margin: '0 0 0.25rem', font: '600 0.72rem/1.2 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+        Seasonal Distribution
+      </p>
+      <h3 style={{ margin: '0 0 0.9rem', font: '500 1.25rem/1.15 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
+        How the archive clusters by month.
+      </h3>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+        {/* Y grid + labels */}
+        {yTicks.map((tick) => {
+          const y = PAD.top + IH - (tick / maxCount) * IH
+          return (
+            <g key={tick}>
+              <line x1={PAD.left} x2={PAD.left + IW} y1={y} y2={y}
+                stroke="rgba(29,35,41,0.08)" strokeWidth="1" />
+              <text x={PAD.left - 8} y={y + 4} textAnchor="end"
+                style={{ font: '10px var(--archive-font-ui)', fill: 'rgba(29,35,41,0.38)' }}>
+                {tick}
+              </text>
+            </g>
+          )
+        })}
 
-      <div style={{ display: 'grid', gap: '0.7rem' }}>
-        <div style={{ overflowX: 'auto', paddingBottom: '0.45rem', border: '1px solid var(--archive-color-rule)', borderRadius: '1.35rem' }}>
-          <div style={{ minWidth: '100%', width: `${chartWidth}px`, padding: '0.9rem 0.9rem 0.35rem' }}>
-            <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-label="Histogram of photographs by month across all years" style={{ display: 'block', width: '100%', height: 'auto', overflow: 'visible' }}>
-              <g transform={`translate(${padding.left},${padding.top})`}>
-                {yTicks.map((tick) => {
-                  const y = maxCount > 0 ? innerHeight - (tick / maxCount) * innerHeight : innerHeight
-                  return (
-                    <g key={tick}>
-                      <line x1="0" x2={innerWidth} y1={y} y2={y} stroke="rgba(29,35,41,0.1)" strokeWidth="1" strokeDasharray="4 4" shapeRendering="crispEdges" />
-                      <text x="-12" y={y + 4} textAnchor="end" style={{ font: '0.7rem/1 var(--archive-font-ui)', fill: 'var(--archive-color-muted)' }}>{tick}</text>
-                    </g>
-                  )
-                })}
+        {/* Bars */}
+        {monthTotals.map(({ label, count, monthIndex }) => {
+          const bh = (count / maxCount) * IH
+          const x  = PAD.left + monthIndex * slotW + bOff
+          const y  = PAD.top + IH - bh
+          const { fill, opacity } = barStyle(monthIndex)
+          return (
+            <g key={label} style={{ transition: 'opacity 0.4s ease' }}>
+              <rect x={x} y={y} width={bw} height={bh} rx="5" fill={fill} opacity={opacity}
+                style={{ transition: 'fill 0.4s ease, opacity 0.4s ease' }}>
+                <title>{`${label}: ${count}`}</title>
+              </rect>
+              <text x={x + bw / 2} y={PAD.top + IH + 16} textAnchor="middle"
+                style={{ font: '600 10px var(--archive-font-ui)', fill: 'rgba(29,35,41,0.5)' }}>
+                {label}
+              </text>
+            </g>
+          )
+        })}
 
-                {monthTotals.map((bin, index) => {
-                  const height = maxCount > 0 ? (bin.count / maxCount) * innerHeight : 0
-                  const x = index * barWidth + barWidth * 0.08
-                  const y = innerHeight - height
-                  const width = barWidth * 0.84
-                  const placeLabel = bin.places.length ? ` Places include ${bin.places.join(', ')}.` : ''
-
-                  return (
-                    <g key={bin.label}>
-                      <rect x={x} y={y} width={width} height={height} rx="6" fill="#5c7c92" fillOpacity="0.78">
-                        <title>{`${bin.label}: ${bin.count} photographs.${placeLabel}`}</title>
-                      </rect>
-                      <text x={x + width / 2} y={innerHeight + 26} textAnchor="middle" style={{ font: '600 12px/1 var(--archive-font-ui)', fill: 'var(--archive-color-muted)' }}>
-                        {bin.label}
-                      </text>
-                      <text x={x + width / 2} y={y - 8} textAnchor="middle" style={{ font: '600 11px/1 var(--archive-font-ui)', fill: 'var(--archive-color-copy)' }}>
-                        {bin.count}
-                      </text>
-                    </g>
-                  )
-                })}
-              </g>
-            </svg>
-          </div>
-        </div>
-        <p style={{ margin: 0, font: '0.78rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>
-          Monthly totals are merged across all years · hover any bar for detail
-        </p>
-      </div>
+        {/* Baseline */}
+        <line x1={PAD.left} y1={PAD.top + IH} x2={PAD.left + IW} y2={PAD.top + IH}
+          stroke="rgba(29,35,41,0.12)" strokeWidth="1" />
+      </svg>
     </div>
   )
 }
@@ -276,6 +484,10 @@ export default function AssignmentTwoNarrative() {
   // Beeswarm scroll-driven step
   const [swarmStep, setSwarmStep] = useState(0)
   const swarmStepRefs = useRef([])
+
+  // Seasonal histogram scroll-driven step
+  const [seasonalStep, setSeasonalStep] = useState(0)
+  const seasonalStepRefs = useRef([])
   const heroStats = [
     { label: 'Corpus', value: `${totals.images.toLocaleString()} images`, note: 'Photographs drawn from the personal image archive.' },
     { label: 'Clusters', value: `${totals.clusters} groups`, note: 'Visual families inferred from CLIP and DINO embeddings.' },
@@ -343,13 +555,27 @@ export default function AssignmentTwoNarrative() {
 
   }, { scope: heroRef, dependencies: [prefersReducedMotion] })
 
-  // IntersectionObserver: advance beeswarm step as right-panel cards scroll into view
+  // IntersectionObserver: advance beeswarm step when sentinel (mid-card) crosses screen centre
   useEffect(() => {
     const observers = swarmStepRefs.current.map((el, i) => {
       if (!el) return null
       const obs = new IntersectionObserver(
         ([entry]) => { if (entry.isIntersecting) setSwarmStep(i) },
-        { rootMargin: '-20% 0px -70% 0px' },
+        { rootMargin: '-49% 0px -49% 0px' },
+      )
+      obs.observe(el)
+      return obs
+    })
+    return () => observers.forEach(o => o?.disconnect())
+  }, [])
+
+  // IntersectionObserver: advance seasonal step when sentinel (mid-card) crosses screen centre
+  useEffect(() => {
+    const observers = seasonalStepRefs.current.map((el, i) => {
+      if (!el) return null
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setSeasonalStep(i) },
+        { rootMargin: '-49% 0px -49% 0px' },
       )
       obs.observe(el)
       return obs
@@ -537,15 +763,15 @@ export default function AssignmentTwoNarrative() {
         </ScrollSection>
 
         <VisBlock>
-          <div style={{ display: 'grid', gap: '1.1rem', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
-            <HistogramPanel />
-            <PeoplePanel
-              bins={assignment2Data.personCountHistogram}
-              withPeople={totals.withPeople}
-              totalImages={totals.images}
-            />
-            <TagPanelInline />
-          </div>
+          <TagPanelInline />
+        </VisBlock>
+
+        <VisBlock>
+          <BrightnessAreaChart />
+        </VisBlock>
+
+        <VisBlock>
+          <SocialPresenceChart />
         </VisBlock>
 
         {/* 3 – Constellation */}
@@ -567,6 +793,31 @@ export default function AssignmentTwoNarrative() {
         <VisBlock>
           <StagedVisual label="Preparing visual constellation" minHeight="min(75vh,44rem)">
             <AssignmentTwoGraph />
+          </StagedVisual>
+        </VisBlock>
+
+        <ScrollSection id="centrality-network" kicker="Centrality Network" title="Which photographs act as visual archetypes?">
+          <p style={S.body}>
+            The sampled constellation above shows cluster structure for a subset of images. This
+            second network goes further: it includes <strong>all {'{'}7{','}244{'}'} photographs</strong> and draws a{' '}
+            <em>directed</em> edge from every photo to each of its five most visually similar
+            neighbours. Because similarity is asymmetric — A can be among B&apos;s closest matches
+            without B appearing in A&apos;s top five — the resulting graph is directed.
+          </p>
+          <p style={S.body}>
+            A node&apos;s <em>in-degree</em> counts how many other photographs list it as a top-5
+            neighbour. High in-degree photographs are visual archetypes: scenes so compositionally or
+            chromatically representative that many unrelated images converge on them. The colour
+            gradient runs from slate (in-degree&nbsp;0) through blue to red (maximum in-degree).
+            Layout is computed by UMAP run directly on the precomputed k-NN graph, so it
+            optimises for short edges — similar photographs land close together, and k-NN arrows
+            stay local. All nodes are the same size; only colour encodes centrality.
+          </p>
+        </ScrollSection>
+
+        <VisBlock>
+          <StagedVisual label="Preparing centrality network" minHeight="min(80vh,50rem)">
+            <CentralityNetwork />
           </StagedVisual>
         </VisBlock>
 
@@ -592,9 +843,52 @@ export default function AssignmentTwoNarrative() {
           </StagedVisual>
         </VisBlock>
 
-        <VisBlock>
-          <SeasonalHistogramPanel />
-        </VisBlock>
+        {/* Seasonal distribution — sticky chart left, scrollable story cards right */}
+        <div style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start', padding: '2rem 0' }}>
+
+          {/* Left: sticky chart — full viewport height so the chart centres vertically */}
+          <div style={{ flex: '0 0 64%', position: 'sticky', top: 0, height: '100vh', display: 'flex', alignItems: 'center' }}>
+            <div style={{ width: '100%' }}>
+              <SeasonalHistogramPanel activeStep={seasonalStep} />
+            </div>
+          </div>
+
+          {/* Right: scrollable story cards */}
+          <div style={{ flex: 1, minWidth: 0, paddingBottom: 'calc(50vh - 37.5vh - 1rem)' }}>
+            {SEASONAL_STEPS.map((s, i) => (
+              <div
+                key={s.key}
+                style={{ minHeight: '75vh', position: 'relative', display: 'flex', alignItems: 'center', padding: '1rem 0' }}
+              >
+                {/* Sentinel at vertical centre of this card — observed to fire at screen centre */}
+                <div ref={el => { seasonalStepRefs.current[i] = el }}
+                  style={{ position: 'absolute', top: '50%', left: 0, width: '1px', height: '1px',
+                           transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                <div style={{
+                  width: '100%',
+                  borderRadius: '1rem',
+                  padding: '1.5rem 1.6rem',
+                  border: `1px solid ${seasonalStep === i ? 'rgba(29,35,41,0.25)' : 'var(--archive-color-rule)'}`,
+                  background: seasonalStep === i ? 'rgba(255,255,255,0.82)' : 'rgba(255,255,255,0.42)',
+                  boxShadow: seasonalStep === i ? '0 8px 32px -8px rgba(15,23,42,0.14)' : 'none',
+                  opacity: seasonalStep === i ? 1 : 0.4,
+                  transform: seasonalStep === i ? 'translateX(0)' : 'translateX(6px)',
+                  transition: 'opacity 0.35s ease, transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease',
+                }}>
+                  <p style={{ margin: '0 0 0.4rem', font: '600 0.68rem/1 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+                    {i + 1} of {SEASONAL_STEPS.length}
+                  </p>
+                  <h3 style={{ margin: '0 0 0.75rem', font: '500 1.2rem/1.25 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
+                    {s.title}
+                  </h3>
+                  <p style={{ margin: 0, font: '0.9rem/1.75 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
+                    {s.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <VisBlock>
           <StagedVisual label="Preparing object timeline" minHeight="28rem">
@@ -712,7 +1006,7 @@ export default function AssignmentTwoNarrative() {
           </div>
 
           {/* Right: scrollable step cards */}
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0, paddingBottom: 'calc(50vh - 40vh - 1rem)' }}>
 
             {/* Section header */}
             <div style={{ padding: '0 0 1rem' }}>
@@ -730,9 +1024,11 @@ export default function AssignmentTwoNarrative() {
             {SWARM_STEPS.map((s, i) => (
               <div
                 key={s.key}
-                ref={el => { swarmStepRefs.current[i] = el }}
-                style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', padding: '1rem 0' }}
+                style={{ minHeight: '80vh', position: 'relative', display: 'flex', alignItems: 'center', padding: '1rem 0' }}
               >
+                <div ref={el => { swarmStepRefs.current[i] = el }}
+                  style={{ position: 'absolute', top: '50%', left: 0, width: '1px', height: '1px',
+                           transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                 <div style={{
                   width: '100%',
                   borderRadius: '1rem',
@@ -775,6 +1071,20 @@ export default function AssignmentTwoNarrative() {
         </div>
 
         {/* Notes */}
+        {/* Photo search */}
+        <ScrollSection id="photo-search" kicker="Caption Search" title="Find photographs by what they contain.">
+          <p style={S.body}>
+            Every photograph in the archive was described in natural language by Gemma, a vision-language
+            model. The search below queries all {(7243).toLocaleString()} captions simultaneously — type
+            any word or phrase to retrieve the photographs whose descriptions contain it. Results are
+            shown as thumbnails with the matching excerpt highlighted.
+          </p>
+        </ScrollSection>
+
+        <VisBlock>
+          <GemmaSearch />
+        </VisBlock>
+
         <ScrollSection id="endnotes" kicker="Notes" title="Reading the archive as evidence.">
           <p style={S.body}>
             The visualisations do not claim photographic truth. They show what was kept, photographed,
