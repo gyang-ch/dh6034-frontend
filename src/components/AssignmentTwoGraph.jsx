@@ -123,7 +123,7 @@ export default function AssignmentTwoGraph() {
       graph.addEdge(edge.source, edge.target, {
         mode: 'kmeans',
         size: Math.max(0.35, 1.2 - edge.distance),
-        color: 'rgba(71, 85, 105, 0.16)',
+        color: 'rgba(15, 23, 42, 0.28)',
         distance: edge.distance,
       })
     }
@@ -131,7 +131,7 @@ export default function AssignmentTwoGraph() {
       graph.addEdge(edge.source, edge.target, {
         mode: 'hdbscan',
         size: Math.max(0.35, 1.2 - edge.distance),
-        color: 'rgba(71, 85, 105, 0.16)',
+        color: 'rgba(15, 23, 42, 0.28)',
         distance: edge.distance,
       })
     }
@@ -212,7 +212,7 @@ export default function AssignmentTwoGraph() {
         return { ...data, color: 'rgba(15, 23, 42, 0.34)', size: data.size * 1.5, hidden: false }
       }
 
-      return { ...data, color: 'rgba(148, 163, 184, 0.08)' }
+      return { ...data, color: 'rgba(148, 163, 184, 0.12)' }
     })
 
     sigma.getCamera().animatedReset({ duration: 600 })

@@ -15,6 +15,7 @@ const PALETTE = [
 ]
 
 const YOLO_GROUPS = {
+  'People':       ['person'],
   'Vehicles':     ['airplane', 'bicycle', 'bus', 'car', 'train'],
   'Animals':      ['bear', 'bird', 'cat', 'cow', 'dog', 'elephant', 'giraffe', 'horse', 'sheep', 'zebra'],
   'Food & Drink': ['apple', 'banana', 'bottle', 'bowl', 'cake', 'cup', 'pizza', 'sandwich', 'wine glass'],
@@ -28,9 +29,10 @@ const IW = W - PAD.left - PAD.right
 const IH = H - PAD.top - PAD.bottom
 
 // ── Shared chart component ────────────────────────────────────────────────────
+// yFormat: 'percent' → values are 0-1 fractions, label as %; 'avg' → raw avg per photo
 
-function TimelineChart({ items, series, months, groups, colorOf }) {
-  const [enabled, setEnabled] = useState(() => new Set(items.slice(0, 8)))
+function TimelineChart({ items, series, months, groups, colorOf, defaultVisible, yFormat = 'percent' }) {
+  const [enabled, setEnabled] = useState(() => new Set(defaultVisible ?? items.slice(0, 8)))
   const [hoveredIdx, setHoveredIdx] = useState(null)
   const [legendSearch, setLegendSearch] = useState('')
   const svgRef = useRef(null)
@@ -41,14 +43,11 @@ function TimelineChart({ items, series, months, groups, colorOf }) {
   if (prevItemsRef.current !== items) {
     prevItemsRef.current = items
     enabled.clear()
-    items.slice(0, 8).forEach(i => enabled.add(i))
+    ;(defaultVisible ?? items.slice(0, 8)).forEach(i => enabled.add(i))
     setLegendSearch('')
   }
 
-  const colorOfItem = useCallback(
-    (item) => colorOf(item),
-    [colorOf],
-  )
+  const colorOfItem = useCallback((item) => colorOf(item), [colorOf])
 
   const maxVal = useMemo(() => {
     let m = 0.01
@@ -57,8 +56,9 @@ function TimelineChart({ items, series, months, groups, colorOf }) {
       if (!s) continue
       for (const v of s) if (v > m) m = v
     }
-    return Math.min(m * 1.05, 1)
-  }, [enabled, series])
+    // percent mode: cap at 1; avg mode: uncapped
+    return yFormat === 'percent' ? Math.min(m * 1.05, 1) : m * 1.1
+  }, [enabled, series, yFormat])
 
   const paths = useMemo(() => {
     const result = {}
@@ -86,16 +86,24 @@ function TimelineChart({ items, series, months, groups, colorOf }) {
     return ticks
   }, [months])
 
-  const yTicks = [0, 0.25, 0.5, 0.75, 1].map(t => ({
-    label: (maxVal * t * 100).toFixed(maxVal < 0.1 ? 1 : 0) + '%',
-    y:     PAD.top + IH - t * IH,
-  }))
+  const yTicks = useMemo(() => {
+    return [0, 0.25, 0.5, 0.75, 1].map(t => {
+      const val = maxVal * t
+      let label
+      if (yFormat === 'percent') {
+        label = (val * 100).toFixed(val < 0.1 ? 1 : 0) + '%'
+      } else {
+        label = val < 1 ? val.toFixed(2) : val.toFixed(1)
+      }
+      return { label, y: PAD.top + IH - t * IH }
+    })
+  }, [maxVal, yFormat])
 
   const onMouseMove = useCallback((e) => {
     const rect = svgRef.current?.getBoundingClientRect()
     if (!rect) return
-    const svgX  = (e.clientX - rect.left) / rect.width * W
-    const idx   = Math.round(((svgX - PAD.left) / IW) * (months.length - 1))
+    const svgX = (e.clientX - rect.left) / rect.width * W
+    const idx  = Math.round(((svgX - PAD.left) / IW) * (months.length - 1))
     setHoveredIdx(Math.max(0, Math.min(months.length - 1, idx)))
   }, [months.length])
 
@@ -125,6 +133,11 @@ function TimelineChart({ items, series, months, groups, colorOf }) {
   }
 
   const enabledArr = [...enabled]
+
+  const formatTooltipVal = (v) =>
+    yFormat === 'percent'
+      ? (v * 100).toFixed(1) + '%'
+      : v < 1 ? v.toFixed(2) : v.toFixed(1)
 
   return (
     <>
@@ -208,7 +221,7 @@ function TimelineChart({ items, series, months, groups, colorOf }) {
                 <span style={{ width: 9, height: 9, borderRadius: '50%', background: color, flexShrink: 0 }} />
                 <span style={{ font: '0.78rem/1 var(--archive-font-ui)', color: 'var(--archive-color-copy)', flex: 1 }}>{item}</span>
                 <span style={{ font: '600 0.78rem/1 var(--archive-font-ui)', color: 'var(--archive-color-ink)', marginLeft: '0.5rem' }}>
-                  {(v * 100).toFixed(1)}%
+                  {formatTooltipVal(v)}
                 </span>
               </div>
             ))}
@@ -219,7 +232,6 @@ function TimelineChart({ items, series, months, groups, colorOf }) {
       {/* Legend */}
       <div style={{ display: 'grid', gap: '0.5rem' }}>
 
-        {/* Search input — only shown when there are many keywords */}
         {items.length > 40 && (
           <div style={{ position: 'relative' }}>
             <input
@@ -253,7 +265,6 @@ function TimelineChart({ items, series, months, groups, colorOf }) {
           </div>
         )}
 
-        {/* Legend pills — scrollable container */}
         <div
           data-lenis-prevent
           style={{
@@ -265,7 +276,6 @@ function TimelineChart({ items, series, months, groups, colorOf }) {
           {(() => {
             const q = legendSearch.trim().toLowerCase()
 
-            // ── Search mode: flat filtered list ───────────────────────────
             if (q) {
               const matches = items.filter((i) => i.toLowerCase().includes(q))
               if (!matches.length) return (
@@ -297,7 +307,6 @@ function TimelineChart({ items, series, months, groups, colorOf }) {
               )
             }
 
-            // ── Normal mode: grouped list ──────────────────────────────────
             return Object.entries(groups).map(([group, members]) => {
               const available = members.filter((o) => items.includes(o))
               if (!available.length) return null
@@ -343,90 +352,81 @@ function TimelineChart({ items, series, months, groups, colorOf }) {
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
+const YOLO_DEFAULT_VISIBLE = ['person', 'chair', 'cup', 'car', 'handbag', 'bowl', 'potted plant', 'bottle']
+
 export default function YoloObjectTimeline() {
   const tl = assignment2Data.yoloTimeline
   if (!tl) return null
 
-  const [tab, setTab] = useState('yolo')
+  const yoloItems   = useMemo(() => ['person', ...tl.objects], [tl])
+  const yoloSeries  = useMemo(() => tl.seriesCounts, [tl])
 
-  // Unified dataset shape for the two tabs
-  const datasets = useMemo(() => ({
-    yolo: {
-      items:          tl.objects,
-      series:         tl.series,
-      months:         tl.months,
-      defaultVisible: tl.defaultVisible,
-      groups:         YOLO_GROUPS,
-      subtitle:       'Share of photos each month containing each YOLO-detected object class.',
-    },
-    gemma: {
-      items:          gemmaKeywordsData.keywords,
-      series:         gemmaKeywordsData.series,
-      months:         gemmaKeywordsData.months,
-      defaultVisible: gemmaKeywordsData.defaultVisible,
-      groups:         gemmaKeywordsData.groups,
-      subtitle:       `Share of photos each month in which each Gemma keyword appears. ${gemmaKeywordsData.keywords.length} keywords total — search below to find specific terms.`,
-    },
-  }), [tl])
+  const gemmaItems  = gemmaKeywordsData.keywords
+  const gemmaSeries = gemmaKeywordsData.series
+  const gemmaMonths = gemmaKeywordsData.months
+  const gemmaGroups = gemmaKeywordsData.groups
 
-  const ds = datasets[tab]
+  const yoloColorOf  = useCallback((item) => PALETTE[yoloItems.indexOf(item)  % PALETTE.length], [yoloItems])
+  const gemmaColorOf = useCallback((item) => PALETTE[gemmaItems.indexOf(item) % PALETTE.length], [gemmaItems])
 
-  // Stable per-dataset color map (index within each dataset's item list)
-  const colorOf = useCallback(
-    (item) => PALETTE[ds.items.indexOf(item) % PALETTE.length],
-    [ds.items],
-  )
+  const cardStyle = {
+    position: 'relative', display: 'grid', gap: '1rem', padding: '1.2rem',
+    border: '1px solid var(--archive-color-rule)', borderRadius: '1.75rem',
+    background:
+      'linear-gradient(180deg,rgba(255,255,255,0.86),rgba(247,244,237,0.9)),' +
+      'radial-gradient(circle at 14% 18%,rgba(62,91,113,0.08),transparent 34%)',
+  }
 
   return (
-    <div style={{
-      position: 'relative', display: 'grid', gap: '1rem', padding: '1.2rem',
-      border: '1px solid var(--archive-color-rule)', borderRadius: '1.75rem',
-      background:
-        'linear-gradient(180deg,rgba(255,255,255,0.86),rgba(247,244,237,0.9)),' +
-        'radial-gradient(circle at 14% 18%,rgba(62,91,113,0.08),transparent 34%)',
-    }}>
+    <div style={{ display: 'grid', gap: '1.5rem' }}>
 
-      {/* Header + tab toggle */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem' }}>
+      {/* ── YOLO Objects chart ── */}
+      <div style={cardStyle}>
         <div style={{ display: 'grid', gap: '0.4rem' }}>
           <p style={{ margin: 0, font: '600 0.72rem/1.2 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
-            Visual Signals Over Time
+            Visual Signals Over Time — YOLO Objects
           </p>
           <h3 style={{ margin: 0, font: '500 clamp(1.45rem,1.2vw + 1rem,1.95rem)/1.12 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
-            How detected objects and keywords evolve month by month.
+            Average number of each detected object per photo, by month.
           </h3>
           <p style={{ margin: 0, maxWidth: '52rem', fontSize: '0.98rem', lineHeight: '1.7', color: 'var(--archive-color-copy)' }}>
-            {ds.subtitle}{' '}
-            Photos containing the signal / total photos that month. Top 8 shown by default.
+            YOLO counts every instance in each photo — three chairs in one photo counts as three. The y-axis shows the average count per photo that month, so values above 1 mean the object appeared multiple times per photo on average.
           </p>
         </div>
-
-        {/* Tab switcher */}
-        <div style={{ display: 'flex', gap: '3px', padding: '3px', background: 'rgba(29,35,41,0.07)', borderRadius: '999px', flexShrink: 0, alignSelf: 'flex-start' }}>
-          {[['yolo', 'YOLO Objects'], ['gemma', 'Gemma Keywords']].map(([key, label]) => (
-            <button key={key} onClick={() => setTab(key)} style={{
-              padding: '0.35rem 0.9rem', border: 'none', borderRadius: '999px',
-              font: '500 0.82rem/1 var(--archive-font-ui)', cursor: 'pointer',
-              transition: 'background 150ms, color 150ms',
-              background: tab === key ? 'rgba(255,255,255,0.92)' : 'transparent',
-              color: tab === key ? 'var(--archive-color-ink)' : 'var(--archive-color-muted)',
-              boxShadow: tab === key ? '0 1px 4px rgba(29,35,41,0.13)' : 'none',
-            }}>
-              {label}
-            </button>
-          ))}
-        </div>
+        <TimelineChart
+          items={yoloItems}
+          series={yoloSeries}
+          months={tl.months}
+          groups={YOLO_GROUPS}
+          colorOf={yoloColorOf}
+          defaultVisible={YOLO_DEFAULT_VISIBLE}
+          yFormat="avg"
+        />
       </div>
 
-      {/* Chart + legend — keyed by tab so state resets cleanly on switch */}
-      <TimelineChart
-        key={tab}
-        items={ds.items}
-        series={ds.series}
-        months={ds.months}
-        groups={ds.groups}
-        colorOf={colorOf}
-      />
+      {/* ── Gemma Keywords chart ── */}
+      <div style={cardStyle}>
+        <div style={{ display: 'grid', gap: '0.4rem' }}>
+          <p style={{ margin: 0, font: '600 0.72rem/1.2 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+            Visual Signals Over Time — Gemma Keywords
+          </p>
+          <h3 style={{ margin: 0, font: '500 clamp(1.45rem,1.2vw + 1rem,1.95rem)/1.12 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
+            Share of photos each month mentioning each keyword.
+          </h3>
+          <p style={{ margin: 0, maxWidth: '52rem', fontSize: '0.98rem', lineHeight: '1.7', color: 'var(--archive-color-copy)' }}>
+            Each value is the fraction of photos in that month whose Gemma-generated caption contains the keyword — presence or absence per photo, not a count. {gemmaItems.length} keywords total — search below to find specific terms.
+          </p>
+        </div>
+        <TimelineChart
+          items={gemmaItems}
+          series={gemmaSeries}
+          months={gemmaMonths}
+          groups={gemmaGroups}
+          colorOf={gemmaColorOf}
+          yFormat="percent"
+        />
+      </div>
+
     </div>
   )
 }
