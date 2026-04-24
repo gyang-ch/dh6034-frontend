@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { assignment2Data } from '../data/assignment2Data'
@@ -16,6 +16,7 @@ import JsonScrollExplainer from './JsonScrollExplainer'
 import YoloObjectTimeline from './YoloObjectTimeline'
 import CentralityNetwork from './CentralityNetwork'
 import GemmaSearch from './GemmaSearch'
+import AnnotationTimeline from './AnnotationTimeline'
 import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 import { photographUrl } from '../lib/photographs'
 
@@ -95,6 +96,11 @@ const S = {
     font: '500 clamp(1.6rem,2.1vw + 0.8rem,2.55rem)/1.12 var(--archive-font-display)',
     color: 'var(--archive-color-ink)',
   },
+  h3: {
+    margin: '2rem 0 0.75rem',
+    font: '500 clamp(1.15rem,1.2vw + 0.5rem,1.5rem)/1.2 var(--archive-font-display)',
+    color: 'var(--archive-color-ink)',
+  },
   subtitle: {
     margin: '0 0 1.4rem',
     font: '400 1rem/1.5 var(--archive-font-ui)',
@@ -115,15 +121,8 @@ const S = {
   },
 }
 
-function ScrollSection({ id, kicker, title, children, style }) {
-  return (
-    <section id={id} style={{ width: 'min(100%, 88ch)', margin: '0 auto', padding: '4.5rem 0 2rem', ...style }}>
-      {kicker && <p style={S.kicker}>{kicker}</p>}
-      {title && <h2 style={S.h2}>{title}</h2>}
-      {children}
-    </section>
-  )
-}
+const SEC = { width: 'min(100%, 88ch)', margin: '0 auto', padding: '4.5rem 0 2rem' }
+const SEC_CONT = { width: 'min(100%, 88ch)', margin: '0 auto', padding: '1.5rem 0 1rem' }
 
 function VisBlock({ children }) {
   return (
@@ -183,7 +182,6 @@ function BrightnessAreaChart() {
       </h3>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
         <defs>
-          {/* Horizontal gradient dark → bright mirrors the brightness axis */}
           <linearGradient id="brt-area" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%"   stopColor="#1a1a1a" stopOpacity="0.55" />
             <stop offset="45%"  stopColor="#6b7a8d" stopOpacity="0.45" />
@@ -259,7 +257,6 @@ function SocialPresenceChart() {
   const barW     = slotW * 0.58
   const barOff   = (slotW - barW) / 2
 
-  // Grey → warm amber — encodes "no people" → "crowd"
   const COLORS = ['#8a9aaa', '#7d8f7e', '#b09070', '#c28d5b', '#7f5539']
 
   const withPeoplePct = totalImages > 0 ? ((withPeople / totalImages) * 100).toFixed(1) : '0'
@@ -275,7 +272,6 @@ function SocialPresenceChart() {
             How many people appear in each photograph.
           </h3>
         </div>
-        {/* Stat badge */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem 0.9rem', borderRadius: '999px', background: 'rgba(159,111,69,0.1)', border: '1px solid rgba(159,111,69,0.25)', flexShrink: 0 }}>
           <span style={{ font: '700 1.1rem/1 var(--archive-font-ui)', color: '#9f6f45' }}>{withPeoplePct}%</span>
           <span style={{ font: '0.75rem/1.3 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>of photos<br/>feature people</span>
@@ -283,7 +279,6 @@ function SocialPresenceChart() {
       </div>
 
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
-        {/* Subtle horizontal grid */}
         {[0.25, 0.5, 0.75, 1].map(t => {
           const y = PAD.top + IH - t * IH
           return (
@@ -292,7 +287,6 @@ function SocialPresenceChart() {
           )
         })}
 
-        {/* Bars */}
         {bins.map((bin, i) => {
           const bh   = (bin.count / maxCount) * IH
           const x    = PAD.left + i * slotW + barOff
@@ -307,18 +301,15 @@ function SocialPresenceChart() {
               onMouseLeave={() => setHovered(null)}
               style={{ cursor: 'default' }}
             >
-              {/* Bar */}
               <rect x={x} y={y} width={barW} height={bh}
                 fill={color} rx="5" ry="5"
                 opacity={hovered !== null && !isHov ? 0.3 : 1}
                 style={{ transition: 'opacity 0.18s' }}
               />
-              {/* Label above bar: % normally, count on hover */}
               <text x={x + barW / 2} y={y - 7} textAnchor="middle"
                 style={{ font: `${isHov ? '600' : '500'} 11px var(--archive-font-ui)`, fill: isHov ? color : 'rgba(29,35,41,0.7)', transition: 'fill 0.18s' }}>
                 {isHov ? bin.count.toLocaleString() : `${pct}%`}
               </text>
-              {/* Category label below axis */}
               <text x={x + barW / 2} y={PAD.top + IH + 16} textAnchor="middle"
                 style={{ font: '10.5px var(--archive-font-ui)', fill: 'rgba(29,35,41,0.5)' }}>
                 {bin.label}
@@ -327,7 +318,6 @@ function SocialPresenceChart() {
           )
         })}
 
-        {/* Baseline */}
         <line x1={PAD.left} y1={PAD.top + IH} x2={PAD.left + IW} y2={PAD.top + IH}
           stroke="rgba(29,35,41,0.12)" strokeWidth="1" />
       </svg>
@@ -359,27 +349,27 @@ const SEASONAL_STEPS = [
     key:   'overview',
     title: 'The full year at a glance',
     desc:  'Twelve months, merged across every year in the archive. The variation is striking — some months are packed while others are near-empty. Scroll to unpack the pattern.',
-    highlight: null,          // all bars equal
+    highlight: null,
   },
   {
     key:   'summer',
     title: 'Summer dominates',
     desc:  'July and August together hold more than a third of the entire archive. These are the months of extended travel, family reunions, and outdoor exploration — the conditions most likely to prompt a camera.',
-    highlight: [6, 7],        // Jul, Aug
+    highlight: [6, 7],
     color:     '#c28d5b',
   },
   {
     key:   'secondary',
     title: 'February and October also stand out',
     desc:  'Two shorter peaks break the quiet of the rest. February aligns with Chinese New Year — a season of family gatherings and celebrations. October corresponds to Golden Week, China\'s national holiday, which reliably produces travel photographs.',
-    highlight: [1, 9],        // Feb, Oct
+    highlight: [1, 9],
     color:     '#7b6f9c',
   },
   {
     key:   'quiet',
     title: 'The quiet months',
     desc:  'Spring and late autumn are sparse. March, April, May, September, November, and December together hold fewer photos than August alone. These months represent routine rather than occasion — commutes, deadlines, and the undocumented pace of ordinary weeks.',
-    highlight: [0, 2, 3, 4, 8, 10, 11],   // Jan, Mar–May, Sep, Nov, Dec
+    highlight: [0, 2, 3, 4, 8, 10, 11],
     color:     '#8a9aaa',
   },
 ]
@@ -427,7 +417,6 @@ function SeasonalHistogramPanel({ activeStep = 0 }) {
         How the archive clusters by month.
       </h3>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
-        {/* Y grid + labels */}
         {yTicks.map((tick) => {
           const y = PAD.top + IH - (tick / maxCount) * IH
           return (
@@ -442,7 +431,6 @@ function SeasonalHistogramPanel({ activeStep = 0 }) {
           )
         })}
 
-        {/* Bars */}
         {monthTotals.map(({ label, count, monthIndex }) => {
           const bh = (count / maxCount) * IH
           const x  = PAD.left + monthIndex * slotW + bOff
@@ -462,7 +450,6 @@ function SeasonalHistogramPanel({ activeStep = 0 }) {
           )
         })}
 
-        {/* Baseline */}
         <line x1={PAD.left} y1={PAD.top + IH} x2={PAD.left + IW} y2={PAD.top + IH}
           stroke="rgba(29,35,41,0.12)" strokeWidth="1" />
       </svg>
@@ -699,13 +686,9 @@ export default function AssignmentTwoNarrative() {
             <span className="assignment2-hero-signal-meta">Embeddings · Time · Place</span>
           </div>
           <p style={S.kicker}>DH6034 Assignment 2</p>
-          <h1 style={{ ...S.h1, marginBottom: '0.8rem', color: '#f8fafc' }}>Excavating My<br />Image Archive</h1>
-          <p style={{ ...S.subtitle, marginBottom: '1.05rem', color: 'rgba(226,232,240,0.88)' }}>
+          <h1 style={{ ...S.h1, marginBottom: '0.8rem', color: '#f8fafc' }}>From Portraits<br />to Patterns</h1>
+          <p style={{ ...S.subtitle, marginBottom: '2rem', color: 'rgba(226,232,240,0.88)' }}>
             A Data-Driven Analysis of Personal Life Through Photographs
-          </p>
-          <p style={{ ...S.dek, maxWidth: '36rem', marginBottom: '2rem', color: 'rgba(241,245,249,0.94)' }}>
-            A scroll-driven exhibition translating a personal photo archive into an editorial sequence
-            of embeddings, clusters, temporal rhythms, and geographic traces.
           </p>
           <div className="assignment2-hero-stats">
             {heroStats.map(({ label, value, note }) => (
@@ -723,119 +706,85 @@ export default function AssignmentTwoNarrative() {
       <div style={{ margin: '0 auto', width: 'min(112rem,calc(100vw - 2rem))', padding: '0 1.5rem 6rem' }}>
 
         {/* 1 – Introduction */}
-        <ScrollSection id="entry" kicker="Introduction">
+        <section id="intro" style={SEC}>
+          <h2 style={S.h2}>1  Introduction</h2>
           <p style={S.body}>
-            To investigate patterns in my life and behaviour, I used my personal photographic archive as
-            a dataset, analysing a collection of over 7,000 photographs accumulated over many years.
-            Through computational pre-processing and visualisation, I examined how my photographic
-            habits reflect changes in social relationships, daily activities, and personal interests
-            across time.
+            From the yellow loess of Lanzhou to the vertical neon of Hong Kong, and later to life in Europe, my experience has unfolded across distinct cultural and visual environments. Over the past two decades, I have accumulated a personal archive of more than 7,000 photographs. These images form a longitudinal record of everyday life, documenting shifts in social relationships, environments, and routines. Rather than treating them as isolated memories, this project approaches the collection as a dataset that can be analysed computationally. Through image pre-processing and visualisation, I examine how photographic patterns reflect changes in life stages, social interactions, daily activities, and personal interests over time.
           </p>
           <p style={S.body}>
-            Although photographs are not traditionally considered quantified-self data in the same way
-            as biometric or sensor logs, they constitute a form of self-documentation that records what
-            an individual chooses to preserve, remember, and represent. As such, photographic archives
-            can function as an indirect but meaningful quantification of lived experience.
+            This approach reflects a broader shift in cultural analysis, where computational methods and visualisation support the identification of patterns within large-scale image collections that would otherwise remain difficult to discern (Manovich, 2020). Recent research in cultural heritage visualisation further demonstrates how such collections can be explored as complex information spaces through interactive visualisation, opening new possibilities for analysis and interpretation (Windhager et al., 2018).
           </p>
-        </ScrollSection>
+          <p style={S.body}>
+            Following Johanna Drucker's critique of information visualisation, these 7,000 images are treated not as objective data (the given), but as capta (the taken). In the humanities, knowledge is always situated and partial; this archive does not present a neutral record of life, but reflects what was photographed, what was ignored, and the situations in which images were taken. By framing the collection as capta, the visualisation is understood as an interpretative practice of self-reflection. This perspective recognises that in digital humanities, where objective ground truths are often unavailable, methodological trustworthiness depends on the explicit articulation of perspective and the construction of appropriate criteria for analysis.
+          </p>
+          <p style={S.body}>
+            Although photographs are not typically treated as data in the same way as biometric or sensor logs, they are composed of pixel-based information and can be analysed computationally. At the same time, they function as a form of self-documentation, offering an indirect yet meaningful representation of lived experience. As such, photographic archives can be approached as complex datasets that encode patterns of behaviour and environment over time.
+          </p>
+        </section>
 
         {/* 2 – Methodology */}
-        <ScrollSection id="registers" kicker="Methodology" title="Building the dataset and computing embeddings.">
+        <section id="methodology" style={SEC}>
+          <h2 style={S.h2}>2  Methodology</h2>
+          <h3 style={S.h3}>2.1  Preparation of data</h3>
           <p style={S.body}>
-            I collected and curated photographs from my phone, MacBook, and cloud storage, resulting in
-            a dataset of over 7,000 images. While some photographs contained embedded EXIF metadata such
-            as date and location, many lacked complete metadata. To address this, I manually annotated
-            missing temporal and geographical information and stored the resulting metadata in a
-            structured JSON file.
+            I assembled a dataset of over 7,000 photographs collected from personal devices, including a phone, laptop, and cloud storage. While most of the images contained timestamps in the embedded EXIF metadata, all of them lacked location coordinates. To ensure temporal and spatial continuity across the archive, missing metadata was manually supplemented. This process highlights a key principle in Digital Humanities: datasets are not passively "given" but actively constructed through processes of selection, correction, and interpretation. This manual labour constitutes what Wrisley defines as pre-visualisation, defined as interdisciplinary and transmedial critical work that links the raw archive to the final visual system (Wrisley, 2018).
           </p>
           <p style={S.body}>
-            To enable computational analysis beyond basic metadata, I generated image embeddings for all
-            photographs using OpenCLIP and DINOv2. These embeddings provide high-dimensional
-            representations of visual content, allowing for similarity comparison, clustering, and
-            thematic grouping across the dataset. In addition, I computed the dominant colour of each
-            photograph to support chromatic visualisations. I also manually labelled the number of
-            people in each photo, where YOLO was used for assistance.
+            In this project, the photographic archive is treated as a form of cultural data that can be rendered computationally analysable through a data science approach to humanities materials. This aligns with cultural analytics, which applies computational and visual methods to explore patterns in large-scale cultural datasets (Manovich, 2020). Following Johanna Drucker's distinction between data and capta, the dataset is understood not as an objective record of lived experience but as a situated and partial collection shaped by subjective acts of capture and preservation. The preparation of the dataset through annotation, categorisation, and feature extraction therefore constitutes an interpretative process that conditions all subsequent analysis.
+          </p>
+          <p style={S.body}>
+            To enable large-scale analysis, I generated high-dimensional image embeddings for each photograph using OpenCLIP and DINOv2. These models encode visual features into vector representations, allowing for similarity comparison, clustering, and the identification of latent thematic structures across the archive. In contrast to earlier approaches in distant viewing that rely on supervised classification models such as ResNet-50 (Arnold & Tilton, 2023), the use of self-supervised and multimodal models allows for a more flexible and semantically rich representation of visual content.
+          </p>
+          <p style={S.body}>
+            In addition to visual embeddings, I extracted dominant colour values from each image to support chromatic analysis. Following Arnold and Tilton's use of colour to relate visual aesthetics to cultural patterns, I extracted the dominant colour of each photograph to support chromatic visualisations and to examine whether colour distributions reveal broader aesthetic or contextual patterns within the archive.
+          </p>
+          <p style={S.body}>
+            To capture semantic and contextual information, I employed a combination of computer vision and vision–language models. Object detection was performed using YOLO to estimate the number of people present in each image. However, while object detection provides a quantitative proxy for social presence, it does not adequately capture socially meaningful relationships. To address this limitation, I manually annotated each photograph to identify the number of primary subjects (excluding incidental figures) and categorised their social context (e.g., family, friends, professional/academic). This step underscores the necessity of combining automated methods with human interpretation in order to produce meaningful humanities analysis. This reflects a broader understanding that computational methods extend, rather than replace, human interpretative capacities when working with complex cultural data (Manovich, 2020).
+          </p>
+          <p style={S.body}>
+            Furthermore, textual descriptions of the images were generated using vision–language models. Initially, I produced captions using BLIP, but they were found to be insufficiently accurate, particularly in capturing nuanced or context-specific content. These were subsequently replaced with captions and keywords generated using the Gemma 4 31B-it model via Together AI, which produced more reliable semantic descriptions. To improve consistency and reduce hallucinated or interpretative outputs, the model was prompted to generate short, literal descriptions restricted to observable visual content, and to return results in a structured JSON format (including a single-sentence caption and a fixed set of keywords). This ensured that the generated text remained comparable across the dataset and suitable for downstream computational analysis. The integration of visual features (embeddings), detected objects, and generated text reflects a "multimodal turn" in Digital Humanities, in which computational analysis operates across multiple representational layers rather than relying on a single data modality.
+          </p>
+          <p style={S.body}>
+            All extracted features and annotations were stored in a structured JSONL format, linking each image to its associated metadata, embeddings, captions, and categorical labels. In this sense, the dataset is not merely a collection of photographs but a layered representation of visual, textual, and interpretative information, enabling both quantitative analysis and qualitative interpretation at scale. This reflects broader observations that cultural collections are characterised by rich and heterogeneous metadata, requiring computational and visual methods to support meaningful exploration (Windhager et al., 2018). The structured metadata results from collaboration between computational tools and humanistic inquiry, embodying the pre-visualisation phase where the archive is prepared to speak as a cohesive model (Wrisley, 2018).
           </p>
           <p style={S.body}>
             I stored all the metadata in a structured JSON file, as shown below.
           </p>
+        </section>
+
+        <VisBlock>
           <JsonScrollExplainer />
-        </ScrollSection>
-
-        <VisBlock>
-          <TagPanelInline />
         </VisBlock>
 
-        <VisBlock>
-          <BrightnessAreaChart />
-        </VisBlock>
+        {/* 3 – Findings */}
+        <section id="findings" style={SEC}>
+          <h2 style={S.h2}>3  Findings</h2>
+          <h3 style={S.h3}>3.1  Overview</h3>
+          <p style={S.body}>
+            Several patterns emerged from the analysis. Photographs from my early years consist predominantly of family group portraits, reflecting the centrality of family life during childhood. This pattern declines noticeably after my move to university, when geographical distance reduced opportunities for family gatherings.
+          </p>
+          <p style={S.body}>
+            At the same time, new thematic categories begin to appear more frequently in recent years. These include photographs of classroom environments, museum visits, and Chinese calligraphy practice. The emergence of these subjects reflects the increasing influence of academic life, cultural engagement, and specialised personal interests on my daily routine.
+          </p>
+          <p style={S.body}>
+            The archive reveals a gradual shift in the structure of my lived experience: from family-oriented documentation in childhood toward a more individualised and academically shaped visual record in adulthood.
+          </p>
+        </section>
 
         <VisBlock>
-          <SocialPresenceChart />
+          <AnnotationTimeline />
         </VisBlock>
 
-        {/* 3 – Constellation */}
-        <ScrollSection id="constellation-room" kicker="Overview of Findings" title="A shift from family archives to individual practice.">
+        {/* 3.2 – Temporal Patterns */}
+        <section id="temporal" style={SEC_CONT}>
+          <h3 style={S.h3}>3.2  Temporal Patterns</h3>
           <p style={S.body}>
-            Several clear patterns emerged from the analysis. Photographs from my early years consist
-            predominantly of family group portraits, reflecting the centrality of family life during
-            childhood. This pattern declines noticeably after my move to university, when geographical
-            distance reduced opportunities for family gatherings.
+            To understand how my photographic practices evolved over time, I analyse both the temporal distribution of images and shifts in their semantic content.
           </p>
           <p style={S.body}>
-            The constellation maps eight visual clusters derived from OpenCLIP embeddings. Each node is
-            a photograph; colour marks its cluster. Lines connect nearest neighbours in the feature
-            space — dense webs indicate strong local coherence. Hover or click any node to inspect the
-            image and its neighbours.
+            The histogram below shows the distribution of photographs across time. A histogram is appropriate here because it highlights variations in photographic activity, making periods of high and low activity easy to identify. The distribution is uneven, with noticeable peaks corresponding to periods of travel. This suggests that mobility plays a significant role in shaping when photographs are taken, as trips tend to generate concentrated bursts of images.
           </p>
-        </ScrollSection>
-
-        <VisBlock>
-          <StagedVisual label="Preparing visual constellation" minHeight="min(75vh,44rem)">
-            <AssignmentTwoGraph />
-          </StagedVisual>
-        </VisBlock>
-
-        <ScrollSection id="centrality-network" kicker="Centrality Network" title="Which photographs act as visual archetypes?">
-          <p style={S.body}>
-            The sampled constellation above shows cluster structure for a subset of images. This
-            second network goes further: it includes <strong>all {'{'}7{','}244{'}'} photographs</strong> and draws a{' '}
-            <em>directed</em> edge from every photo to each of its five most visually similar
-            neighbours. Because similarity is asymmetric — A can be among B&apos;s closest matches
-            without B appearing in A&apos;s top five — the resulting graph is directed.
-          </p>
-          <p style={S.body}>
-            A node&apos;s <em>in-degree</em> counts how many other photographs list it as a top-5
-            neighbour. High in-degree photographs are visual archetypes: scenes so compositionally or
-            chromatically representative that many unrelated images converge on them. The colour
-            gradient runs from slate (in-degree&nbsp;0) through blue to red (maximum in-degree).
-            Layout is computed by UMAP run directly on the precomputed k-NN graph, so it
-            optimises for short edges — similar photographs land close together, and k-NN arrows
-            stay local. All nodes are the same size; only colour encodes centrality.
-          </p>
-        </ScrollSection>
-
-        <VisBlock>
-          <StagedVisual label="Preparing centrality network" minHeight="min(80vh,50rem)">
-            <CentralityNetwork />
-          </StagedVisual>
-        </VisBlock>
-
-        {/* 4 – Temporal ribbon */}
-        <ScrollSection id="time" kicker="Temporal Register" title="New categories emerge in recent years.">
-          <p style={S.body}>
-            At the same time, new thematic categories begin to appear more frequently in recent years.
-            These include photographs of classroom environments, museum visits, and Chinese calligraphy
-            practice. The emergence of these subjects reflects the increasing influence of academic
-            life, cultural engagement, and specialised personal interests on my daily routine.
-          </p>
-          <p style={S.body}>
-            Taken together, the archive reveals a gradual shift in the structure of my lived experience:
-            from family-oriented documentation in childhood toward a more individualised and
-            academically shaped visual record in adulthood. Drag the range selector beneath the bars to
-            isolate any period; hover any bar for a month detail card.
-          </p>
-        </ScrollSection>
+        </section>
 
         <VisBlock>
           <StagedVisual label="Preparing temporal ribbon" minHeight="min(60vh,28rem)">
@@ -843,24 +792,25 @@ export default function AssignmentTwoNarrative() {
           </StagedVisual>
         </VisBlock>
 
+        <section style={SEC_CONT}>
+          <p style={S.body}>
+            A seasonal pattern can also be observed. When aggregating photographs by month across all years, the summer months contain substantially more images than the rest of the year. October, December, and February also show moderate increases, which likely correspond to recurring events such as the Chinese National Day holiday and the Chinese New Year. These patterns indicate that photographic activity is structured not only by personal circumstances but also by cyclical cultural and social rhythms.
+          </p>
+        </section>
+
         {/* Seasonal distribution — sticky chart left, scrollable story cards right */}
         <div style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start', padding: '2rem 0' }}>
-
-          {/* Left: sticky chart — full viewport height so the chart centres vertically */}
           <div style={{ flex: '0 0 64%', position: 'sticky', top: 0, height: '100vh', display: 'flex', alignItems: 'center' }}>
             <div style={{ width: '100%' }}>
               <SeasonalHistogramPanel activeStep={seasonalStep} />
             </div>
           </div>
-
-          {/* Right: scrollable story cards */}
           <div style={{ flex: 1, minWidth: 0, paddingBottom: 'calc(50vh - 37.5vh - 1rem)' }}>
             {SEASONAL_STEPS.map((s, i) => (
               <div
                 key={s.key}
                 style={{ minHeight: '75vh', position: 'relative', display: 'flex', alignItems: 'center', padding: '1rem 0' }}
               >
-                {/* Sentinel at vertical centre of this card — observed to fire at screen centre */}
                 <div ref={el => { seasonalStepRefs.current[i] = el }}
                   style={{ position: 'absolute', top: '50%', left: 0, width: '1px', height: '1px',
                            transform: 'translateY(-50%)', pointerEvents: 'none' }} />
@@ -890,24 +840,14 @@ export default function AssignmentTwoNarrative() {
           </div>
         </div>
 
-        <VisBlock>
-          <StagedVisual label="Preparing object timeline" minHeight="28rem">
-            <YoloObjectTimeline />
-          </StagedVisual>
-        </VisBlock>
-
-        {/* 4b – Semantic timeline */}
-        <ScrollSection id="semantic-timeline" kicker="Semantic Register" title="The machine's subject language shifts with the life being documented.">
+        <section style={SEC_CONT}>
           <p style={S.body}>
-            Once BLIP captions, keywords, and VQA subject labels are folded together, a second timeline
-            appears. Early years remain anchored in people and family presence; later years accumulate
-            more architectural, artistic, and study-oriented traces.
+            Changes over time can also be examined through semantic features derived from Gemma-generated keywords. The line graph below visualises the frequency of selected terms across different periods. Visualisation provides a way to represent gradual temporal shifts across a large image collection, offering a descriptive perspective that is difficult to achieve through textual inspection alone (Manovich, 2020). The terms "boy" and "child" appear frequently in earlier years but decline sharply in later periods, reflecting a transition in how subjects are represented within the archive. This shift corresponds to my own ageing, as the collection moves from documenting childhood to adult life.
           </p>
           <p style={S.body}>
-            Hover any year column to inspect which semantic families dominate that slice of the archive,
-            alongside the most common subjects and cleaned keywords attached to those images.
+            Other terms highlight changes in activities and interests. "Calligraphy" and "Chinese calligraphy" increase significantly between 2022 and 2024, a period when I devoted substantial time to practice and visited exhibitions featuring both contemporary and historical works. The term "classroom" appears much more frequently after 2023, aligning with my transition into a more structured academic environment.
           </p>
-        </ScrollSection>
+        </section>
 
         <VisBlock>
           <StagedVisual label="Preparing semantic timeline" minHeight="min(66vh,36rem)">
@@ -915,38 +855,57 @@ export default function AssignmentTwoNarrative() {
           </StagedVisual>
         </VisBlock>
 
-        {/* 5 – Place × Subject Atlas */}
-        <ScrollSection id="subject-atlas" kicker="Place × Subject Atlas" title="Each place is remembered through a different subject vocabulary.">
+        <section style={SEC_CONT}>
           <p style={S.body}>
-            This heatmap crosses the archive's largest places with the most distinctive VQA subjects
-            they contain. Rather than raw photo totals, it reveals what each location tends to be about:
-            water-play in Beidaihe, paintings in Paris, boats in Venice, statues in Lisbon.
+            The graph below shows the frequency of selected keywords and objects over time, calculated by dividing the number of occurrences in each month by the total number of photographs taken in that month. This normalisation accounts for fluctuations in image volume, ensuring that the trends reflect changes in content rather than differences in quantity. For example, the decline of the term "boy" across time remains visible even after controlling for the number of photographs, reinforcing the interpretation that the dataset captures a shift in life stage. A more precise analysis could distinguish whether the term refers specifically to myself or to other individuals, but the overall trend still provides a meaningful indication of personal development.
           </p>
-          <p style={S.body}>
-            Hover any cell to read the count and inspect a representative image from that place-subject
-            intersection.
-          </p>
-        </ScrollSection>
+        </section>
 
         <VisBlock>
-          <StagedVisual label="Preparing place subject atlas" minHeight="min(72vh,42rem)">
-            <PlaceSubjectAtlas atlas={assignment2Data.placeSubjectAtlas} />
+          <StagedVisual label="Preparing object timeline" minHeight="28rem">
+            <YoloObjectTimeline />
           </StagedVisual>
         </VisBlock>
 
-        {/* 5b – 2D Map */}
-        <ScrollSection id="map-room" kicker="Geographic Distribution" title="Where the photographs were taken, and what each place tends to hold.">
+        {/* 3.3 – Semantic analysis */}
+        <section id="semantic" style={SEC_CONT}>
+          <h3 style={S.h3}>3.3  Semantic analysis</h3>
           <p style={S.body}>
-            All {assignment2Data.totals.images.toLocaleString()} images mapped to their place of origin. The corpus has a dense centre of gravity
-            in mainland China, particularly in major cities and along travel routes. Scattered clusters mark
-            travels to Southeast Asia — Hanoi, Da Nang, Bangkok — as well as European cities including London,
-            Paris, Brussels, Venice, and Lausanne.
+            To analyse the semantic content of the photographs, I draw on several computational descriptions, including object detection (YOLO), vision–language tagging (CLIP), and caption generation (Gemma). Each captures a different dimension of image meaning: YOLO identifies discrete objects, CLIP assigns descriptive labels, and Gemma produces full-sentence captions. Used in combination, these representations allow the dataset to be examined through objects, scenes, and inferred descriptions.
           </p>
           <p style={S.body}>
-            Use the mode toggle to switch the field from pure quantity to subject-family or indoors/outdoors
-            balance. Click any cluster to zoom in; click an individual point to pin its detail card.
+            This approach aligns with the logic of large-scale image analysis described in Distant Viewing, where visual collections are transformed into structured data that can be queried, aggregated, and compared. Rather than relying entirely on manual interpretation, semantic features make it possible to trace recurring elements, such as "classroom", "calligraphy", or "family", across thousands of images.
           </p>
-        </ScrollSection>
+        </section>
+
+        <VisBlock>
+          <TagPanelInline />
+        </VisBlock>
+
+        <VisBlock>
+          <BrightnessAreaChart />
+        </VisBlock>
+
+        <section style={SEC_CONT}>
+          <p style={S.body}>
+            The search function below allows viewers to search using words or phrases, which are matched against the Gemma-generated captions of all photos. This provides an additional way to access the dataset, enabling targeted exploration alongside the broader patterns revealed through visualisation. While charts and maps highlight aggregate trends, search allows for the retrieval of specific instances, linking abstract patterns back to concrete images. The interface supports both distant and close reading: users can identify large-scale semantic patterns (e.g. the rise of "calligraphy" or "classroom") and then directly examine the individual photographs that constitute these trends.
+          </p>
+        </section>
+
+        <VisBlock>
+          <GemmaSearch />
+        </VisBlock>
+
+        {/* 3.4 – Geographical Patterns */}
+        <section id="geography" style={SEC_CONT}>
+          <h3 style={S.h3}>3.4  Geographical Patterns</h3>
+          <p style={S.body}>
+            To examine how place shapes visual content, I analyse the spatial distribution of objects and activities across locations.
+          </p>
+          <p style={S.body}>
+            The map below shows the geographical distribution of my photographs. This visualisation situates photographic activity in space, making patterns of movement and spatial variation easier to interpret. It records where images were taken and highlights the uneven spatial concentration of my archive.
+          </p>
+        </section>
 
         <VisBlock>
           <StagedVisual label="Preparing geographic field" minHeight="34rem">
@@ -954,20 +913,20 @@ export default function AssignmentTwoNarrative() {
           </StagedVisual>
         </VisBlock>
 
-        {/* 6 – Globe */}
-        <ScrollSection id="globe-room" kicker="Geographic Distribution — 3D" title="The same corpus, rendered on a globe.">
+        <section style={SEC_CONT}>
           <p style={S.body}>
-            The flat map compresses the world onto a plane; the globe restores the spherical geometry of
-            the archive. Each spike rises from its coordinates — taller and thicker where more
-            photographs were taken. The dominant mass over central China is immediately apparent, while
-            the thinner spikes mark the scattered traces of international travel.
+            By linking YOLO-detected objects and Gemma-generated keywords to geographic coordinates, place-specific visual patterns can be identified. In this visualisation, object and keyword frequencies are aggregated by location, allowing comparisons across different regions. Variations in these distributions reflect both environmental conditions and the social contexts in which photographs were taken. For example, "cow" and "sheep" occur more frequently in Tibet and Xinjiang, corresponding to pastoral landscapes, including Tibetan yaks and local cattle. "Horse" appears more often in Xinjiang than in Tibet. "Suitcase" is especially common in Hong Kong, reflecting a period when my parents accompanied me there at the beginning of my university studies.
           </p>
           <p style={S.body}>
-            Drag to rotate the globe and inspect any region. Hover a spike to read the location name and
-            photo count. The auto-rotation can be interrupted by clicking and dragging; it resumes on
-            release.
+            In Dunhuang, the high frequency of "bottle" and "people" corresponds to a group school trip in a hot desert environment, where both climate and group activity influenced photographic behaviour. By contrast, "car" appears relatively infrequently in Dunhuang and Venice, which can be explained by the desert setting of the former and the car-free infrastructure of the latter. Landscape-related terms such as "landscape" and "mountain" are strongly associated with Tibet and Xinjiang, indicating an emphasis on scenic documentation in these regions.
           </p>
-        </ScrollSection>
+        </section>
+
+        <VisBlock>
+          <StagedVisual label="Preparing place subject atlas" minHeight="min(72vh,42rem)">
+            <PlaceSubjectAtlas atlas={assignment2Data.placeSubjectAtlas} />
+          </StagedVisual>
+        </VisBlock>
 
         <VisBlock>
           <StagedVisual label="Preparing 3D globe" minHeight="34rem">
@@ -975,19 +934,98 @@ export default function AssignmentTwoNarrative() {
           </StagedVisual>
         </VisBlock>
 
-        {/* 7 – Chromatic Fugue */}
-        <ScrollSection id="fugue" kicker="Chromatic Fugue" title="Colour as another index of the corpus.">
+        <section style={SEC_CONT}>
           <p style={S.body}>
-            The dominant colour of each photograph was computed to support chromatic visualisations and
-            to explore whether colour distributions might reveal broader aesthetic or contextual
-            patterns within the archive. Each stripe represents a photograph — colour comes from the
-            dominant palette, height reflects style energy.
+            These patterns highlight how place influences both activity and attention. The photographs capture not just movement across locations, but also shifts in what I noticed and chose to document in different environments.
           </p>
+        </section>
+
+        {/* 3.5 – Social Structure */}
+        <section id="social" style={SEC_CONT}>
+          <h3 style={S.h3}>3.5  Social Structure</h3>
           <p style={S.body}>
-            Hover a stripe to audition its tone. Sort modes let the corpus be reread by cluster, hue,
-            brightness, or woven constellation pattern.
+            Based on my using YOLO to count the number of people in each photograph, and my manual labelling of how many main people in each photo (excluding passers-by), and if it belongs to family, friends, professional/academic group, or neither. These features reveal changes in my social relationships across time, including shifts between family, friendship, and academic contexts.
           </p>
-        </ScrollSection>
+        </section>
+
+        <VisBlock>
+          <SocialPresenceChart />
+        </VisBlock>
+
+        {/* 3.6 – Visual Similarity and Clustering */}
+        <section id="clustering" style={SEC_CONT}>
+          <h3 style={S.h3}>3.6  Visual Similarity and Clustering</h3>
+          <p style={S.body}>
+            With the CLIP and DINOv2 embeddings, I can calculate clusters and similar images for all the photos. Similarity is computed using high-dimensional embeddings, and visualised through nearest-neighbour retrieval, which allows related images to be grouped without relying on predefined categories. This supports exploration of visual patterns within the archive. The two groups of images below are curated using image similarity, highlighting recurring scenes such as eating at tables and conference room settings.
+          </p>
+
+          {/* Similarity image groups */}
+          <div style={{ display: 'flex', gap: '2rem', margin: '0.5rem 0 1.8rem', flexWrap: 'wrap' }}>
+            {[
+              {
+                label: 'Food, eating at table',
+                images: [
+                  '2014-01-30_Hangzhou_001.jpg',
+                  '2018-02-15_Shenzhen_001.jpg',
+                  '2018-02-15_Shenzhen_002.jpg',
+                  '2024-02-09_Chengdu_002.jpg',
+                  '2021-05-05_Zhuhai_001.jpg',
+                  '2017-10-05_Hongkong_001.jpg',
+                ],
+              },
+              {
+                label: 'Conference room',
+                images: [
+                  '2023-07-22_Beijing_001.JPG',
+                  '2023-07-22_Beijing_002.JPG',
+                  '2024-03-28_Hongkong_001.JPG',
+                  '2024-03-02_Hongkong_003.JPG',
+                  '2025-11-04_Vienna_005.jpg',
+                  '2024-05-25_Hongkong_002.JPG',
+                ],
+              },
+            ].map(group => (
+              <div key={group.label} style={{ flex: '1 1 260px' }}>
+                <p style={{ margin: '0 0 0.5rem', font: '600 0.68rem/1 var(--archive-font-ui)', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+                  {group.label}
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.35rem' }}>
+                  {group.images.map(filename => (
+                    <img
+                      key={filename}
+                      src={imageUrl(filename)}
+                      alt=""
+                      loading="lazy"
+                      style={{ width: '100%', aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: '0.5rem', display: 'block' }}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p style={S.body}>
+            The network below shows the clustering of all photographs in the dataset. Each node represents an individual image, positioned according to its similarity to others in the high-dimensional embedding space and projected into two dimensions using UMAP. Colours show the cluster to which each image is assigned, revealing groups of visually related images that share common features without relying on predefined semantic categories. Dense regions in the network correspond to recurring visual themes in the archive, while more sparsely connected nodes suggest outliers or less frequently captured scenes. This network-based representation provides an overview of the structural organisation of the dataset, complementing the local perspective offered by nearest-neighbour retrieval.
+          </p>
+        </section>
+
+        <VisBlock>
+          <StagedVisual label="Preparing visual constellation" minHeight="min(75vh,44rem)">
+            <AssignmentTwoGraph />
+          </StagedVisual>
+        </VisBlock>
+
+        <section style={SEC_CONT}>
+          <p style={S.body}>
+            This form of visualisation supports exploratory analysis, enabling patterns to emerge through interaction rather than predefined classification. This makes thematic exploration more effective. Such patterns would be difficult to identify without computational similarity search.
+          </p>
+        </section>
+
+        <VisBlock>
+          <StagedVisual label="Preparing centrality network" minHeight="min(80vh,50rem)">
+            <CentralityNetwork />
+          </StagedVisual>
+        </VisBlock>
 
         <VisBlock>
           <StagedVisual label="Preparing chromatic field" minHeight="min(65vh,36rem)">
@@ -995,23 +1033,17 @@ export default function AssignmentTwoNarrative() {
           </StagedVisual>
         </VisBlock>
 
-        {/* 8 – Beeswarm: sticky viz left, scrollable text right */}
+        {/* Beeswarm: sticky viz left, scrollable text right */}
         <div id="swarm" style={{ display: 'flex', gap: '2.5rem', alignItems: 'flex-start', padding: '4.5rem 0 2rem' }}>
-
-          {/* Left: sticky canvas */}
           <div style={{ flex: '0 0 64%', position: 'sticky', top: '1.5rem' }}>
             <StagedVisual label="Preparing beeswarm" minHeight="100vh">
               <ChromaticSwarm step={swarmStep} />
             </StagedVisual>
           </div>
-
-          {/* Right: scrollable step cards */}
           <div style={{ flex: 1, minWidth: 0, paddingBottom: 'calc(50vh - 40vh - 1rem)' }}>
-
-            {/* Section header */}
             <div style={{ padding: '0 0 1rem' }}>
-              <p style={S.kicker}>Scroll-Driven Beeswarm</p>
-              <h2 style={S.h2}>The same corpus read as freely moving circles.</h2>
+              <p style={{ ...S.kicker, marginBottom: '0.4rem' }}>Scroll-Driven Beeswarm</p>
+              <h3 style={{ ...S.h3, marginTop: 0 }}>The same corpus read as freely moving circles.</h3>
               <p style={S.body}>
                 The stripes above collapse each photograph into a one-dimensional mark. Here the same data expands into two dimensions: each circle can drift, cluster, or align along an axis.
               </p>
@@ -1019,8 +1051,6 @@ export default function AssignmentTwoNarrative() {
                 Hover any circle to inspect the photograph and click to pin a detail strip. Radius encodes style energy; colour is the dominant hue.
               </p>
             </div>
-
-            {/* One card per beeswarm step */}
             {SWARM_STEPS.map((s, i) => (
               <div
                 key={s.key}
@@ -1066,40 +1096,57 @@ export default function AssignmentTwoNarrative() {
                 </div>
               </div>
             ))}
-
           </div>
         </div>
 
-        {/* Notes */}
-        {/* Photo search */}
-        <ScrollSection id="photo-search" kicker="Caption Search" title="Find photographs by what they contain.">
+        {/* 4 – Conclusion */}
+        <section id="conclusion" style={SEC}>
+          <h2 style={S.h2}>4  Conclusion</h2>
           <p style={S.body}>
-            Every photograph in the archive was described in natural language by Gemma, a vision-language
-            model. The search below queries all {(7243).toLocaleString()} captions simultaneously — type
-            any word or phrase to retrieve the photographs whose descriptions contain it. Results are
-            shown as thumbnails with the matching excerpt highlighted.
+            To communicate these findings, the web-based visualisation utilises a Narrative Visualisation framework, specifically the "Martini Glass" structure described by Segel and Heer. The interface begins with a directed narrative that guides the viewer through the major temporal and geographical shifts of my 20-year archive. It then opens up into an interactive exploration. This structure supports both guided interpretation and open exploration, aligning with principles of narrative visualisation that balance author-driven storytelling with user-driven discovery. This supports both an author-led story about my personal growth and a user-led discovery phase where the viewer can filter by "Chinese calligraphy" or "Paris" to see the specific images that ground the data.
           </p>
-        </ScrollSection>
+          <p style={S.body}>
+            Ultimately, this project demonstrates that the Quantified Self is not limited to heart rates or step counts. By applying computational methods to a lifetime of photography, I have constructed a digital mirror that reflects my changing priorities and environments. This synthesis of machine-driven analysis and humanistic interpretation allows the archive to speak as a cohesive narrative, turning a fragmented collection of files into a legible history of a lived experience.
+          </p>
+        </section>
 
-        <VisBlock>
-          <GemmaSearch />
-        </VisBlock>
+        {/* 5 – Reflection on design */}
+        <section id="reflection" style={SEC}>
+          <h2 style={S.h2}>5  Reflection on design</h2>
+          <p style={S.body}>
+            When designing the website, I initially considered a strict two-column, scroll-based storytelling layout, similar to k-means-explorable. However, this approach made the interface overly crowded and restrictive. Not all sections of the narrative required accompanying visualisations, and the fixed two-column structure risked forcing visual elements where they were not necessary. As a result, I shifted to a primarily single-column essay format.
+          </p>
+          <p style={S.body}>
+            This decision reflects a key visualisation principle: reducing visual clutter in order to improve readability and interpretability. A simpler layout allows the viewer to focus more clearly on both the textual argument and the visual content without unnecessary distraction.
+          </p>
+          <p style={S.body}>
+            At the same time, I found that selectively reintroducing a two-column layout in certain sections was beneficial. In these cases, placing visualisations alongside the relevant text creates a closer connection between analysis and representation, and makes more efficient use of space when visual elements are relatively compact.
+          </p>
+          <p style={S.body}>
+            Overall, the design balances clarity with flexibility, prioritising consistency and the close integration of text and visualisation. This ensures that visual elements directly support the narrative argument rather than interrupt or overwhelm it.
+          </p>
+        </section>
 
-        <ScrollSection id="endnotes" kicker="Notes" title="Reading the archive as evidence.">
-          <p style={S.body}>
-            The visualisations do not claim photographic truth. They show what was kept, photographed,
-            and later recoverable through metadata and embeddings.
-          </p>
-          <p style={S.body}>
-            Where metadata was incomplete, dates and locations were manually restored. Person counts
-            were manually checked after assisted detection to keep the archive legible rather than
-            fully automated.
-          </p>
-          <p style={S.body}>
-            All interaction patterns are designed for gradual reading: hover reveals detail, click
-            opens deeper inspection, and reduced-motion preferences suppress decorative transitions.
-          </p>
-        </ScrollSection>
+        {/* References */}
+        <section id="references" style={SEC}>
+          <h2 style={S.h2}>References</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {[
+              'Arnold, Taylor, and Lauren Tilton. Distant viewing: Computational exploration of digital images. MIT Press, 2023.',
+              'Arnold, Taylor, Nathaniel Ayers, Justin Madron, Robert Nelson, and Lauren Tilton. "Visualizing a large spatiotemporal collection of historic photography with a generous interface." In 2020 IEEE 5th Workshop on Visualization for the Digital Humanities (VIS4DH), pp. 30-35. IEEE, 2020.',
+              'Drucker, Johanna. "Humanities approaches to graphical display." Digital Humanities Quarterly 5, no. 1 (2011): 1-21.',
+              'Manovich, Lev. Cultural analytics. Mit Press, 2020.',
+              'Segel, Edward, and Jeffrey Heer. "Narrative visualization: Telling stories with data." IEEE transactions on visualization and computer graphics 16, no. 6 (2010): 1139-1148.',
+              'Van Den Berg, Hein, Arianna Betti, Thom Castermans, Rob Koopman, Bettina Speckmann, K. A. B. Verbeek, Titia Van der Werf, Shenghui Wang, and Michel A. Westenberg. "A philosophical perspective on visualization for digital humanities." (2018).',
+              'Windhager, Florian, Paolo Federico, Günther Schreder, Katrin Glinka, Marian Dörk, Silvia Miksch, and Eva Mayr. "Visualization of cultural heritage collection data: State of the art and future challenges." IEEE transactions on visualization and computer graphics 25, no. 6 (2018): 2311-2330.',
+              'Wrisley, David Joseph. "Pre-visualization." IEEE 3rd Workshop for Visualization and the Digital Humanities, 2018.',
+            ].map((ref, i) => (
+              <p key={i} style={{ ...S.body, margin: 0, fontSize: '0.92rem', lineHeight: '1.65', paddingLeft: '2em', textIndent: '-2em' }}>
+                {ref}
+              </p>
+            ))}
+          </div>
+        </section>
 
       </div>
     </div>
