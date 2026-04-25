@@ -17,10 +17,25 @@ function fmtCoord(lat, lng) {
   return `${Math.abs(lat).toFixed(4)}° ${ns}, ${Math.abs(lng).toFixed(4)}° ${ew}`
 }
 
-function aspectLabel(ratio) {
-  if (ratio > 1.05) return 'Landscape'
-  if (ratio < 0.95) return 'Portrait'
-  return 'Square'
+function fmtNumber(value, digits = 2) {
+  if (value == null || Number.isNaN(value)) return 'Unknown'
+  return Number(value).toFixed(digits)
+}
+
+function fmtRgbTriplet(value) {
+  if (!Array.isArray(value) || value.length !== 3) return null
+  return value.map((channel) => Math.round(channel)).join(', ')
+}
+
+function fmtList(items, emptyLabel = 'None') {
+  if (!items?.length) return emptyLabel
+  return items.join(', ')
+}
+
+function fmtObjectEntries(record, emptyLabel = 'None') {
+  const entries = Object.entries(record ?? {})
+  if (!entries.length) return emptyLabel
+  return entries.map(([key, value]) => `${key}: ${value}`).join(', ')
 }
 
 function useElementSize() {
@@ -150,8 +165,31 @@ function MetaPill({ label, value }) {
   )
 }
 
+function MetadataCard({ title, children }) {
+  return (
+    <div style={{ padding: '0.95rem 1rem', border: '1px solid rgba(29,35,41,0.08)', background: 'rgba(255,255,255,0.62)' }}>
+      <p style={{ margin: '0 0 0.55rem', font: '600 0.66rem/1 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+        {title}
+      </p>
+      <div style={{ display: 'grid', gap: '0.45rem' }}>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function MetadataLine({ label, value }) {
+  return (
+    <p style={{ margin: 0, font: '0.8rem/1.5 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
+      <span style={{ color: 'var(--archive-color-ink)', fontWeight: 600 }}>{label}:</span>{' '}
+      {value}
+    </p>
+  )
+}
+
 export default function PhotoArchiveWindowed() {
   const [rootRef, rootSize] = useElementSize()
+  const [photoSupplementMap, setPhotoSupplementMap] = useState({})
   const years = useMemo(() => {
     const grouped = new Map()
 
@@ -186,6 +224,19 @@ export default function PhotoArchiveWindowed() {
   ), [selectedFilename])
 
   const selectedPhoto = selectedIndex >= 0 ? galleryData[selectedIndex] ?? null : null
+  const selectedPhotoSupplement = selectedPhoto ? photoSupplementMap[selectedPhoto.filename] ?? null : null
+
+  useEffect(() => {
+    let cancelled = false
+
+    import('../data/photoMetadataSupplement').then((module) => {
+      if (!cancelled) setPhotoSupplementMap(module.photoMetadataSupplement ?? {})
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (!selectedPhoto?.date) return
@@ -238,6 +289,10 @@ export default function PhotoArchiveWindowed() {
 
   const coords = selectedPhoto ? fmtCoord(selectedPhoto.lat, selectedPhoto.lng) : null
   const nearestNeighbours = selectedPhoto ? photoNearestNeighbours[selectedPhoto.filename] ?? [] : []
+  const dominantColours = selectedPhoto?.dominant ?? []
+  const clipTagDetails = selectedPhotoSupplement?.clipTagsDetailed ?? []
+  const yoloObjects = selectedPhotoSupplement?.yoloObjects ?? {}
+  const pcaFeatures = selectedPhotoSupplement?.pcaFeatures ?? {}
 
   const handleToggleYear = (year) => {
     setOpenYears((prev) => {
@@ -339,19 +394,30 @@ export default function PhotoArchiveWindowed() {
               </div>
             </div>
           ) : (
-            <div style={{ height: '100%', minHeight: 0, border: '1px solid rgba(29,35,41,0.08)', background: 'linear-gradient(180deg, rgba(11,18,32,0.94), rgba(15,23,42,0.9))', boxShadow: '0 32px 70px -42px rgba(15,23,42,0.6)', display: 'grid', placeItems: 'center', padding: '2rem' }}>
+            <div
+              style={{
+                height: '100%',
+                minHeight: 0,
+                border: '1px solid rgba(29,35,41,0.08)',
+                background: 'linear-gradient(180deg, rgba(255,255,255,0.82), rgba(247,244,237,0.94))',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.45)',
+                display: 'grid',
+                placeItems: 'center',
+                padding: '2rem',
+              }}
+            >
               <div style={{ display: 'grid', gap: '0.9rem', justifyItems: 'center', textAlign: 'center', maxWidth: '22rem' }}>
-                <div style={{ width: '3.4rem', height: '3.4rem', borderRadius: '999px', border: '1px solid rgba(148,163,184,0.24)', display: 'grid', placeItems: 'center', color: 'rgba(226,232,240,0.78)' }}>
+                <div style={{ width: '3.4rem', height: '3.4rem', borderRadius: '999px', border: '1px solid rgba(29,35,41,0.1)', background: 'rgba(255,255,255,0.55)', display: 'grid', placeItems: 'center', color: 'rgba(62,91,113,0.76)' }}>
                   <svg viewBox="0 0 48 48" width="28" height="28" aria-hidden="true">
                     <rect x="6" y="10" width="36" height="28" rx="3" fill="none" stroke="currentColor" strokeWidth="1.5" />
                     <circle cx="17" cy="20" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
                     <path d="M6 32 L16 23 L23 30 L30 24 L42 34" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <p style={{ margin: 0, font: '500 1.1rem/1.35 var(--archive-font-display)', color: '#f8fafc' }}>
+                <p style={{ margin: 0, font: '500 1.1rem/1.35 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
                   Select a photo to view it
                 </p>
-                <p style={{ margin: 0, font: '0.82rem/1.6 var(--archive-font-ui)', color: 'rgba(226,232,240,0.62)' }}>
+                <p style={{ margin: 0, font: '0.82rem/1.6 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>
                   Choose any image from the explorer on the left to open it in the viewer.
                 </p>
               </div>
@@ -363,46 +429,77 @@ export default function PhotoArchiveWindowed() {
           <section
             data-lenis-prevent
             data-lenis-prevent-wheel
-            style={{ display: 'grid', gap: '0.9rem', maxHeight: isNarrow ? '32vh' : '28vh', overflowY: 'auto', padding: '1rem 1.15rem 1.15rem', borderTop: '1px solid var(--archive-color-rule)', background: 'rgba(255,255,255,0.72)' }}
+            style={{ display: 'grid', gap: '0.9rem', maxHeight: isNarrow ? '34vh' : '32vh', overflowY: 'auto', padding: '1rem 1.15rem 1.15rem', borderTop: '1px solid var(--archive-color-rule)', background: 'rgba(255,255,255,0.72)' }}
           >
-            <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))', gap: '0.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? 'repeat(2, minmax(0, 1fr))' : 'repeat(6, minmax(0, 1fr))', gap: '0.75rem' }}>
+              <MetaPill label="File" value={selectedPhoto.filename} />
               <MetaPill label="Date" value={selectedPhoto.date ?? 'Unknown'} />
               <MetaPill label="Place" value={selectedPhoto.place ?? 'Unknown'} />
-              <MetaPill label="Aspect" value={aspectLabel(selectedPhoto.aspectRatio)} />
-              <MetaPill label="Cluster" value={`#${selectedPhoto.clusterId}`} />
+              <MetaPill label="K-Means" value={selectedPhoto.clusterId != null ? `#${selectedPhoto.clusterId}` : 'Unknown'} />
+              <MetaPill label="HDBSCAN" value={selectedPhoto.hdbscanClusterId != null ? `#${selectedPhoto.hdbscanClusterId}` : 'Unknown'} />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? '1fr' : 'minmax(0, 1.2fr) minmax(0, 0.8fr)', gap: '1rem' }}>
-              <div style={{ padding: '0.9rem 1rem', border: '1px solid rgba(29,35,41,0.08)', background: 'rgba(255,255,255,0.62)' }}>
-                <p style={{ margin: '0 0 0.45rem', font: '600 0.66rem/1 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
-                  Caption
-                </p>
-                <p style={{ margin: 0, font: 'italic 0.98rem/1.7 var(--archive-font-body)', color: 'var(--archive-color-copy)' }}>
-                  {selectedPhoto.blipCaption ? `"${selectedPhoto.blipCaption}"` : 'No AI caption available.'}
-                </p>
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
+              <MetadataCard title="Captions">
+                <MetadataLine label="BLIP" value={selectedPhoto.blipCaption ? `"${selectedPhoto.blipCaption}"` : 'No BLIP caption available.'} />
+                <MetadataLine label="Gemma" value={selectedPhoto.gemmaCaption ?? 'No Gemma caption available.'} />
+              </MetadataCard>
 
-              <div style={{ padding: '0.9rem 1rem', border: '1px solid rgba(29,35,41,0.08)', background: 'rgba(255,255,255,0.62)' }}>
-                <p style={{ margin: '0 0 0.45rem', font: '600 0.66rem/1 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
-                  Details
-                </p>
-                <div style={{ display: 'grid', gap: '0.3rem' }}>
-                  <p style={{ margin: 0, font: '0.8rem/1.45 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
-                    Dimensions: {selectedPhoto.width} × {selectedPhoto.height}px
-                  </p>
-                  <p style={{ margin: 0, font: '0.8rem/1.45 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
-                    Brightness: {selectedPhoto.brightness} · Entropy: {selectedPhoto.entropy}
-                  </p>
-                  <p style={{ margin: 0, font: '0.8rem/1.45 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
-                    Style energy: {selectedPhoto.styleEnergy} · People: {selectedPhoto.personCount}
-                  </p>
-                  {coords ? (
+              <MetadataCard title="Technical Details">
+                <MetadataLine label="Dimensions" value={`${selectedPhoto.width} × ${selectedPhoto.height}px`} />
+                <MetadataLine label="Brightness" value={fmtNumber(selectedPhoto.brightness, 1)} />
+                <MetadataLine label="Entropy" value={fmtNumber(selectedPhoto.entropy, 3)} />
+                <MetadataLine label="Style Energy" value={fmtNumber(selectedPhoto.styleEnergy, 3)} />
+                <MetadataLine label="Coordinates" value={coords ?? 'Unknown'} />
+                <MetadataLine label="UMAP Position" value={`${fmtNumber(selectedPhoto.x, 4)}, ${fmtNumber(selectedPhoto.y, 4)}`} />
+                <MetadataLine label="Mean RGB" value={fmtRgbTriplet(selectedPhotoSupplement?.meanRgb) ?? 'Unknown'} />
+                <MetadataLine label="Std RGB" value={fmtRgbTriplet(selectedPhotoSupplement?.stdRgb) ?? 'Unknown'} />
+              </MetadataCard>
+
+              <MetadataCard title="People And Annotation">
+                <MetadataLine label="Visible People" value={selectedPhoto.personCount ?? 'Unknown'} />
+                <MetadataLine label="Main Subjects" value={selectedPhotoSupplement?.mainPeople ?? 'Unknown'} />
+                <MetadataLine label="Contains Me" value={selectedPhotoSupplement?.myself == null ? 'Unknown' : selectedPhotoSupplement.myself ? 'Yes' : 'No'} />
+                <MetadataLine label="Social Category" value={selectedPhotoSupplement?.category ?? 'Unknown'} />
+                <MetadataLine label="Detected Objects" value={fmtObjectEntries(yoloObjects)} />
+              </MetadataCard>
+
+              <MetadataCard title="Clusters And Features">
+                <MetadataLine label="K-Means Label" value={selectedPhotoSupplement?.kmeansClusterLabel ?? 'Unknown'} />
+                <MetadataLine label="K-Means Name" value={selectedPhotoSupplement?.kmeansClusterName ?? 'Unknown'} />
+                <MetadataLine label="HDBSCAN Name" value={selectedPhotoSupplement?.hdbscanClusterName ?? 'Unknown'} />
+                <MetadataLine label="PCA Structure" value={pcaFeatures.structure ?? 'Unknown'} />
+                <MetadataLine label="PCA Palette" value={pcaFeatures.palette ?? 'Unknown'} />
+                <MetadataLine label="PCA Texture" value={pcaFeatures.texture ?? 'Unknown'} />
+              </MetadataCard>
+
+              <MetadataCard title="Keywords And Tags">
+                <MetadataLine label="Archive Tags" value={fmtList(selectedPhoto.tags)} />
+                <MetadataLine label="BLIP Keywords" value={fmtList(selectedPhoto.blipKeywords)} />
+                <MetadataLine label="Gemma Keywords" value={fmtList(selectedPhoto.gemmaKeywords)} />
+                <MetadataLine
+                  label="CLIP Tags"
+                  value={clipTagDetails.length ? clipTagDetails.map(({ tag, score }) => `${tag} (${fmtNumber(score, 3)})`).join(', ') : 'None'}
+                />
+              </MetadataCard>
+
+              <MetadataCard title="Dominant Colours">
+                <div style={{ display: 'grid', gap: '0.55rem' }}>
+                  {dominantColours.length ? dominantColours.map((colour, index) => (
+                    <div key={`${colour.hex}-${index}`} style={{ display: 'grid', gridTemplateColumns: '1.2rem minmax(0, 1fr)', gap: '0.55rem', alignItems: 'center' }}>
+                      <span style={{ width: '1.2rem', height: '1.2rem', borderRadius: '999px', background: colour.hex, border: '1px solid rgba(29,35,41,0.14)' }} />
+                      <span style={{ font: '0.8rem/1.45 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
+                        <span style={{ color: 'var(--archive-color-ink)', fontWeight: 600 }}>{colour.hex}</span>
+                        {` · saturation ${fmtNumber(colour.hslSaturation, 3)}`}
+                      </span>
+                    </div>
+                  )) : (
                     <p style={{ margin: 0, font: '0.8rem/1.45 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
-                      Coordinates: {coords}
+                      No dominant colour metadata available.
                     </p>
-                  ) : null}
+                  )}
                 </div>
-              </div>
+              </MetadataCard>
             </div>
           </section>
         ) : null}
@@ -416,7 +513,18 @@ export default function PhotoArchiveWindowed() {
         >
           {selectedPhoto && nearestNeighbours.length > 0 ? (
             <>
-              <p style={{ margin: '0 0 0.55rem', font: '600 0.64rem/1 var(--archive-font-ui)', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+              <p
+                style={{
+                  margin: '0 0 0.8rem',
+                  padding: '0.7rem 0.85rem',
+                  border: '1px solid rgba(62,91,113,0.16)',
+                  background: 'linear-gradient(180deg, rgba(255,255,255,0.76), rgba(247,244,237,0.96))',
+                  font: '600 0.82rem/1 var(--archive-font-ui)',
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  color: 'var(--archive-color-ink)',
+                }}
+              >
                 Similar Images
               </p>
               <div style={{ display: 'grid', gap: '0.5rem' }}>

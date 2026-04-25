@@ -67,40 +67,23 @@ function CodeLine({ text }) {
 
 const STEPS = [
   {
-    id: 'filename',
-    label: 'File Identifier',
-    title: 'Filename',
-    color: '#818cf8',
-    lines: ['    "filename": "2004-04-25_Lanzhou_001.JPG",'],
-    explanation: 'Encodes date, place, and shot number — self-describing without a database. Applied consistently during manual curation.',
-  },
-  {
-    id: 'date-place',
+    id: 'date-place-gps',
     label: 'Temporal & Geographic Metadata',
-    title: 'Date & Place',
-    color: '#22d3ee',
+    title: 'Date, Place & Coordinates',
+    color: '#38bdf8',
     lines: [
       '    "date": "2004-04-25",',
       '    "place": "Lanzhou",',
-    ],
-    explanation: 'ISO 8601 date and human-readable place name, from EXIF metadata or manually annotated where missing.',
-  },
-  {
-    id: 'gps',
-    label: 'GPS Coordinates',
-    title: 'Latitude & Longitude',
-    color: '#34d399',
-    lines: [
       '    "lat": 36.0526223,',
       '    "lng": 103.8394984,',
     ],
-    explanation: 'Decimal-degree coordinates from EXIF GPS or geocoded from the place name. Powers the map, globe, and place–subject atlas.',
+    explanation: 'ISO 8601 date and human-readable place name, sourced from EXIF metadata or manually annotated where missing. The decimal-degree coordinates come from EXIF GPS or are geocoded from the place name — they power the map, globe, and place–subject atlas.',
   },
   {
     id: 'person',
     label: 'Social Metadata',
     title: 'Person Count & Identity',
-    color: '#fbbf24',
+    color: '#38bdf8',
     lines: [
       '    "person_count": 1,',
       '    "myself": true,',
@@ -113,7 +96,7 @@ const STEPS = [
     id: 'captions',
     label: 'AI-Generated Descriptions',
     title: 'BLIP & Gemma Captions',
-    color: '#f472b6',
+    color: '#38bdf8',
     lines: [
       '    "BLIP_Caption": "a young boy with his arms outstretched in the air",',
       '    "BLIP_Keywords": ["young", "boy", "his", "arms", "outstretched", "air"],',
@@ -126,7 +109,7 @@ const STEPS = [
     id: 'yolo',
     label: 'Object Detection',
     title: 'YOLO Objects',
-    color: '#f97316',
+    color: '#38bdf8',
     lines: [
       '    "yolo_objects": { "car": 1 },',
     ],
@@ -136,7 +119,7 @@ const STEPS = [
     id: 'colours',
     label: 'Chromatic Data',
     title: 'Dominant Colours',
-    color: '#a78bfa',
+    color: '#38bdf8',
     lines: [
       '    "dominant_colours": [',
       '      { "hex": "#a3bcd1", "rgb": [163, 188, 209], "hsl_saturation": 0.333 },',
@@ -152,7 +135,7 @@ const STEPS = [
     id: 'clip',
     label: 'Semantic Tagging',
     title: 'CLIP Tags',
-    color: '#2dd4bf',
+    color: '#38bdf8',
     lines: [
       '    "clip_tags": [',
       '      { "tag": "bright image",  "score": 0.02   },',
@@ -181,7 +164,7 @@ const STEPS = [
     id: 'umap',
     label: '2D Embedding Projection',
     title: 'UMAP Coordinates',
-    color: '#818cf8',
+    color: '#38bdf8',
     lines: [
       '    "umap_x": 0.3585,',
       '    "umap_y": 0.3645,',
@@ -192,7 +175,7 @@ const STEPS = [
     id: 'style',
     label: 'Visual Complexity',
     title: 'Style Energy',
-    color: '#f87171',
+    color: '#38bdf8',
     lines: ['    "style_energy": 0.4933,'],
     explanation: 'Edge-gradient magnitude normalised 0–1. Higher values mean busier, more textured images. Encodes stripe height in the Chromatic Fugue and radius in the beeswarm.',
   },
@@ -200,43 +183,34 @@ const STEPS = [
     id: 'pca',
     label: 'Structural Decomposition',
     title: 'PCA Features',
-    color: '#34d399',
+    color: '#38bdf8',
     lines: [
       '    "pca_features": { "structure": 0.7768, "palette": 0.4819, "texture": 0.4744 },',
     ],
     explanation: 'Three PCA scores summarising compositional geometry, colour breadth, and texture complexity — each normalised across the archive.',
   },
   {
-    id: 'kmeans-cluster',
-    label: 'K-Means Clustering',
-    title: 'K-Means Cluster',
-    color: '#fb923c',
+    id: 'kmeans',
+    label: 'K-Means Clustering & Similarity',
+    title: 'K-Means Cluster & Neighbours',
+    color: '#38bdf8',
     lines: [
       '    "kmeans_cluster": 3,',
       '    "kmeans_cluster_label": "cluster_3",',
       '    "kmeans_cluster_name": "indoor · stage · table",',
-    ],
-    explanation: 'K-means cluster from CLIP embeddings, plus a human-readable name derived from the most representative BLIP keywords in that cluster. Photos in the same cluster share visual themes and a colour in the constellation graph.',
-  },
-  {
-    id: 'kmeans-neighbours',
-    label: 'K-Means Visual Similarity',
-    title: 'K-Means Neighbours',
-    color: '#fdba74',
-    lines: [
       '    "kmeans_neighbours": [',
       '      { "filename": "2004-04-25_Lanzhou_002.JPG", "distance": 0.1499 },',
       '      { "filename": "2006-07-27_Beidaihe_009.JPG", "distance": 0.3479 },',
       '      { "filename": "2006-07-27_Beidaihe_008.JPG", "distance": 0.3564 }',
       '    ],',
     ],
-    explanation: 'Five most similar photos by cosine distance in CLIP space. These links form the edges of the constellation graph.',
+    explanation: 'K-means cluster from CLIP embeddings, with a human-readable name derived from the most representative BLIP keywords in that cluster. Photos in the same cluster share visual themes and a colour in the constellation graph. The neighbours list the five most similar photos by cosine distance in CLIP space — these links form the edges of the constellation graph.',
   },
   {
     id: 'hdbscan',
     label: 'HDBSCAN Clustering',
     title: 'HDBSCAN Cluster',
-    color: '#c084fc',
+    color: '#38bdf8',
     lines: [
       '    "hdbscan_cluster": 53,',
       '    "hdbscan_cluster_name": "butterflies · marks · practice",',
@@ -283,7 +257,7 @@ export default function JsonScrollExplainer() {
   const active = STEPS.find(s => s.id === activeId) ?? STEPS[0]
 
   return (
-    <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', margin: '2.5rem -3rem 0', width: 'calc(100% + 6rem)' }}>
+    <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', margin: '2.5rem 0 0', maxWidth: '80rem', marginLeft: 'auto', marginRight: 'auto' }}>
 
       {/* ── Left: sticky code window ─────────────────────────────────────── */}
       <div style={{ flex: '0 0 60%', position: 'sticky', top: '5.5rem' }}>
@@ -326,6 +300,7 @@ export default function JsonScrollExplainer() {
             <code>
               <CodeLine text={'['} />
               <CodeLine text={'  {'} />
+              <CodeLine text={'    "filename": "2004-04-25_Lanzhou_001.JPG",'} />
               {STEPS.map((step, i) => (
                 <span
                   key={step.id}

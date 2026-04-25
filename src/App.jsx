@@ -15,6 +15,8 @@ function getAssignmentFromPath(pathname) {
   if (
     pathname === '/archive' ||
     pathname.startsWith('/archive/') ||
+    pathname === '/photoarchive' ||
+    pathname.startsWith('/photoarchive/') ||
     pathname === '/archive-windowed' ||
     pathname.startsWith('/archive-windowed/')
   ) {
@@ -46,6 +48,8 @@ export default function App() {
     const isArchiveWindowedPath =
       pathname === '/archive' ||
       pathname.startsWith('/archive/') ||
+      pathname === '/photoarchive' ||
+      pathname.startsWith('/photoarchive/') ||
       pathname === '/archive-windowed' ||
       pathname.startsWith('/archive-windowed/')
 
@@ -265,7 +269,7 @@ export default function App() {
     const nextPath = assignment === 'assignment2'
       ? '/assignment2'
       : assignment === 'archive-windowed'
-      ? '/archive-windowed'
+      ? '/photoarchive'
       : '/assignment1'
     if (window.location.pathname !== nextPath) {
       window.history.pushState({}, '', nextPath)

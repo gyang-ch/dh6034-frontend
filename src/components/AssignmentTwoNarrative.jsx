@@ -3,13 +3,11 @@ import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { assignment2Data } from '../data/assignment2Data'
 import AssignmentTwoGraph from './AssignmentTwoGraph'
-import AssignmentTwoSonification from './AssignmentTwoSonification'
 import ChromaticSwarm, { STEPS as SWARM_STEPS } from './ChromaticSwarm'
 import PeoplePanel from './PeoplePanel'
 import SemanticTimeline from './SemanticTimeline'
 import PlaceSubjectAtlas from './PlaceSubjectAtlas'
 import TemporalRibbon from './TemporalRibbon'
-import GlobeView from './GlobeView'
 import PhotoMap from './PhotoMap'
 import StagedVisual from './StagedVisual'
 import JsonScrollExplainer from './JsonScrollExplainer'
@@ -325,24 +323,6 @@ function SocialPresenceChart() {
   )
 }
 
-function TagPanelInline() {
-  const maxCount = assignment2Data.topTags[0]?.count ?? 1
-  return (
-    <div style={{ borderRadius: '1.6rem', border: '1px solid var(--archive-color-rule)', background: 'rgba(255,255,255,0.72)', padding: '1.4rem 1.6rem', boxShadow: '0 30px 80px -36px rgba(15,23,42,0.38)' }}>
-      <p style={{ margin: '0 0 0.35rem', font: '600 0.72rem/1 var(--archive-font-ui)', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>Recurring CLIP Descriptors</p>
-      <h3 style={{ margin: '0 0 1.1rem', font: '500 1.35rem/1.2 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>The tags lean toward daylight, outdoor scenes, and low-contrast atmospheres</h3>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem' }}>
-        {assignment2Data.topTags.map((tag) => (
-          <div key={tag.tag} style={{ borderRadius: '999px', border: '1px solid rgba(29,35,41,0.12)', background: 'rgba(255,255,255,0.82)', padding: '0.4rem 0.9rem', font: '0.82rem/1 var(--archive-font-ui)', color: 'var(--archive-color-copy)', transform: `scale(${0.88 + (tag.count / maxCount) * 0.22})` }}>
-            <span style={{ fontWeight: 500 }}>{tag.tag}</span>
-            <span style={{ marginLeft: '0.5rem', font: '0.7rem/1 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>{tag.count}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 // Which months belong to each story step (0-based month index Jan=0…Dec=11)
 const SEASONAL_STEPS = [
   {
@@ -460,7 +440,6 @@ function SeasonalHistogramPanel({ activeStep = 0 }) {
 // ── Main narrative ────────────────────────────────────────────────────────────
 
 export default function AssignmentTwoNarrative() {
-  const { totals } = assignment2Data
   const prefersReducedMotion = usePrefersReducedMotion()
   const heroRef = useRef(null)
   const overlayRef = useRef(null)
@@ -475,12 +454,6 @@ export default function AssignmentTwoNarrative() {
   // Seasonal histogram scroll-driven step
   const [seasonalStep, setSeasonalStep] = useState(0)
   const seasonalStepRefs = useRef([])
-  const heroStats = [
-    { label: 'Corpus', value: `${totals.images.toLocaleString()} images`, note: 'Photographs drawn from the personal image archive.' },
-    { label: 'Clusters', value: `${totals.clusters} groups`, note: 'Visual families inferred from CLIP and DINO embeddings.' },
-    { label: 'Aspect', value: `${totals.landscape} landscape`, note: `${totals.portrait} portrait · ${totals.squareish} near-square` },
-    { label: 'Average', value: `${totals.avgBrightness}`, note: `Mean brightness · style energy avg ${totals.avgStyleEnergy}` },
-  ]
 
   useGSAP(() => {
     const railTracks = railTracksRef.current.filter(Boolean)
@@ -681,24 +654,11 @@ export default function AssignmentTwoNarrative() {
         </div>
 
         <div ref={overlayRef} className="hero-overlay glass-card assignment2-hero-overlay">
-          <div className="assignment2-hero-signal">
-            <span className="assignment2-hero-signal-pill">Computational Photo Essay</span>
-            <span className="assignment2-hero-signal-meta">Embeddings · Time · Place</span>
-          </div>
           <p style={S.kicker}>DH6034 Assignment 2</p>
-          <h1 style={{ ...S.h1, marginBottom: '0.8rem', color: '#f8fafc' }}>From Portraits<br />to Patterns</h1>
-          <p style={{ ...S.subtitle, marginBottom: '2rem', color: 'rgba(226,232,240,0.88)' }}>
+          <h1 className="assignment2-hero-title" style={{ ...S.h1, color: '#f8fafc' }}>From Portraits<br />to Patterns</h1>
+          <p className="assignment2-hero-subtitle" style={{ ...S.subtitle, color: 'rgba(226,232,240,0.88)' }}>
             A Data-Driven Analysis of Personal Life Through Photographs
           </p>
-          <div className="assignment2-hero-stats">
-            {heroStats.map(({ label, value, note }) => (
-              <div key={label} className="assignment2-hero-stat">
-                <p className="assignment2-hero-stat-label">{label}</p>
-                <p className="assignment2-hero-stat-value">{value}</p>
-                <p className="assignment2-hero-stat-note">{note}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </header>
 
@@ -879,10 +839,6 @@ export default function AssignmentTwoNarrative() {
         </section>
 
         <VisBlock>
-          <TagPanelInline />
-        </VisBlock>
-
-        <VisBlock>
           <BrightnessAreaChart />
         </VisBlock>
 
@@ -925,12 +881,6 @@ export default function AssignmentTwoNarrative() {
         <VisBlock>
           <StagedVisual label="Preparing place subject atlas" minHeight="min(72vh,42rem)">
             <PlaceSubjectAtlas atlas={assignment2Data.placeSubjectAtlas} />
-          </StagedVisual>
-        </VisBlock>
-
-        <VisBlock>
-          <StagedVisual label="Preparing 3D globe" minHeight="34rem">
-            <GlobeView />
           </StagedVisual>
         </VisBlock>
 
@@ -1027,12 +977,6 @@ export default function AssignmentTwoNarrative() {
           </StagedVisual>
         </VisBlock>
 
-        <VisBlock>
-          <StagedVisual label="Preparing chromatic field" minHeight="min(65vh,36rem)">
-            <AssignmentTwoSonification />
-          </StagedVisual>
-        </VisBlock>
-
         {/* Beeswarm: sticky viz left, scrollable text right */}
         <div id="swarm" style={{ display: 'flex', gap: '2.5rem', alignItems: 'flex-start', padding: '4.5rem 0 2rem' }}>
           <div style={{ flex: '0 0 64%', position: 'sticky', top: '1.5rem' }}>
@@ -1045,7 +989,7 @@ export default function AssignmentTwoNarrative() {
               <p style={{ ...S.kicker, marginBottom: '0.4rem' }}>Scroll-Driven Beeswarm</p>
               <h3 style={{ ...S.h3, marginTop: 0 }}>The same corpus read as freely moving circles.</h3>
               <p style={S.body}>
-                The stripes above collapse each photograph into a one-dimensional mark. Here the same data expands into two dimensions: each circle can drift, cluster, or align along an axis.
+                Here the corpus is read as a field of moving circles rather than a fixed grid. Each point can drift, cluster, or align along an axis, making broader patterns easier to perceive.
               </p>
               <p style={S.body}>
                 Hover any circle to inspect the photograph and click to pin a detail strip. Radius encodes style energy; colour is the dominant hue.

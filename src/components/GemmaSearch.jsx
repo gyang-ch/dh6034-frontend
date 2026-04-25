@@ -225,44 +225,72 @@ export default function GemmaSearch() {
         'radial-gradient(circle at 80% 10%,rgba(234,179,8,0.06),transparent 32%)',
     }}>
 
-      {/* Search input */}
-      <div style={{ position: 'relative' }}>
-        <span style={{
-          position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)',
-          color: 'var(--archive-color-muted)', fontSize: '1rem', pointerEvents: 'none',
-          lineHeight: 1,
-        }}>⌕</span>
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder="Search captions — e.g. mountain, red shirt, street market…"
-          style={{
-            width: '100%', boxSizing: 'border-box',
-            padding: '0.72rem 2.5rem 0.72rem 2.5rem',
-            border: '1.5px solid var(--archive-color-rule)',
-            borderRadius: '999px',
-            font: '0.92rem/1.4 var(--archive-font-ui)',
-            color: 'var(--archive-color-ink)',
-            background: 'rgba(255,255,255,0.9)',
-            outline: 'none',
-            boxShadow: '0 2px 12px rgba(15,23,42,0.06)',
-            transition: 'border-color 0.15s, box-shadow 0.15s',
-          }}
-          onFocus={e => { e.target.style.borderColor = 'rgba(15,23,42,0.35)'; e.target.style.boxShadow = '0 2px 16px rgba(15,23,42,0.1)' }}
-          onBlur={e  => { e.target.style.borderColor = 'var(--archive-color-rule)'; e.target.style.boxShadow = '0 2px 12px rgba(15,23,42,0.06)' }}
-        />
-        {trimmed && (
-          <button
-            onClick={() => { setQuery(''); inputRef.current?.focus() }}
+      {/* Search input + suggestions */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ position: 'relative' }}>
+          <span style={{
+            position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)',
+            color: 'var(--archive-color-muted)', fontSize: '1rem', pointerEvents: 'none',
+            lineHeight: 1,
+          }}>⌕</span>
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search captions — e.g. mountain, red shirt, street market…"
             style={{
-              position: 'absolute', right: '0.85rem', top: '50%', transform: 'translateY(-50%)',
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--archive-color-muted)', fontSize: '0.85rem', padding: '0.2rem',
-              lineHeight: 1,
+              width: '100%', boxSizing: 'border-box',
+              padding: '0.72rem 2.5rem 0.72rem 2.5rem',
+              border: '1.5px solid var(--archive-color-rule)',
+              borderRadius: '999px',
+              font: '0.92rem/1.4 var(--archive-font-ui)',
+              color: 'var(--archive-color-ink)',
+              background: 'rgba(255,255,255,0.9)',
+              outline: 'none',
+              boxShadow: '0 2px 12px rgba(15,23,42,0.06)',
+              transition: 'border-color 0.15s, box-shadow 0.15s',
             }}
-          >✕</button>
+            onFocus={e => { e.target.style.borderColor = 'rgba(15,23,42,0.35)'; e.target.style.boxShadow = '0 2px 16px rgba(15,23,42,0.1)' }}
+            onBlur={e  => { e.target.style.borderColor = 'var(--archive-color-rule)'; e.target.style.boxShadow = '0 2px 12px rgba(15,23,42,0.06)' }}
+          />
+          {trimmed && (
+            <button
+              onClick={() => { setQuery(''); inputRef.current?.focus() }}
+              style={{
+                position: 'absolute', right: '0.85rem', top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--archive-color-muted)', fontSize: '0.85rem', padding: '0.2rem',
+                lineHeight: 1,
+              }}
+            >✕</button>
+          )}
+        </div>
+
+        {/* Suggested searches */}
+        {trimmed.length < 2 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'flex-start' }}>
+            {['food', 'restaurant', 'calligraphy', 'museum', 'gallery'].map(suggestion => (
+              <button
+                key={suggestion}
+                onClick={() => { setQuery(suggestion); inputRef.current?.focus() }}
+                style={{
+                  padding: '0.3rem 0.85rem',
+                  borderRadius: '999px',
+                  border: '1px solid var(--archive-color-rule)',
+                  background: 'transparent',
+                  color: 'var(--archive-color-muted)',
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  transition: 'border-color 0.15s, color 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--archive-color-text)'; e.currentTarget.style.color = 'var(--archive-color-text)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--archive-color-rule)'; e.currentTarget.style.color = 'var(--archive-color-muted)' }}
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
@@ -289,12 +317,6 @@ export default function GemmaSearch() {
         </div>
       )}
 
-      {/* Empty prompt */}
-      {trimmed.length < 2 && (
-        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--archive-color-muted)', textAlign: 'center', padding: '1rem 0 0.5rem' }}>
-          Type at least two characters to search
-        </p>
-      )}
     </div>
   )
 }
