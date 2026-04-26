@@ -138,81 +138,119 @@ function VisBlock({ children }) {
 
 // ── Panel components ──────────────────────────────────────────────────────────
 
-function SocialPresenceChart() {
-  const bins        = assignment2Data.personCountHistogram
-  const { withPeople, images: totalImages } = assignment2Data.totals
-  const [hovered, setHovered] = useState(null)
+// ── Donut chart helpers ───────────────────────────────────────────────────────
 
-  const W = 300, H = 140
-  const PAD = { top: 38, right: 16, bottom: 42, left: 16 }
-  const IW  = W - PAD.left - PAD.right
-  const IH  = H - PAD.top  - PAD.bottom
+function donutArc(cx, cy, R, r, a0, a1) {
+  const G = 0.022
+  const s = a0 + G, e = a1 - G
+  if (e <= s) return ''
+  const lg = e - s > Math.PI ? 1 : 0
+  const pt = (a, rad) => `${(cx + rad * Math.cos(a)).toFixed(3)} ${(cy + rad * Math.sin(a)).toFixed(3)}`
+  return `M ${pt(s,R)} A ${R} ${R} 0 ${lg} 1 ${pt(e,R)} L ${pt(e,r)} A ${r} ${r} 0 ${lg} 0 ${pt(s,r)} Z`
+}
 
-  const maxCount = Math.max(...bins.map(b => b.count), 1)
-  const slotW    = IW / bins.length
-  const barW     = slotW * 0.58
-  const barOff   = (slotW - barW) / 2
-
-  const COLORS = ['#8a9aaa', '#7d8f7e', '#b09070', '#c28d5b', '#7f5539']
-
-  const withPeoplePct = totalImages > 0 ? ((withPeople / totalImages) * 100).toFixed(1) : '0'
+function DonutChart({ slices, title, defaultCenter }) {
+  const [hov, setHov] = useState(null)
+  const total = slices.reduce((s, d) => s + d.count, 0)
+  const CX = 80, CY = 80, R = 60, r = 36
+  let angle = -Math.PI / 2
+  const arcs = slices.map(sl => {
+    const sweep = (sl.count / total) * 2 * Math.PI
+    const arc = { ...sl, a0: angle, a1: angle + sweep }
+    angle += sweep
+    return arc
+  })
+  const active = hov !== null ? arcs[hov] : null
+  const cVal = active ? `${((active.count / total) * 100).toFixed(0)}%` : defaultCenter.value
+  const cSub = active ? (active.shortLabel ?? active.label) : defaultCenter.label
 
   return (
-    <div style={{ borderRadius: '1.6rem', border: '1px solid var(--archive-color-rule)', background: 'rgba(255,255,255,0.72)', padding: '1.4rem 1.6rem', boxShadow: '0 30px 80px -36px rgba(15,23,42,0.38)', maxWidth: '380px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.6rem', marginBottom: '0.8rem' }}>
-        <div>
-          <p style={{ margin: '0 0 0.25rem', font: '600 0.72rem/1 var(--archive-font-ui)', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
-            Social Presence
-          </p>
-          <h3 style={{ margin: 0, font: '500 1.35rem/1.2 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
-            How many people appear in each photograph.
-          </h3>
-        </div>
-      </div>
-
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
-        {[0.25, 0.5, 0.75, 1].map(t => {
-          const y = PAD.top + IH - t * IH
-          return (
-            <line key={t} x1={PAD.left} y1={y} x2={PAD.left + IW} y2={y}
-              stroke="rgba(29,35,41,0.06)" strokeWidth="1" />
-          )
-        })}
-
-        {bins.map((bin, i) => {
-          const bh   = (bin.count / maxCount) * IH
-          const x    = PAD.left + i * slotW + barOff
-          const y    = PAD.top + IH - bh
-          const pct  = ((bin.count / totalImages) * 100).toFixed(1)
-          const isHov = hovered === i
-          const color = COLORS[i]
-
-          return (
-            <g key={bin.label}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-              style={{ cursor: 'default' }}
-            >
-              <rect x={x} y={y} width={barW} height={bh}
-                fill={color} rx="5" ry="5"
-                opacity={hovered !== null && !isHov ? 0.3 : 1}
-                style={{ transition: 'opacity 0.18s' }}
-              />
-              <text x={x + barW / 2} y={y - 7} textAnchor="middle"
-                style={{ font: `${isHov ? '600' : '500'} 11px var(--archive-font-ui)`, fill: isHov ? color : 'rgba(29,35,41,0.7)', transition: 'fill 0.18s' }}>
-                {isHov ? bin.count.toLocaleString() : `${pct}%`}
-              </text>
-              <text x={x + barW / 2} y={PAD.top + IH + 16} textAnchor="middle"
-                style={{ font: '10.5px var(--archive-font-ui)', fill: 'rgba(29,35,41,0.5)' }}>
-                {bin.label}
-              </text>
-            </g>
-          )
-        })}
-
-        <line x1={PAD.left} y1={PAD.top + IH} x2={PAD.left + IW} y2={PAD.top + IH}
-          stroke="rgba(29,35,41,0.12)" strokeWidth="1" />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.55rem' }}>
+      <p style={{ margin: 0, font: '600 0.68rem/1 var(--archive-font-ui)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--archive-color-muted)', textAlign: 'center' }}>
+        {title}
+      </p>
+      <svg viewBox="0 0 160 160" style={{ width: '100%', maxWidth: 160, display: 'block' }}>
+        {arcs.map((arc, i) => (
+          <path key={i} d={donutArc(CX, CY, R, r, arc.a0, arc.a1)} fill={arc.color}
+            opacity={hov === null || hov === i ? 1 : 0.28}
+            onMouseEnter={() => setHov(i)} onMouseLeave={() => setHov(null)}
+            style={{ transition: 'opacity 0.18s', cursor: 'default' }} />
+        ))}
+        <text x={CX} y={CY - 5} textAnchor="middle"
+          style={{ font: '700 15px var(--archive-font-ui)', fill: 'var(--archive-color-ink)' }}>
+          {cVal}
+        </text>
+        <text x={CX} y={CY + 10} textAnchor="middle"
+          style={{ font: '9.5px var(--archive-font-ui)', fill: 'var(--archive-color-muted)' }}>
+          {cSub}
+        </text>
       </svg>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.18rem 0.5rem', width: '100%' }}>
+        {slices.map((sl, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.28rem', minWidth: 0 }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: sl.color, flexShrink: 0 }} />
+            <span style={{ font: '9.5px var(--archive-font-ui)', color: 'var(--archive-color-copy)', lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {sl.shortLabel ?? sl.label}{' '}
+              <span style={{ color: 'var(--archive-color-muted)' }}>
+                {((sl.count / total) * 100).toFixed(0)}%
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const SHORT_CLUSTER = {
+  0: 'City', 1: 'Street', 2: 'Temple', 3: 'Indoor',
+  4: 'Museum', 5: 'Mountain', 6: 'Art', 7: 'Water',
+}
+
+function SocialDonutPanel() {
+  const { totals, personCountHistogram, clusterCentroids, clusterNames } = assignment2Data
+  const PERSON_COLORS = ['#8a9aaa', '#7d8f7e', '#b09070', '#c28d5b', '#7f5539']
+
+  return (
+    <div style={{
+      borderRadius: '1.6rem', border: '1px solid var(--archive-color-rule)',
+      background: 'rgba(255,255,255,0.72)', padding: '1.6rem 1.8rem',
+      boxShadow: '0 30px 80px -36px rgba(15,23,42,0.38)',
+      maxWidth: '680px', margin: '0 auto',
+    }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.8rem 2.4rem' }}>
+        <DonutChart
+          title="Person Count"
+          slices={personCountHistogram.map((b, i) => ({ label: b.label, count: b.count, color: PERSON_COLORS[i] }))}
+          defaultCenter={{ value: totals.images.toLocaleString(), label: 'photos' }}
+        />
+        <DonutChart
+          title="My Presence"
+          slices={[
+            { label: 'I appear',     count: 2893, color: '#274c77' },
+            { label: "Don't appear", count: 4350, color: '#c8d8e6' },
+          ]}
+          defaultCenter={{ value: '40%', label: 'I appear' }}
+        />
+        <DonutChart
+          title="Visual Themes"
+          slices={[...clusterCentroids].sort((a, b) => b.count - a.count).map(c => ({
+            label: clusterNames[c.cluster_id],
+            shortLabel: SHORT_CLUSTER[c.cluster_id],
+            count: c.count,
+            color: CLUSTER_COLOURS[c.cluster_id],
+          }))}
+          defaultCenter={{ value: '8', label: 'clusters' }}
+        />
+        <DonutChart
+          title="Orientation"
+          slices={[
+            { label: 'Landscape', count: totals.landscape, color: '#4d6a6d' },
+            { label: 'Portrait',  count: totals.portrait,  color: '#e09f3e' },
+          ]}
+          defaultCenter={{ value: '85%', label: 'landscape' }}
+        />
+      </div>
     </div>
   )
 }
@@ -833,7 +871,7 @@ export default function AssignmentTwoNarrative() {
         </section>
 
         <VisBlock>
-          <SocialPresenceChart />
+          <SocialDonutPanel />
         </VisBlock>
 
         {/* 3.6 – Visual Similarity and Clustering */}

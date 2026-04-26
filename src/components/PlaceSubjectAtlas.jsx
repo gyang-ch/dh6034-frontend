@@ -159,9 +159,6 @@ export default function PlaceSubjectAtlas({ atlas }) {
           {showFreq ? '% frequency' : '# count'}
         </button>
 
-        <span style={{ marginLeft: 'auto', alignSelf: 'center', font: '0.7rem/1 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>
-          scroll →
-        </span>
       </div>
 
       {/* ── Grid + detail panel ─────────────────────────────────────────── */}

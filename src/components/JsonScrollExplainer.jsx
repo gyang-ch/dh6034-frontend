@@ -77,7 +77,7 @@ const STEPS = [
       '    "lat": 36.0526223,',
       '    "lng": 103.8394984,',
     ],
-    explanation: 'Date and place name from EXIF metadata, manually supplemented where missing. GPS coordinates come from EXIF or geocoded from the place name — they power the map, globe, and place–subject atlas.',
+    explanation: 'Date from EXIF metadata, manually supplemented where missing. Place names and GPS coordinates were manually annotated.',
   },
   {
     id: 'person',
@@ -89,7 +89,7 @@ const STEPS = [
       '    "main_people": 1,',
       '    "category": "neither",',
     ],
-    explanation: 'person_count is YOLO-estimated and manually verified. myself flags whether I appear. main_people counts primary subjects, excluding passers-by. category records the social context: family, friends, or neither.',
+    explanation: 'person_count is auto-detected using YOLO. myself flags whether I appear. main_people counts primary persons, excluding passers-by. category records the social context: family, friends, academic or neither.',
   },
   {
     id: 'captions',
@@ -169,7 +169,7 @@ const STEPS = [
     title: 'Style Energy',
     color: '#38bdf8',
     lines: ['    "style_energy": 0.4933,'],
-    explanation: 'Edge-gradient magnitude normalised 0–1. Higher values mean busier, more textured images. Encodes stripe height in the Chromatic Fugue and radius in the beeswarm.',
+    explanation: 'Edge-gradient magnitude normalised 0–1. Higher values mean busier, more textured images.',
   },
   {
     id: 'pca',
