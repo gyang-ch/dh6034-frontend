@@ -1,4 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useRef } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useGSAP } from '@gsap/react'
+
+gsap.registerPlugin(ScrollTrigger)
 
 // ── Syntax tokeniser ──────────────────────────────────────────────────────────
 
@@ -15,14 +20,12 @@ function tokenize(text) {
   const tokens = []
   let i = 0
   while (i < text.length) {
-    // whitespace (preserve)
     if (/\s/.test(text[i])) {
       let s = ''
       while (i < text.length && /\s/.test(text[i])) s += text[i++]
       tokens.push({ t: 'ws', v: s })
       continue
     }
-    // string
     if (text[i] === '"') {
       let s = '"'; i++
       while (i < text.length && text[i] !== '"') {
@@ -30,13 +33,11 @@ function tokenize(text) {
         s += text[i++]
       }
       s += '"'; i++
-      // key if followed by ':'
       let j = i
       while (j < text.length && (text[j] === ' ' || text[j] === '\t')) j++
       tokens.push({ t: j < text.length && text[j] === ':' ? 'key' : 'str', v: s })
       continue
     }
-    // number
     if (/[-\d]/.test(text[i])) {
       let s = ''
       while (i < text.length && /[-\d.eE+]/.test(text[i])) s += text[i++]
@@ -68,7 +69,6 @@ function CodeLine({ text }) {
 const STEPS = [
   {
     id: 'date-place-gps',
-    label: 'Temporal & Geographic Metadata',
     title: 'Date, Place & Coordinates',
     color: '#38bdf8',
     lines: [
@@ -77,12 +77,11 @@ const STEPS = [
       '    "lat": 36.0526223,',
       '    "lng": 103.8394984,',
     ],
-    explanation: 'ISO 8601 date and human-readable place name, sourced from EXIF metadata or manually annotated where missing. The decimal-degree coordinates come from EXIF GPS or are geocoded from the place name — they power the map, globe, and place–subject atlas.',
+    explanation: 'Date and place name from EXIF metadata, manually supplemented where missing. GPS coordinates come from EXIF or geocoded from the place name — they power the map, globe, and place–subject atlas.',
   },
   {
     id: 'person',
-    label: 'Social Metadata',
-    title: 'Person Count & Identity',
+    title: 'Person Count & Social Context',
     color: '#38bdf8',
     lines: [
       '    "person_count": 1,',
@@ -90,12 +89,11 @@ const STEPS = [
       '    "main_people": 1,',
       '    "category": "neither",',
     ],
-    explanation: 'person_count is the total number of visible people, YOLO-assisted then manually verified. myself flags whether I appear in the photo. main_people counts the primary subjects. category classifies the social context — "family", "friends", or "neither".',
+    explanation: 'person_count is YOLO-estimated and manually verified. myself flags whether I appear. main_people counts primary subjects, excluding passers-by. category records the social context: family, friends, or neither.',
   },
   {
     id: 'captions',
-    label: 'AI-Generated Descriptions',
-    title: 'BLIP & Gemma Captions',
+    title: 'AI-Generated Captions',
     color: '#38bdf8',
     lines: [
       '    "BLIP_Caption": "a young boy with his arms outstretched in the air",',
@@ -103,21 +101,19 @@ const STEPS = [
       '    "Gemma_caption": "A young boy in a red shirt poses against a white wall.",',
       '    "Gemma_keywords": ["boy", "red shirt", "shaved head", "wall", "pose"],',
     ],
-    explanation: 'Two caption passes from different vision-language models. BLIP produces a short free-form sentence and keyword list. Gemma tends to be more precise about colour, clothing, and spatial detail. Both feed the semantic timeline and subject-family groupings.',
+    explanation: 'Two caption passes from different vision-language models. BLIP gives a short sentence and keywords. Gemma 4 (31B) produces more precise descriptions of colour, clothing, and spatial detail. Both feed the semantic timeline and subject groupings.',
   },
   {
     id: 'yolo',
-    label: 'Object Detection',
-    title: 'YOLO Objects',
+    title: 'Object Detection',
     color: '#38bdf8',
     lines: [
       '    "yolo_objects": { "car": 1 },',
     ],
-    explanation: 'Object classes detected by YOLO, stored as a count map. An empty object means no detected objects. Powers the YOLO Object Timeline — showing which object categories appear across the archive over time.',
+    explanation: 'YOLO detects object classes in each image, stored as a count map. An empty object means no detected objects. Used in the YOLO Object Timeline and to estimate person counts.',
   },
   {
     id: 'colours',
-    label: 'Chromatic Data',
     title: 'Dominant Colours',
     color: '#38bdf8',
     lines: [
@@ -129,12 +125,11 @@ const STEPS = [
       '      { "hex": "#4d4856", "rgb": [ 77,  72,  86], "hsl_saturation": 0.089 }',
       '    ],',
     ],
-    explanation: 'Top five colours extracted by k-means on the pixel palette, stored as hex, RGB triplet, and HSL saturation. The five-colour palette gives a richer chromatic fingerprint used in the Chromatic Fugue stripes.',
+    explanation: 'The top five colours extracted by k-means on the pixel palette, stored as hex, RGB, and HSL saturation. Provide a chromatic fingerprint used in the Chromatic Fugue stripes.',
   },
   {
     id: 'clip',
-    label: 'Semantic Tagging',
-    title: 'CLIP Tags',
+    title: 'Semantic Tags',
     color: '#38bdf8',
     lines: [
       '    "clip_tags": [',
@@ -144,11 +139,10 @@ const STEPS = [
       '      { "tag": "motion blur",   "score": 0.0197 }',
       '    ],',
     ],
-    explanation: 'Candidate tags scored by cosine similarity between the image embedding and each tag\'s text embedding in CLIP space. The top tags drive the tag-frequency panel and the semantic timeline.',
+    explanation: 'Candidate tags scored by cosine similarity between the image embedding and tag text embeddings in CLIP space. The top tags drive the tag-frequency panel and semantic timeline.',
   },
   {
     id: 'stats',
-    label: 'Technical Properties',
     title: 'Image Statistics',
     color: '#38bdf8',
     lines: [
@@ -158,22 +152,20 @@ const STEPS = [
       '      "brightness": 139.16, "contrast": 54.04, "entropy": 6.9496',
       '    },',
     ],
-    explanation: 'Pixel dimensions, aspect ratio, per-channel mean and standard deviation, scalar brightness (luminance-weighted mean), RMS contrast, and Shannon entropy. These feed the brightness area chart and style-energy calculations.',
+    explanation: 'Pixel dimensions, aspect ratio, per-channel mean and standard deviation, brightness, RMS contrast, and Shannon entropy. These feed the brightness chart and style-energy calculations.',
   },
   {
     id: 'umap',
-    label: '2D Embedding Projection',
     title: 'UMAP Coordinates',
     color: '#38bdf8',
     lines: [
       '    "umap_x": 0.3585,',
       '    "umap_y": 0.3645,',
     ],
-    explanation: 'Position in a UMAP projection of the 768-d CLIP space — visually similar images cluster together. Used to place nodes in the constellation graph.',
+    explanation: 'Position in a 2D UMAP projection of the CLIP embedding space — visually similar images cluster together. Used to place nodes in the constellation graph.',
   },
   {
     id: 'style',
-    label: 'Visual Complexity',
     title: 'Style Energy',
     color: '#38bdf8',
     lines: ['    "style_energy": 0.4933,'],
@@ -181,7 +173,6 @@ const STEPS = [
   },
   {
     id: 'pca',
-    label: 'Structural Decomposition',
     title: 'PCA Features',
     color: '#38bdf8',
     lines: [
@@ -191,7 +182,6 @@ const STEPS = [
   },
   {
     id: 'kmeans',
-    label: 'K-Means Clustering & Similarity',
     title: 'K-Means Cluster & Neighbours',
     color: '#38bdf8',
     lines: [
@@ -204,11 +194,10 @@ const STEPS = [
       '      { "filename": "2006-07-27_Beidaihe_008.JPG", "distance": 0.3564 }',
       '    ],',
     ],
-    explanation: 'K-means cluster from CLIP embeddings, with a human-readable name derived from the most representative BLIP keywords in that cluster. Photos in the same cluster share visual themes and a colour in the constellation graph. The neighbours list the five most similar photos by cosine distance in CLIP space — these links form the edges of the constellation graph.',
+    explanation: 'K-means cluster from CLIP embeddings, with a human-readable name from the cluster\'s most representative keywords. Photos in the same cluster share visual themes and a colour in the constellation graph. Neighbours are the five most similar images by cosine distance — these links form the graph edges.',
   },
   {
     id: 'hdbscan',
-    label: 'HDBSCAN Clustering',
     title: 'HDBSCAN Cluster',
     color: '#38bdf8',
     lines: [
@@ -219,45 +208,72 @@ const STEPS = [
       '      { "filename": "2006-07-27_Beidaihe_019.JPG", "distance": 0.0276 }',
       '    ]',
     ],
-    explanation: 'Finer-grained density cluster (HDBSCAN) that allows outliers, with a human-readable name from the cluster\'s top keywords. Neighbours are the closest members of the same local group in embedding space.',
+    explanation: 'A finer-grained density cluster (HDBSCAN) that allows outliers, with a human-readable name from the cluster\'s top keywords. Neighbours are the closest members of the same local group in embedding space.',
   },
 ]
 
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function JsonScrollExplainer() {
-  const [activeId, setActiveId] = useState(STEPS[0].id)
-  const sentinelRefs  = useRef([])
-  const codeRef       = useRef(null)   // the <pre> scroll container
-  const stepCodeRefs  = useRef([])     // one ref per step span inside the code
+  const containerRef = useRef(null)
+  const codeRef      = useRef(null)
+  const cardRefs     = useRef([])
+  const stepCodeRefs = useRef([])
 
-  // Scroll the code window so the highlighted block is centred in view
-  useEffect(() => {
-    const idx = STEPS.findIndex(s => s.id === activeId)
-    const el  = stepCodeRefs.current[idx]
-    const pre = codeRef.current
-    if (!el || !pre) return
-    const targetTop = el.offsetTop - pre.clientHeight / 2 + el.offsetHeight / 2
-    pre.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' })
-  }, [activeId])
+  useGSAP(() => {
+    const cards      = cardRefs.current.filter(Boolean)
+    const codeBlocks = stepCodeRefs.current.filter(Boolean)
+    if (!cards.length) return
 
-  useEffect(() => {
-    const observers = sentinelRefs.current.map((el, i) => {
-      if (!el) return null
-      const obs = new IntersectionObserver(
-        ([entry]) => { if (entry.isIntersecting) setActiveId(STEPS[i].id) },
-        { rootMargin: '-49% 0px -49% 0px' },
-      )
-      obs.observe(el)
-      return obs
+    // Initial state: first card active, rest blurred/faded
+    gsap.set(cards[0], { opacity: 1, filter: 'blur(0px)', scale: 1 })
+    cards[0].classList.add('active-card')
+    cards.slice(1).forEach(card => {
+      gsap.set(card, { opacity: 0.3, filter: 'blur(2px)', scale: 0.98 })
     })
-    return () => observers.forEach(o => o?.disconnect())
-  }, [])
+    if (codeBlocks[0]) codeBlocks[0].classList.add('active')
 
-  const active = STEPS.find(s => s.id === activeId) ?? STEPS[0]
+    function activateStep(i) {
+      // Animate cards: focus active, blur others
+      cards.forEach((card, j) => {
+        if (j === i) {
+          gsap.to(card, { opacity: 1, filter: 'blur(0px)', scale: 1, duration: 0.5, ease: 'power2.out', overwrite: 'auto' })
+          card.classList.add('active-card')
+        } else {
+          gsap.to(card, { opacity: 0.3, filter: 'blur(2px)', scale: 0.98, duration: 0.5, ease: 'power2.out', overwrite: 'auto' })
+          card.classList.remove('active-card')
+        }
+      })
+
+      // Toggle glowing border on code blocks
+      stepCodeRefs.current.forEach((block, j) => {
+        if (!block) return
+        if (j === i) block.classList.add('active')
+        else block.classList.remove('active')
+      })
+
+      // Smooth-scroll the code window to centre the active block
+      const el  = stepCodeRefs.current[i]
+      const pre = codeRef.current
+      if (el && pre) {
+        const targetTop = el.offsetTop - pre.clientHeight / 2 + el.offsetHeight / 2
+        gsap.to(pre, { scrollTop: Math.max(0, targetTop), duration: 0.6, ease: 'expo.out', overwrite: 'auto' })
+      }
+    }
+
+    cards.forEach((card, i) => {
+      ScrollTrigger.create({
+        trigger: card,
+        start: 'top center',
+        end: 'bottom center',
+        onEnter:     () => activateStep(i),
+        onEnterBack: () => activateStep(i),
+      })
+    })
+  }, { scope: containerRef, dependencies: [] })
 
   return (
-    <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', margin: '2.5rem 0 0', maxWidth: '80rem', marginLeft: 'auto', marginRight: 'auto' }}>
+    <div ref={containerRef} style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', margin: '2.5rem 0 0', maxWidth: '80rem', marginLeft: 'auto', marginRight: 'auto' }}>
 
       {/* ── Left: sticky code window ─────────────────────────────────────── */}
       <div style={{ flex: '0 0 60%', position: 'sticky', top: '5.5rem' }}>
@@ -294,7 +310,6 @@ export default function JsonScrollExplainer() {
               color: '#cbd5e1',
               maxHeight: '78vh',
               overflowY: 'auto',
-              scrollBehavior: 'smooth',
             }}
           >
             <code>
@@ -305,14 +320,7 @@ export default function JsonScrollExplainer() {
                 <span
                   key={step.id}
                   ref={el => { stepCodeRefs.current[i] = el }}
-                  style={{
-                    display: 'block',
-                    background: activeId === step.id ? `${step.color}38` : 'transparent',
-                    borderLeft: `4px solid ${activeId === step.id ? step.color : 'transparent'}`,
-                    paddingLeft: '0.55rem',
-                    borderRadius: '0 4px 4px 0',
-                    transition: 'background 0.35s ease, border-color 0.35s ease',
-                  }}
+                  className="code-block-highlight"
                 >
                   {step.lines.map((line, li) => (
                     <CodeLine key={li} text={line} />
@@ -333,36 +341,15 @@ export default function JsonScrollExplainer() {
             key={step.id}
             style={{
               minHeight: '22rem',
-              position: 'relative',
               display: 'flex',
               alignItems: 'center',
               padding: '2rem 0',
             }}
           >
-            {/* Sentinel at vertical centre of this card */}
-            <div ref={el => { sentinelRefs.current[i] = el }}
-              style={{ position: 'absolute', top: '50%', left: 0, width: '1px', height: '1px',
-                       transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-            <div style={{
-              width: '100%',
-              borderRadius: '1rem',
-              padding: '1.4rem 1.6rem',
-              border: `1px solid ${activeId === step.id ? 'rgba(29,35,41,0.22)' : 'var(--archive-color-rule)'}`,
-              background: activeId === step.id ? 'rgba(255,255,255,0.82)' : 'rgba(255,255,255,0.42)',
-              boxShadow: activeId === step.id ? '0 8px 32px -8px rgba(15,23,42,0.13)' : 'none',
-              opacity: activeId === step.id ? 1 : 0.4,
-              transform: activeId === step.id ? 'translateX(0)' : 'translateX(6px)',
-              transition: 'opacity 0.35s ease, transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease',
-            }}>
-              <p style={{
-                margin: '0 0 0.25rem',
-                font: '600 0.67rem/1 var(--archive-font-ui)',
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase',
-                color: step.color,
-              }}>
-                {step.label}
-              </p>
+            <div
+              ref={el => { cardRefs.current[i] = el }}
+              className="explanation-card"
+            >
               <h3 style={{
                 margin: '0 0 0.6rem',
                 font: '500 1.1rem/1.2 var(--archive-font-display)',

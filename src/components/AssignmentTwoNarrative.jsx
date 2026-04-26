@@ -113,7 +113,7 @@ const S = {
   },
   body: {
     margin: '0 0 1.15rem',
-    font: '1rem/1.8 var(--archive-font-ui)',
+    font: '1rem/1.8 "Aptos", "Aptos Display", "Segoe UI", "Calibri", sans-serif',
     color: 'var(--archive-color-copy)',
     maxWidth: 'none',
   },
@@ -228,8 +228,8 @@ const SEASONAL_STEPS = [
   {
     key:   'summer',
     title: 'Summer dominates',
-    desc:  'July and August together hold more than a third of the entire archive. These are the months of extended travel, family reunions, and outdoor exploration — the conditions most likely to prompt a camera.',
-    highlight: [6, 7],
+    desc:  'June, July, and August together hold more than a third of the entire archive. These are the months of extended travel, family reunions, and outdoor exploration — the conditions most likely to prompt a camera.',
+    highlight: [5, 6, 7],
     color:     '#c28d5b',
   },
   {
@@ -343,11 +343,11 @@ export default function AssignmentTwoNarrative() {
 
   // Beeswarm scroll-driven step
   const [swarmStep, setSwarmStep] = useState(0)
-  const swarmStepRefs = useRef([])
+  const swarmCardRefs = useRef([])
 
   // Seasonal histogram scroll-driven step
   const [seasonalStep, setSeasonalStep] = useState(0)
-  const seasonalStepRefs = useRef([])
+  const seasonalCardRefs = useRef([])
 
   useGSAP(() => {
     const railTracks = railTracksRef.current.filter(Boolean)
@@ -409,10 +409,13 @@ export default function AssignmentTwoNarrative() {
 
   }, { scope: heroRef, dependencies: [prefersReducedMotion] })
 
-  // IntersectionObserver: advance beeswarm step when sentinel (mid-card) crosses screen centre
+  // Beeswarm cards: IntersectionObserver detects which card is centred in viewport
   useEffect(() => {
-    const observers = swarmStepRefs.current.map((el, i) => {
-      if (!el) return null
+    const cards = swarmCardRefs.current.filter(Boolean)
+    if (!cards.length) return
+    gsap.set(cards[0], { opacity: 1, filter: 'blur(0px)', scale: 1 })
+    cards.slice(1).forEach(c => gsap.set(c, { opacity: 0.3, filter: 'blur(2px)', scale: 0.98 }))
+    const observers = cards.map((el, i) => {
       const obs = new IntersectionObserver(
         ([entry]) => { if (entry.isIntersecting) setSwarmStep(i) },
         { rootMargin: '-49% 0px -49% 0px' },
@@ -420,13 +423,27 @@ export default function AssignmentTwoNarrative() {
       obs.observe(el)
       return obs
     })
-    return () => observers.forEach(o => o?.disconnect())
+    return () => observers.forEach(o => o.disconnect())
   }, [])
 
-  // IntersectionObserver: advance seasonal step when sentinel (mid-card) crosses screen centre
+  // Beeswarm cards: GSAP animates blur/scale/opacity when active step changes
   useEffect(() => {
-    const observers = seasonalStepRefs.current.map((el, i) => {
-      if (!el) return null
+    const cards = swarmCardRefs.current.filter(Boolean)
+    cards.forEach((c, j) => gsap.to(c, {
+      opacity: j === swarmStep ? 1 : 0.3,
+      filter: j === swarmStep ? 'blur(0px)' : 'blur(2px)',
+      scale: j === swarmStep ? 1 : 0.98,
+      duration: 0.5, ease: 'power2.out', overwrite: 'auto',
+    }))
+  }, [swarmStep])
+
+  // Seasonal cards: IntersectionObserver detects which card is centred in viewport
+  useEffect(() => {
+    const cards = seasonalCardRefs.current.filter(Boolean)
+    if (!cards.length) return
+    gsap.set(cards[0], { opacity: 1, filter: 'blur(0px)', scale: 1 })
+    cards.slice(1).forEach(c => gsap.set(c, { opacity: 0.3, filter: 'blur(2px)', scale: 0.98 }))
+    const observers = cards.map((el, i) => {
       const obs = new IntersectionObserver(
         ([entry]) => { if (entry.isIntersecting) setSeasonalStep(i) },
         { rootMargin: '-49% 0px -49% 0px' },
@@ -434,8 +451,19 @@ export default function AssignmentTwoNarrative() {
       obs.observe(el)
       return obs
     })
-    return () => observers.forEach(o => o?.disconnect())
+    return () => observers.forEach(o => o.disconnect())
   }, [])
+
+  // Seasonal cards: GSAP animates blur/scale/opacity when active step changes
+  useEffect(() => {
+    const cards = seasonalCardRefs.current.filter(Boolean)
+    cards.forEach((c, j) => gsap.to(c, {
+      opacity: j === seasonalStep ? 1 : 0.3,
+      filter: j === seasonalStep ? 'blur(0px)' : 'blur(2px)',
+      scale: j === seasonalStep ? 1 : 0.98,
+      duration: 0.5, ease: 'power2.out', overwrite: 'auto',
+    }))
+  }, [seasonalStep])
 
   let tileIndex = 0
 
@@ -676,22 +704,13 @@ export default function AssignmentTwoNarrative() {
             {SEASONAL_STEPS.map((s, i) => (
               <div
                 key={s.key}
-                style={{ minHeight: '75vh', position: 'relative', display: 'flex', alignItems: 'center', padding: '1rem 0' }}
+                style={{ minHeight: '75vh', display: 'flex', alignItems: 'center', padding: '1rem 0' }}
               >
-                <div ref={el => { seasonalStepRefs.current[i] = el }}
-                  style={{ position: 'absolute', top: '50%', left: 0, width: '1px', height: '1px',
-                           transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                <div style={{
-                  width: '100%',
-                  borderRadius: '1rem',
-                  padding: '1.5rem 1.6rem',
-                  border: `1px solid ${seasonalStep === i ? 'rgba(29,35,41,0.25)' : 'var(--archive-color-rule)'}`,
-                  background: seasonalStep === i ? 'rgba(255,255,255,0.82)' : 'rgba(255,255,255,0.42)',
-                  boxShadow: seasonalStep === i ? '0 8px 32px -8px rgba(15,23,42,0.14)' : 'none',
-                  opacity: seasonalStep === i ? 1 : 0.4,
-                  transform: seasonalStep === i ? 'translateX(0)' : 'translateX(6px)',
-                  transition: 'opacity 0.35s ease, transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease',
-                }}>
+                <div
+                  ref={el => { seasonalCardRefs.current[i] = el }}
+                  className={`explanation-card${seasonalStep === i ? ' active-card' : ''}`}
+                  style={{ padding: '1.5rem 1.6rem' }}
+                >
                   <p style={{ margin: '0 0 0.4rem', font: '600 0.68rem/1 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
                     {i + 1} of {SEASONAL_STEPS.length}
                   </p>
@@ -916,22 +935,13 @@ export default function AssignmentTwoNarrative() {
             {SWARM_STEPS.map((s, i) => (
               <div
                 key={s.key}
-                style={{ minHeight: '80vh', position: 'relative', display: 'flex', alignItems: 'center', padding: '1rem 0' }}
+                style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', padding: '1rem 0' }}
               >
-                <div ref={el => { swarmStepRefs.current[i] = el }}
-                  style={{ position: 'absolute', top: '50%', left: 0, width: '1px', height: '1px',
-                           transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                <div style={{
-                  width: '100%',
-                  borderRadius: '1rem',
-                  padding: '1.5rem 1.6rem',
-                  border: `1px solid ${swarmStep === i ? 'rgba(29,35,41,0.25)' : 'var(--archive-color-rule)'}`,
-                  background: swarmStep === i ? 'rgba(255,255,255,0.82)' : 'rgba(255,255,255,0.42)',
-                  boxShadow: swarmStep === i ? '0 8px 32px -8px rgba(15,23,42,0.14)' : 'none',
-                  opacity: swarmStep === i ? 1 : 0.4,
-                  transform: swarmStep === i ? 'translateX(0)' : 'translateX(6px)',
-                  transition: 'opacity 0.35s ease, transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease',
-                }}>
+                <div
+                  ref={el => { swarmCardRefs.current[i] = el }}
+                  className={`explanation-card${swarmStep === i ? ' active-card' : ''}`}
+                  style={{ padding: '1.5rem 1.6rem' }}
+                >
                   <p style={{
                     margin: '0 0 0.4rem',
                     font: '600 0.68rem/1 var(--archive-font-ui)',

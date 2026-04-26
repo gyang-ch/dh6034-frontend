@@ -208,6 +208,7 @@ export default function PhotoArchiveWindowed() {
   const [openYears, setOpenYears] = useState(() => new Set())
   const listRef = useListRef()
   const [explorerRef, explorerSize] = useElementSize()
+  const [explorerScrollTop, setExplorerScrollTop] = useState(0)
   const isNarrow = rootSize.width > 0 && rootSize.width < 980
 
   const slides = useMemo(() => (
@@ -266,6 +267,44 @@ export default function PhotoArchiveWindowed() {
 
     return nextRows
   }, [openYears, years])
+
+  const rowOffsets = useMemo(() => {
+    const offsets = []
+    let top = 0
+    for (const row of rows) {
+      offsets.push(top)
+      top += row.type === 'year' ? YEAR_ROW_HEIGHT : PHOTO_ROW_HEIGHT
+    }
+    return offsets
+  }, [rows])
+
+  const stickyInfo = useMemo(() => {
+    let stickyRow = null
+    let stickyRowIndex = -1
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].type === 'year' && rowOffsets[i] < explorerScrollTop) {
+        stickyRow = rows[i]
+        stickyRowIndex = i
+      }
+    }
+    if (!stickyRow) return null
+
+    let nextYearOffset = null
+    for (let i = stickyRowIndex + 1; i < rows.length; i++) {
+      if (rows[i].type === 'year') {
+        nextYearOffset = rowOffsets[i]
+        break
+      }
+    }
+
+    let translateY = 0
+    if (nextYearOffset != null) {
+      const gap = nextYearOffset - explorerScrollTop
+      if (gap < YEAR_ROW_HEIGHT) translateY = gap - YEAR_ROW_HEIGHT
+    }
+
+    return { row: stickyRow, translateY }
+  }, [explorerScrollTop, rows, rowOffsets])
 
   const rowIndexByFilename = useMemo(() => {
     const map = new Map()
@@ -328,7 +367,7 @@ export default function PhotoArchiveWindowed() {
           ref={explorerRef}
           data-lenis-prevent
           data-lenis-prevent-wheel
-          style={{ minHeight: 0, overflow: 'hidden' }}
+          style={{ minHeight: 0, overflow: 'hidden', position: 'relative' }}
         >
           {explorerSize.width > 0 && explorerSize.height > 0 ? (
             <List
@@ -344,8 +383,63 @@ export default function PhotoArchiveWindowed() {
               }}
               overscanCount={8}
               style={{ width: explorerSize.width, height: explorerSize.height }}
+              onScroll={(e) => setExplorerScrollTop(e.currentTarget.scrollTop)}
             />
           ) : null}
+          {stickyInfo && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: YEAR_ROW_HEIGHT,
+                transform: `translateY(${stickyInfo.translateY}px)`,
+                zIndex: 5,
+                pointerEvents: stickyInfo.translateY < 0 ? 'none' : 'auto',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => handleToggleYear(stickyInfo.row.year)}
+                style={{
+                  display: 'flex',
+                  width: '100%',
+                  height: '100%',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '0.8rem',
+                  border: 'none',
+                  borderBottom: '1px solid var(--archive-color-rule)',
+                  background: 'rgba(247,244,237,0.98)',
+                  padding: '0 1rem',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  boxShadow: '0 2px 8px -2px rgba(29,35,41,0.15)',
+                }}
+              >
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.7rem' }}>
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      display: 'inline-block',
+                      fontSize: '0.7rem',
+                      transform: stickyInfo.row.isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                      transition: 'transform 180ms ease',
+                    }}
+                  >
+                    ▶
+                  </span>
+                  <span style={{ font: '600 0.8rem/1 var(--archive-font-ui)', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--archive-color-ink)' }}>
+                    {stickyInfo.row.year}
+                  </span>
+                </span>
+                <span style={{ font: '0.72rem/1 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>
+                  {stickyInfo.row.count}
+                </span>
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 

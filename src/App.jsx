@@ -124,7 +124,7 @@ export default function App() {
               handleAssignmentChange('assignment1')
             }}>
               <div className="assignment-nav-logo">DH</div>
-              <span className="assignment-nav-title">DH6034 – John Smith</span>
+              <span className="assignment-nav-title">DH6034 – Guang Yang</span>
             </a>
             <div className="assignment-tablist">
               <button
@@ -174,18 +174,18 @@ export default function App() {
                 <div className="flex flex-col">
                   <span className="font-semibold text-slate-900 tracking-tight text-sm">
                     {activeAssignment === 'assignment1'
-                      ? 'DH6034 Assignment 1 – John Smith'
+                      ? 'DH6034 Assignment 1 – Guang Yang'
                       : activeAssignment === 'assignment2'
-                      ? 'DH6034 Assignment 2 – John Smith'
+                      ? 'DH6034 Assignment 2 – Guang Yang'
                       : activeAssignment === 'archive-windowed'
-                      ? 'DH6034 Photo Archive V2 – John Smith'
-                      : 'DH6034 Photo Archive – John Smith'}
+                      ? 'DH6034 Photo Archive V2 – Guang Yang'
+                      : 'DH6034 Photo Archive – Guang Yang'}
                   </span>
                   <span className="text-[10px] text-slate-500 uppercase tracking-widest font-major mt-0.5">Humanities & New Technologies</span>
                 </div>
               </div>
               <p className="font-major m-0 text-xs tracking-[0.08em] text-slate-500">
-                © 2026 John Smith. All Rights Reserved.
+                © 2026 Guang Yang. All Rights Reserved.
               </p>
             </div>
           </footer>
