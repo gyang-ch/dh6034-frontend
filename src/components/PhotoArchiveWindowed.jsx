@@ -125,10 +125,11 @@ function ExplorerRow({ ariaAttributes, index, style, rows, selectedFilename, onT
           padding: '0 0.9rem 0 1.8rem',
           border: 'none',
           borderBottom: '1px solid rgba(29,35,41,0.04)',
-          background: isSelected ? 'linear-gradient(90deg, rgba(62,91,113,0.12), rgba(62,91,113,0.03))' : 'transparent',
-          boxShadow: isSelected ? 'inset 3px 0 0 var(--archive-color-accent)' : 'none',
+          background: isSelected ? 'var(--parchment)' : 'transparent',
+          borderLeft: isSelected ? '3px solid var(--archive-color-accent)' : '3px solid transparent',
           cursor: 'pointer',
           textAlign: 'left',
+          transition: 'background 0.2s',
         }}
       >
         <div style={{ width: '3rem', height: '3rem', borderRadius: '0.45rem', overflow: 'hidden', background: 'rgba(29,35,41,0.08)', border: isSelected ? '1px solid rgba(62,91,113,0.3)' : '1px solid rgba(29,35,41,0.06)' }}>
@@ -154,11 +155,11 @@ function ExplorerRow({ ariaAttributes, index, style, rows, selectedFilename, onT
 
 function MetaPill({ label, value }) {
   return (
-    <div style={{ display: 'grid', gap: '0.15rem', padding: '0.75rem 0.85rem', border: '1px solid rgba(29,35,41,0.08)', background: 'rgba(255,255,255,0.7)' }}>
-      <span style={{ font: '600 0.64rem/1 var(--archive-font-ui)', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+    <div style={{ display: 'grid', gap: '0.25rem', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(29,35,41,0.05)' }}>
+      <span style={{ font: '600 0.65rem/1 var(--archive-font-ui)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
         {label}
       </span>
-      <span style={{ font: '0.9rem/1.35 var(--archive-font-body)', color: 'var(--archive-color-ink)' }}>
+      <span style={{ font: 'italic 400 1rem/1.2 var(--archive-font-body)', color: 'var(--archive-color-ink)' }}>
         {value}
       </span>
     </div>
@@ -167,11 +168,11 @@ function MetaPill({ label, value }) {
 
 function MetadataCard({ title, children }) {
   return (
-    <div style={{ padding: '0.95rem 1rem', border: '1px solid rgba(29,35,41,0.08)', background: 'rgba(255,255,255,0.62)' }}>
-      <p style={{ margin: '0 0 0.55rem', font: '600 0.66rem/1 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+    <div style={{ padding: '1.25rem 0 0.5rem', borderTop: '1px solid var(--archive-color-rule)' }}>
+      <p style={{ margin: '0 0 0.75rem', font: '600 0.7rem/1 var(--archive-font-ui)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--archive-color-ink)' }}>
         {title}
       </p>
-      <div style={{ display: 'grid', gap: '0.45rem' }}>
+      <div style={{ display: 'grid', gap: '0.5rem' }}>
         {children}
       </div>
     </div>
@@ -444,7 +445,7 @@ export default function PhotoArchiveWindowed() {
       </aside>
 
       <main style={{ display: 'grid', gridTemplateRows: 'minmax(0,1fr) auto', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
-        <div style={{ minHeight: 0, overflow: 'hidden', padding: '0.65rem', background: 'radial-gradient(circle at 14% 12%, rgba(62,91,113,0.08), transparent 24%), linear-gradient(180deg, rgba(255,255,255,0.58), rgba(238,244,247,0.72))' }}>
+        <div style={{ minHeight: 0, overflow: 'hidden', padding: '1.5rem', background: '#e8e4da' }}>
           {selectedPhoto ? (
             <div style={{ height: '100%', minHeight: 0, display: 'grid' }}>
               <div style={{ minWidth: 0, minHeight: 0, background: 'rgba(11,18,32,0.92)', boxShadow: '0 32px 70px -42px rgba(15,23,42,0.6)', display: 'grid', placeItems: 'center', overflow: 'hidden' }}>
@@ -492,27 +493,18 @@ export default function PhotoArchiveWindowed() {
               style={{
                 height: '100%',
                 minHeight: 0,
-                border: '1px solid rgba(29,35,41,0.08)',
-                background: 'linear-gradient(180deg, rgba(255,255,255,0.82), rgba(247,244,237,0.94))',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.45)',
+                background: 'var(--parchment)',
                 display: 'grid',
                 placeItems: 'center',
                 padding: '2rem',
               }}
             >
-              <div style={{ display: 'grid', gap: '0.9rem', justifyItems: 'center', textAlign: 'center', maxWidth: '22rem' }}>
-                <div style={{ width: '3.4rem', height: '3.4rem', borderRadius: '999px', border: '1px solid rgba(29,35,41,0.1)', background: 'rgba(255,255,255,0.55)', display: 'grid', placeItems: 'center', color: 'rgba(62,91,113,0.76)' }}>
-                  <svg viewBox="0 0 48 48" width="28" height="28" aria-hidden="true">
-                    <rect x="6" y="10" width="36" height="28" rx="3" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                    <circle cx="17" cy="20" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M6 32 L16 23 L23 30 L30 24 L42 34" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <p style={{ margin: 0, font: '500 1.1rem/1.35 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
-                  Select a photo to view it
-                </p>
-                <p style={{ margin: 0, font: '0.82rem/1.6 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>
-                  Choose any image from the explorer on the left to open it in the viewer.
+              <div style={{ textAlign: 'center', maxWidth: '24rem' }}>
+                <h3 style={{ margin: '0 0 0.5rem', font: 'italic 400 1.5rem/1.3 var(--archive-font-display)', color: 'var(--archive-color-muted)' }}>
+                  The Viewer is Empty
+                </h3>
+                <p style={{ margin: 0, font: '400 0.9rem/1.6 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
+                  Please select a photograph from the ledger on the left to examine its latent features, annotations, and metadata.
                 </p>
               </div>
             </div>
