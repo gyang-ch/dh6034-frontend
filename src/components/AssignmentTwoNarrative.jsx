@@ -117,6 +117,12 @@ const S = {
     color: 'var(--archive-color-copy)',
     maxWidth: 'none',
   },
+  link: {
+    color: 'var(--archive-color-ink)',
+    textDecoration: 'underline',
+    textDecorationColor: 'var(--archive-color-muted)',
+    textUnderlineOffset: '3px',
+  },
 }
 
 const SEC = { width: 'min(100%, 88ch)', margin: '0 auto', padding: '4.5rem 0 2rem' }
@@ -132,120 +138,12 @@ function VisBlock({ children }) {
 
 // ── Panel components ──────────────────────────────────────────────────────────
 
-function BrightnessAreaChart() {
-  const dist = assignment2Data.brightnessDistribution
-  const avg  = assignment2Data.totals.avgBrightness
-  if (!dist?.length) return null
-
-  const W = 700, H = 180
-  const PAD = { top: 18, right: 18, bottom: 34, left: 44 }
-  const IW = W - PAD.left - PAD.right
-  const IH = H - PAD.top - PAD.bottom
-  const maxCount = Math.max(...dist.map(b => b.count), 1)
-
-  const xOf = (brightness) => PAD.left + (brightness / 255) * IW
-  const yOf = (count)      => PAD.top  + IH - (count / maxCount) * IH
-
-  // Catmull-Rom → cubic Bézier smooth path through all bin midpoints
-  const pts = dist.map(b => ({ x: xOf(b.mid), y: yOf(b.count) }))
-  function crPath(points) {
-    let d = `M${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`
-    for (let i = 0; i < points.length - 1; i++) {
-      const p0 = points[Math.max(0, i - 1)]
-      const p1 = points[i]
-      const p2 = points[i + 1]
-      const p3 = points[Math.min(points.length - 1, i + 2)]
-      const cp1x = (p1.x + (p2.x - p0.x) / 6).toFixed(1)
-      const cp1y = (p1.y + (p2.y - p0.y) / 6).toFixed(1)
-      const cp2x = (p2.x - (p3.x - p1.x) / 6).toFixed(1)
-      const cp2y = (p2.y - (p3.y - p1.y) / 6).toFixed(1)
-      d += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`
-    }
-    return d
-  }
-  const linePath = crPath(pts)
-  const areaPath = `${linePath} L${pts.at(-1).x.toFixed(1)},${(PAD.top + IH).toFixed(1)} L${pts[0].x.toFixed(1)},${(PAD.top + IH).toFixed(1)} Z`
-
-  const meanX   = xOf(avg)
-  const xTicks  = [0, 64, 128, 192, 255]
-  const yTicks  = [0, 0.5, 1].map(t => ({ y: yOf(maxCount * t), label: Math.round(maxCount * t).toLocaleString() }))
-
-  return (
-    <div style={{ borderRadius: '1.6rem', border: '1px solid var(--archive-color-rule)', background: 'rgba(255,255,255,0.72)', padding: '1.4rem 1.6rem', boxShadow: '0 30px 80px -36px rgba(15,23,42,0.38)' }}>
-      <p style={{ margin: '0 0 0.25rem', font: '600 0.72rem/1 var(--archive-font-ui)', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
-        Brightness Distribution
-      </p>
-      <h3 style={{ margin: '0 0 1rem', font: '500 1.35rem/1.2 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
-        Most images sit in a restrained middle register
-      </h3>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
-        <defs>
-          <linearGradient id="brt-area" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%"   stopColor="#1a1a1a" stopOpacity="0.55" />
-            <stop offset="45%"  stopColor="#6b7a8d" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="#e8e2d5" stopOpacity="0.30" />
-          </linearGradient>
-          <linearGradient id="brt-stroke" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%"   stopColor="#2c3e50" />
-            <stop offset="100%" stopColor="#8a9aaa" />
-          </linearGradient>
-        </defs>
-
-        {/* Y grid lines */}
-        {yTicks.map(({ y, label }) => (
-          <g key={label}>
-            <line x1={PAD.left} y1={y} x2={PAD.left + IW} y2={y}
-              stroke="rgba(29,35,41,0.07)" strokeWidth="1" />
-            <text x={PAD.left - 6} y={y} textAnchor="end" dominantBaseline="middle"
-              style={{ font: '10px var(--archive-font-ui)', fill: 'rgba(29,35,41,0.38)' }}>
-              {label}
-            </text>
-          </g>
-        ))}
-
-        {/* Axes */}
-        <line x1={PAD.left} y1={PAD.top} x2={PAD.left} y2={PAD.top + IH}
-          stroke="rgba(29,35,41,0.12)" strokeWidth="1" />
-        <line x1={PAD.left} y1={PAD.top + IH} x2={PAD.left + IW} y2={PAD.top + IH}
-          stroke="rgba(29,35,41,0.12)" strokeWidth="1" />
-
-        {/* X axis ticks + labels */}
-        {xTicks.map(v => (
-          <g key={v}>
-            <line x1={xOf(v)} y1={PAD.top + IH} x2={xOf(v)} y2={PAD.top + IH + 4}
-              stroke="rgba(29,35,41,0.2)" strokeWidth="1" />
-            <text x={xOf(v)} y={PAD.top + IH + 14} textAnchor="middle"
-              style={{ font: '10px var(--archive-font-ui)', fill: 'rgba(29,35,41,0.45)' }}>
-              {v}
-            </text>
-          </g>
-        ))}
-
-        {/* Filled area */}
-        <path d={areaPath} fill="url(#brt-area)" />
-
-        {/* Outline */}
-        <path d={linePath} fill="none" stroke="url(#brt-stroke)" strokeWidth="1.8"
-          strokeLinejoin="round" strokeLinecap="round" />
-
-        {/* Mean line */}
-        <line x1={meanX} y1={PAD.top - 2} x2={meanX} y2={PAD.top + IH}
-          stroke="rgba(29,35,41,0.45)" strokeWidth="1.2" strokeDasharray="4 3" />
-        <text x={meanX} y={PAD.top - 6} textAnchor="middle"
-          style={{ font: '600 9.5px var(--archive-font-ui)', fill: 'rgba(29,35,41,0.55)' }}>
-          μ = {avg}
-        </text>
-      </svg>
-    </div>
-  )
-}
-
 function SocialPresenceChart() {
   const bins        = assignment2Data.personCountHistogram
   const { withPeople, images: totalImages } = assignment2Data.totals
   const [hovered, setHovered] = useState(null)
 
-  const W = 560, H = 210
+  const W = 300, H = 140
   const PAD = { top: 38, right: 16, bottom: 42, left: 16 }
   const IW  = W - PAD.left - PAD.right
   const IH  = H - PAD.top  - PAD.bottom
@@ -260,7 +158,7 @@ function SocialPresenceChart() {
   const withPeoplePct = totalImages > 0 ? ((withPeople / totalImages) * 100).toFixed(1) : '0'
 
   return (
-    <div style={{ borderRadius: '1.6rem', border: '1px solid var(--archive-color-rule)', background: 'rgba(255,255,255,0.72)', padding: '1.4rem 1.6rem', boxShadow: '0 30px 80px -36px rgba(15,23,42,0.38)' }}>
+    <div style={{ borderRadius: '1.6rem', border: '1px solid var(--archive-color-rule)', background: 'rgba(255,255,255,0.72)', padding: '1.4rem 1.6rem', boxShadow: '0 30px 80px -36px rgba(15,23,42,0.38)', maxWidth: '380px', margin: '0 auto' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.6rem', marginBottom: '0.8rem' }}>
         <div>
           <p style={{ margin: '0 0 0.25rem', font: '600 0.72rem/1 var(--archive-font-ui)', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
@@ -269,10 +167,6 @@ function SocialPresenceChart() {
           <h3 style={{ margin: 0, font: '500 1.35rem/1.2 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
             How many people appear in each photograph.
           </h3>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem 0.9rem', borderRadius: '999px', background: 'rgba(159,111,69,0.1)', border: '1px solid rgba(159,111,69,0.25)', flexShrink: 0 }}>
-          <span style={{ font: '700 1.1rem/1 var(--archive-font-ui)', color: '#9f6f45' }}>{withPeoplePct}%</span>
-          <span style={{ font: '0.75rem/1.3 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>of photos<br/>feature people</span>
         </div>
       </div>
 
@@ -340,16 +234,16 @@ const SEASONAL_STEPS = [
   },
   {
     key:   'secondary',
-    title: 'February and October also stand out',
-    desc:  'Two shorter peaks break the quiet of the rest. February aligns with Chinese New Year — a season of family gatherings and celebrations. October corresponds to Golden Week, China\'s national holiday, which reliably produces travel photographs.',
-    highlight: [1, 9],
+    title: 'February, October, and December also stand out',
+    desc:  'Three shorter peaks break the quiet of the rest. February aligns with Chinese New Year — a season of family gatherings and celebrations. October corresponds to Golden Week, China\'s national holiday, which reliably produces travel photographs. December follows a similar pattern, likely tied to end-of-year festivities and the lead-up to the Lunar New Year.',
+    highlight: [1, 9, 11],
     color:     '#7b6f9c',
   },
   {
     key:   'quiet',
     title: 'The quiet months',
-    desc:  'Spring and late autumn are sparse. March, April, May, September, November, and December together hold fewer photos than August alone. These months represent routine rather than occasion — commutes, deadlines, and the undocumented pace of ordinary weeks.',
-    highlight: [0, 2, 3, 4, 8, 10, 11],
+    desc:  'Spring and mid-autumn are sparse. March, April, May, September, and November together hold fewer photos than August alone. These months represent routine rather than occasion — commutes, deadlines, and the undocumented pace of ordinary weeks.',
+    highlight: [0, 2, 3, 4, 8, 10],
     color:     '#8a9aaa',
   },
 ]
@@ -700,7 +594,7 @@ export default function AssignmentTwoNarrative() {
           </p>
           <h3 style={S.h3}>2.2  Feature Extraction and Multimodal Analysis</h3>
           <p style={S.body}>
-            To enable large-scale analysis, I generated high-dimensional image embeddings for each photograph using OpenCLIP and DINOv2 (Cherti et al. 2023; Oquab et al. 2023). These models encode images as vectors, allowing for similarity comparison, clustering, and the discovery of latent thematic patterns. Unlike earlier approaches that rely on supervised models such as ResNet-50 (Arnold and Tilton 2023), the use of self-supervised and multimodal models allows for a more flexible and semantically rich representation of visual content.
+            To enable large-scale analysis, I generated high-dimensional image embeddings for each photograph using <a href="https://github.com/mlfoundations/open_clip" target="_blank" rel="noreferrer" style={S.link}>OpenCLIP</a> and <a href="https://dinov2.metademolab.com" target="_blank" rel="noreferrer" style={S.link}>DINOv2</a> (Cherti et al. 2023; Oquab et al. 2023). These models encode images as vectors, allowing for similarity comparison, clustering, and the discovery of latent thematic patterns. Unlike earlier approaches that rely on supervised models such as ResNet-50 (Arnold and Tilton 2023), the use of self-supervised and multimodal models allows for a more flexible and semantically rich representation of visual content.
           </p>
           <p style={S.body}>
             In addition to visual embeddings, I extracted dominant colour values from each image to support chromatic analysis. Following Arnold and Tilton’s analysis of how colour in movie posters relates to genre (Arnold and Tilton 2023), I extracted the dominant colour of each photograph to support chromatic visualisations and examine whether colour patterns reflect broader trends.
@@ -850,10 +744,6 @@ export default function AssignmentTwoNarrative() {
             This approach aligns with the logic of large-scale image analysis described in Distant Viewing (Arnold and Tilton 2023), where visual collections are transformed into structured data that can be queried, aggregated, and compared. Instead of relying entirely on manual interpretation, semantic features make it possible to trace recurring elements, such as “classroom”, “calligraphy”, or “family”, across thousands of images.
           </p>
         </section>
-
-        <VisBlock>
-          <BrightnessAreaChart />
-        </VisBlock>
 
         <section style={SEC_CONT}>
           <p style={S.body}>
@@ -1089,7 +979,7 @@ export default function AssignmentTwoNarrative() {
         <section id="reflection" style={SEC}>
           <h2 style={S.h2}>5  Reflection on design</h2>
           <p style={S.body}>
-            The design of the web interface forms part of how the dataset is interpreted and communicated. When designing the website, I initially considered a strict two-column, scroll-based storytelling layout, similar to K-Means Clustering: An Explorable Explainer (Ang n.d.). However, this approach made the interface overly crowded and restrictive. Not all sections required visualisations, and the fixed two-column layout risked introducing them unnecessarily. As a result, I shifted to a primarily single-column essay format.
+            The design of the web interface forms part of how the dataset is interpreted and communicated. When designing the website, I initially considered a strict two-column, scroll-based storytelling layout, similar to <a href="https://k-means-explorable.vercel.app" target="_blank" rel="noreferrer" style={S.link}>K-Means Clustering: An Explorable Explainer</a> (Ang n.d.). However, this approach made the interface overly crowded and restrictive. Not all sections required visualisations, and the fixed two-column layout risked introducing them unnecessarily. As a result, I shifted to a primarily single-column essay format.
           </p>
           <p style={S.body}>
             In the website, I initially included a data sonification section and a beeswarm plot, but later removed them: the former relied on abstract image features that did not support meaningful interpretation, while the latter duplicated existing visualisations without adding new insight.
@@ -1111,10 +1001,10 @@ export default function AssignmentTwoNarrative() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {[
               'Ang, Yi Zhe. n.d. “K-Means Clustering: An Explorable Explainer.” Accessed 24 April 2026. https://k-means-explorable.vercel.app/',
-              'Arnold, Taylor, and Lauren Tilton. Distant viewing: Computational exploration of digital images. MIT Press, 2023.',
-              'Arnold, Taylor, Nathaniel Ayers, Justin Madron, Robert Nelson, and Lauren Tilton. "Visualizing a large spatiotemporal collection of historic photography with a generous interface." In 2020 IEEE 5th Workshop on Visualization for the Digital Humanities (VIS4DH), pp. 30-35. IEEE, 2020.',
+              <>Arnold, Taylor, and Lauren Tilton. <em>Distant Viewing: Computational Exploration of Digital Images</em>. MIT Press, 2023.</>,
+              <>Arnold, Taylor, Nathaniel Ayers, Justin Madron, Robert Nelson, and Lauren Tilton. "Visualizing a large spatiotemporal collection of historic photography with a generous interface." In <em>2020 IEEE 5th Workshop on Visualization for the Digital Humanities (VIS4DH)</em>, pp. 30-35. IEEE, 2020.</>,
               'Cherti, Mehdi, Romain Beaumont, Ross Wightman, Mitchell Wortsman, Gabriel Ilharco, Cade Gordon, Christoph Schuhmann, Ludwig Schmidt, and Jenia Jitsev. "Reproducible scaling laws for contrastive language-image learning." In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition, pp. 2818-2829. 2023.',
-              'Drucker, Johanna. "Humanities approaches to graphical display." Digital Humanities Quarterly 5, no. 1 (2011): 1-21.',
+              <>Drucker, Johanna. "Humanities approaches to graphical display." <em>Digital Humanities Quarterly</em> 5, no. 1 (2011): 1-21.</>,
               'Manovich, Lev. Cultural analytics. Mit Press, 2020.',
               'Oquab, Maxime, Timothée Darcet, Théo Moutakanni, Huy Vo, Marc Szafraniec, Vasil Khalidov, Pierre Fernandez et al. "Dinov2: Learning robust visual features without supervision." arXiv preprint arXiv:2304.07193 (2023).',
               'Segel, Edward, and Jeffrey Heer. "Narrative visualization: Telling stories with data." IEEE transactions on visualization and computer graphics 16, no. 6 (2010): 1139-1148.',
