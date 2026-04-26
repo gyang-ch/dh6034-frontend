@@ -15,6 +15,30 @@
     {
       "source": "/assignment2/(.*)",
       "destination": "/"
+    },
+    {
+      "source": "/photoarchive",
+      "destination": "/"
+    },
+    {
+      "source": "/photoarchive/(.*)",
+      "destination": "/"
+    },
+    {
+      "source": "/archive",
+      "destination": "/"
+    },
+    {
+      "source": "/archive/(.*)",
+      "destination": "/"
+    },
+    {
+      "source": "/archive-windowed",
+      "destination": "/"
+    },
+    {
+      "source": "/archive-windowed/(.*)",
+      "destination": "/"
     }
   ]
 }

@@ -594,7 +594,7 @@ export default function AssignmentTwoNarrative() {
           </p>
           <h3 style={S.h3}>2.2  Feature Extraction and Multimodal Analysis</h3>
           <p style={S.body}>
-            To enable large-scale analysis, I generated high-dimensional image embeddings for each photograph using <a href="https://github.com/mlfoundations/open_clip" target="_blank" rel="noreferrer" style={S.link}>OpenCLIP</a> and <a href="https://dinov2.metademolab.com" target="_blank" rel="noreferrer" style={S.link}>DINOv2</a> (Cherti et al. 2023; Oquab et al. 2023). These models encode images as vectors, allowing for similarity comparison, clustering, and the discovery of latent thematic patterns. Unlike earlier approaches that rely on supervised models such as ResNet-50 (Arnold and Tilton 2023), the use of self-supervised and multimodal models allows for a more flexible and semantically rich representation of visual content.
+            To enable large-scale analysis, I generated high-dimensional image embeddings for each photograph using <a href="https://github.com/mlfoundations/open_clip/" target="_blank" rel="noreferrer" style={S.link}>OpenCLIP</a> and <a href="https://dinov2.metademolab.com/" target="_blank" rel="noreferrer" style={S.link}>DINOv2</a> (Cherti et al. 2023; Oquab et al. 2023). These models encode images as vectors, allowing for similarity comparison, clustering, and the discovery of latent thematic patterns. Unlike earlier approaches that rely on supervised models such as ResNet-50 (Arnold and Tilton 2023), the use of self-supervised and multimodal models allows for a more flexible and semantically rich representation of visual content.
           </p>
           <p style={S.body}>
             In addition to visual embeddings, I extracted dominant colour values from each image to support chromatic analysis. Following Arnold and Tilton’s analysis of how colour in movie posters relates to genre (Arnold and Tilton 2023), I extracted the dominant colour of each photograph to support chromatic visualisations and examine whether colour patterns reflect broader trends.
@@ -979,7 +979,7 @@ export default function AssignmentTwoNarrative() {
         <section id="reflection" style={SEC}>
           <h2 style={S.h2}>5  Reflection on design</h2>
           <p style={S.body}>
-            The design of the web interface forms part of how the dataset is interpreted and communicated. When designing the website, I initially considered a strict two-column, scroll-based storytelling layout, similar to <a href="https://k-means-explorable.vercel.app" target="_blank" rel="noreferrer" style={S.link}>K-Means Clustering: An Explorable Explainer</a> (Ang n.d.). However, this approach made the interface overly crowded and restrictive. Not all sections required visualisations, and the fixed two-column layout risked introducing them unnecessarily. As a result, I shifted to a primarily single-column essay format.
+            The design of the web interface forms part of how the dataset is interpreted and communicated. When designing the website, I initially considered a strict two-column, scroll-based storytelling layout, similar to <a href="https://k-means-explorable.vercel.app/" target="_blank" rel="noreferrer" style={S.link}>K-Means Clustering: An Explorable Explainer</a> (Ang n.d.). However, this approach made the interface overly crowded and restrictive. Not all sections required visualisations, and the fixed two-column layout risked introducing them unnecessarily. As a result, I shifted to a primarily single-column essay format.
           </p>
           <p style={S.body}>
             In the website, I initially included a data sonification section and a beeswarm plot, but later removed them: the former relied on abstract image features that did not support meaningful interpretation, while the latter duplicated existing visualisations without adding new insight.
@@ -1000,15 +1000,15 @@ export default function AssignmentTwoNarrative() {
           <h2 style={S.h2}>References</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {[
-              'Ang, Yi Zhe. n.d. “K-Means Clustering: An Explorable Explainer.” Accessed 24 April 2026. https://k-means-explorable.vercel.app/',
-              <>Arnold, Taylor, and Lauren Tilton. <em>Distant Viewing: Computational Exploration of Digital Images</em>. MIT Press, 2023.</>,
-              <>Arnold, Taylor, Nathaniel Ayers, Justin Madron, Robert Nelson, and Lauren Tilton. "Visualizing a large spatiotemporal collection of historic photography with a generous interface." In <em>2020 IEEE 5th Workshop on Visualization for the Digital Humanities (VIS4DH)</em>, pp. 30-35. IEEE, 2020.</>,
-              'Cherti, Mehdi, Romain Beaumont, Ross Wightman, Mitchell Wortsman, Gabriel Ilharco, Cade Gordon, Christoph Schuhmann, Ludwig Schmidt, and Jenia Jitsev. "Reproducible scaling laws for contrastive language-image learning." In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition, pp. 2818-2829. 2023.',
-              <>Drucker, Johanna. "Humanities approaches to graphical display." <em>Digital Humanities Quarterly</em> 5, no. 1 (2011): 1-21.</>,
-              'Manovich, Lev. Cultural analytics. Mit Press, 2020.',
-              'Oquab, Maxime, Timothée Darcet, Théo Moutakanni, Huy Vo, Marc Szafraniec, Vasil Khalidov, Pierre Fernandez et al. "Dinov2: Learning robust visual features without supervision." arXiv preprint arXiv:2304.07193 (2023).',
-              'Segel, Edward, and Jeffrey Heer. "Narrative visualization: Telling stories with data." IEEE transactions on visualization and computer graphics 16, no. 6 (2010): 1139-1148.',
-              'Wrisley, David Joseph. "Pre-visualization." IEEE 3rd Workshop for Visualization and the Digital Humanities, 2018.',
+              <>Ang, Yi Zhe. n.d. <em>K-Means Clustering: An Explorable Explainer</em>. Accessed April 24, 2026. https://k-means-explorable.vercel.app/.</>,
+              <>Arnold, Taylor, and Lauren Tilton. 2023. <em>Distant Viewing: Computational Exploration of Digital Images</em>. Cambridge, MA: MIT Press.</>,
+              <>Arnold, Taylor, Nathaniel Ayers, Justin Madron, Robert Nelson, and Lauren Tilton. 2020. “Visualizing a Large Spatiotemporal Collection of Historic Photography with a Generous Interface.” In <em>Proceedings of the IEEE 5th Workshop on Visualization for the Digital Humanities</em>, 30–35. IEEE.</>,
+              <>Cherti, Mehdi, Romain Beaumont, Ross Wightman, Mitchell Wortsman, Gabriel Ilharco, Cade Gordon, Christoph Schuhmann, Ludwig Schmidt, and Jenia Jitsev. 2023. “Reproducible Scaling Laws for Contrastive Language-Image Learning.” In <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</em>, 2818–2829.</>,
+              <>Drucker, Johanna. 2011. “Humanities Approaches to Graphical Display.” <em>Digital Humanities Quarterly</em> 5 (1).</>,
+              <>Manovich, Lev. 2020. <em>Cultural Analytics</em>. Cambridge, MA: MIT Press.</>,
+              <>Oquab, Maxime, Timothée Darcet, Théo Moutakanni, Huy Vo, Marc Szafraniec, Vasil Khalidov, Pierre Fernandez, et al. 2023. “DINOv2: Learning Robust Visual Features without Supervision.” <em>arXiv</em>:2304.07193.</>,
+              <>Segel, Edward, and Jeffrey Heer. 2010. “Narrative Visualization: Telling Stories with Data.” <em>IEEE Transactions on Visualization and Computer Graphics</em> 16 (6): 1139–1148.</>,
+              <>Wrisley, David Joseph. 2018. “Pre-visualization.” In <em>Proceedings of the IEEE 3rd Workshop on Visualization for the Digital Humanities</em>.</>,
             ].map((ref, i) => (
               <p key={i} style={{ ...S.body, margin: 0, fontSize: '0.92rem', lineHeight: '1.65', paddingLeft: '2em', textIndent: '-2em' }}>
                 {ref}
