@@ -145,7 +145,7 @@ function CaptionSnippet({ caption, queryToks, queryPhrase }) {
     snippet = caption.slice(0, 160) + (caption.length > 160 ? '…' : '')
   }
   return (
-    <p style={{ margin: 0, fontSize: '0.72rem', lineHeight: 1.5, color: 'var(--archive-color-copy)' }}>
+    <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.5, fontFamily: '"Aptos", "Aptos Display", "Segoe UI", "Calibri", "Noto Sans", sans-serif', color: 'var(--archive-color-copy)' }}>
       <HighlightedText text={snippet} queryToks={queryToks} />
     </p>
   )
@@ -158,14 +158,15 @@ function PhotoCard({ item, queryToks, queryPhrase }) {
   const { date, place } = parseName(item.f)
   return (
     <div style={{
-      borderRadius: '0.9rem',
+      borderRadius: '4px',
       border: '1px solid var(--archive-color-rule)',
-      background: 'rgba(255,255,255,0.82)',
-      overflow: 'hidden',
+      background: '#ffffff',
+      padding: '0.5rem',
       display: 'flex',
       flexDirection: 'column',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
     }}>
-      <div style={{ aspectRatio: '1', overflow: 'hidden', background: '#e8e4da', flexShrink: 0 }}>
+      <div style={{ aspectRatio: '1', overflow: 'hidden', background: '#e8e4da' }}>
         {!failed ? (
           <img
             src={photographUrl(item.f)}
@@ -179,11 +180,13 @@ function PhotoCard({ item, queryToks, queryPhrase }) {
           </div>
         )}
       </div>
-      <div style={{ padding: '0.6rem 0.75rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-        <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: 600, color: 'var(--archive-color-ink)', letterSpacing: '0.02em' }}>
-          {place}{date ? <span style={{ fontWeight: 400, color: 'var(--archive-color-muted)', marginLeft: '0.35em' }}>{date}</span> : null}
+      <div style={{ padding: '0.75rem 0.25rem 0.25rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+        <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: 600, color: 'var(--archive-color-accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          {place}{date ? <span style={{ color: 'var(--archive-color-muted)' }}> — {date}</span> : null}
         </p>
-        <CaptionSnippet caption={item.c} queryToks={queryToks} queryPhrase={queryPhrase} />
+        <div style={{ font: '400 0.875rem/1.5 "Aptos", "Aptos Display", "Segoe UI", "Calibri", "Noto Sans", sans-serif' }}>
+          <CaptionSnippet caption={item.c} queryToks={queryToks} queryPhrase={queryPhrase} />
+        </div>
       </div>
     </div>
   )
@@ -197,10 +200,18 @@ export default function GemmaSearch() {
 
   const trimmed = query.trim()
 
-  const { queryPhrase, queryToks, results } = useMemo(() => {
+  const { queryPhrase, queryToks, results, isSearching } = useMemo(() => {
     const queryPhrase = trimmed.toLowerCase()
     const queryToks   = tokenize(trimmed)
-    if (trimmed.length < 2) return { queryPhrase, queryToks, results: [] }
+
+    if (trimmed.length < 2) {
+      return {
+        queryPhrase: '',
+        queryToks: [],
+        results: gemmaCaptionsData.slice(0, 12),
+        isSearching: false,
+      }
+    }
 
     const scored = []
     for (const item of gemmaCaptionsData) {
@@ -208,7 +219,12 @@ export default function GemmaSearch() {
       if (s > 0) scored.push({ item, score: s })
     }
     scored.sort((a, b) => b.score - a.score)
-    return { queryPhrase, queryToks, results: scored.map(r => r.item) }
+    return {
+      queryPhrase,
+      queryToks,
+      results: scored.map(r => r.item),
+      isSearching: true,
+    }
   }, [trimmed])
 
   const shown   = results.slice(0, MAX_SHOWN)
@@ -225,6 +241,17 @@ export default function GemmaSearch() {
         'radial-gradient(circle at 80% 10%,rgba(234,179,8,0.06),transparent 32%)',
     }}>
 
+      {/* Archive Header */}
+      <div style={{ marginBottom: '0.25rem', textAlign: 'center' }}>
+        <h2 style={{
+          font: '400 2rem var(--archive-font-display)',
+          color: 'var(--archive-color-ink)',
+          margin: '0 0 0.5rem 0',
+        }}>
+          Machine Vision Archive
+        </h2>
+      </div>
+
       {/* Search input + suggestions */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         <div style={{ position: 'relative' }}>
@@ -238,21 +265,20 @@ export default function GemmaSearch() {
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search captions — e.g. mountain, red shirt, street market…"
+            placeholder="Query the archive (e.g. 'museum', 'botanical garden', 'red coat')…"
             style={{
               width: '100%', boxSizing: 'border-box',
-              padding: '0.72rem 2.5rem 0.72rem 2.5rem',
-              border: '1.5px solid var(--archive-color-rule)',
-              borderRadius: '999px',
-              font: '0.92rem/1.4 var(--archive-font-ui)',
+              padding: '1rem 2.5rem',
+              border: '1px solid var(--archive-color-rule)',
+              borderRadius: '8px',
+              font: '0.95rem/1.5 var(--archive-font-ui)',
               color: 'var(--archive-color-ink)',
-              background: 'rgba(255,255,255,0.9)',
+              background: 'var(--parchment)',
               outline: 'none',
-              boxShadow: '0 2px 12px rgba(15,23,42,0.06)',
-              transition: 'border-color 0.15s, box-shadow 0.15s',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
             }}
-            onFocus={e => { e.target.style.borderColor = 'rgba(15,23,42,0.35)'; e.target.style.boxShadow = '0 2px 16px rgba(15,23,42,0.1)' }}
-            onBlur={e  => { e.target.style.borderColor = 'var(--archive-color-rule)'; e.target.style.boxShadow = '0 2px 12px rgba(15,23,42,0.06)' }}
+            onFocus={e => { e.target.style.borderColor = 'var(--archive-color-accent)'; e.target.style.boxShadow = '0 4px 20px rgba(0,0,0,0.04)' }}
+            onBlur={e  => { e.target.style.borderColor = 'var(--archive-color-rule)'; e.target.style.boxShadow = 'none' }}
           />
           {trimmed && (
             <button
@@ -295,14 +321,14 @@ export default function GemmaSearch() {
       </div>
 
       {/* Status line */}
-      {trimmed.length >= 2 && (
-        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--archive-color-muted)' }}>
-          {results.length === 0
+      <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--archive-color-muted)' }}>
+        {!isSearching
+          ? ''
+          : results.length === 0
             ? `No photos found for "${trimmed}"`
             : <><strong style={{ color: 'var(--archive-color-ink)' }}>{results.length}</strong> photo{results.length !== 1 ? 's' : ''} found{hasMore ? ` — showing top ${MAX_SHOWN}` : ''}</>
-          }
-        </p>
-      )}
+        }
+      </p>
 
       {/* Results grid */}
       {shown.length > 0 && (

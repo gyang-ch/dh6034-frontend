@@ -542,49 +542,63 @@
 
 .assignment2-hero-overlay {
   z-index: 1;
-  width: min(92ch, calc(100vw - 3rem));
-  padding: 2rem 2rem 2.3rem;
-  background:
-    linear-gradient(180deg, rgba(7, 12, 24, 0.46), rgba(7, 12, 24, 0.28)),
-    rgba(11, 18, 32, 0.14);
-  border-color: rgba(255, 255, 255, 0.18);
+  position: relative;
+  width: min(85ch, calc(100vw - 3rem));
+  padding: 3rem 3.5rem 3.75rem;
+  border-radius: 0;
+  /* Opaque fallback for browsers without backdrop-filter support */
+  background: rgba(11, 18, 32, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
-    0 34px 76px -18px rgba(0, 0, 0, 0.36),
-    0 20px 36px -18px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(45, 212, 191, 0.08),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    0 4px 30px rgba(0, 0, 0, 0.12),
+    0 30px 60px -15px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
   will-change: transform, opacity;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
 }
 
-.assignment2-hero-overlay::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(125deg, rgba(125, 211, 252, 0.45), rgba(255, 255, 255, 0.12), rgba(253, 224, 71, 0.34));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  opacity: 0.78;
+/* Progressive enhancement: glass effect only when backdrop-filter is supported */
+@supports (backdrop-filter: blur(1px)) {
+  .assignment2-hero-overlay {
+    background: linear-gradient(
+      175deg,
+      rgba(11, 18, 32, 0.72),
+      rgba(11, 18, 32, 0.55)
+    );
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+  }
+}
+
+.hero-kicker {
+  margin: 0 0 1.25rem;
+  font: 600 0.75rem/1 var(--archive-font-ui);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.65);
 }
 
 .assignment2-hero-title {
-  max-width: 10.5ch;
-  margin: 0 0 1rem;
-  font: 500 clamp(3.35rem, 5vw + 1rem, 6.2rem)/0.88 var(--archive-font-display);
-  letter-spacing: -0.045em;
+  margin: 0;
+  font: 500 clamp(3rem, 5vw + 1rem, 5.5rem)/1.05 var(--archive-font-display);
+  letter-spacing: -0.02em;
   text-wrap: balance;
+  color: #fdfaf0;
+}
+
+.hero-separator {
+  width: 48px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  margin: 2rem 0;
 }
 
 .assignment2-hero-subtitle {
-  max-width: 30rem;
+  max-width: 42rem;
   margin: 0;
-  font: 400 clamp(1rem, 0.35vw + 0.92rem, 1.18rem)/1.55 var(--archive-font-ui);
-  letter-spacing: 0.015em;
+  font: italic 400 clamp(1.5rem, 0.8vw + 1.2rem, 2rem)/1.45 var(--archive-font-body);
+  letter-spacing: 0.01em;
+  color: rgba(226, 232, 240, 0.9);
   text-wrap: pretty;
 }
 

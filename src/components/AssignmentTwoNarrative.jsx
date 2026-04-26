@@ -613,10 +613,13 @@ export default function AssignmentTwoNarrative() {
           <div className="assignment2-hero-wash" />
         </div>
 
-        <div ref={overlayRef} className="hero-overlay glass-card assignment2-hero-overlay">
-          <p style={S.kicker}>DH6034 Assignment 2</p>
-          <h1 className="assignment2-hero-title" style={{ ...S.h1, color: '#f8fafc' }}>From Portraits<br />to Patterns</h1>
-          <p className="assignment2-hero-subtitle" style={{ ...S.subtitle, color: 'rgba(226,232,240,0.88)' }}>
+        <div ref={overlayRef} className="assignment2-hero-overlay">
+          <p className="hero-kicker">DH6034 Assignment 2</p>
+          <h1 className="assignment2-hero-title">
+            From Portraits<br />to Patterns
+          </h1>
+          <hr className="hero-separator" aria-hidden="true" />
+          <p className="assignment2-hero-subtitle">
             A Data-Driven Analysis of Personal Life Through Photographs
           </p>
         </div>
