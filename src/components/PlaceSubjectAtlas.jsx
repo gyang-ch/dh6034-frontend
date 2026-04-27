@@ -11,7 +11,8 @@ function prettyLabel(value) {
 function lerp(a, b, t) { return Math.round(a + (b - a) * t) }
 
 function cellColor(count, maxCount) {
-  if (count === 0) return { bg: 'rgba(29,35,41,0.055)', text: 'rgba(29,35,41,0.28)' }
+  // More elegant, almost-invisible empty state
+  if (count === 0) return { bg: 'rgba(29,35,41,0.02)', text: 'rgba(29,35,41,0.2)' }
   const t = Math.pow(count / maxCount, 0.55)
 
   let r, g, b
@@ -30,14 +31,14 @@ function cellColor(count, maxCount) {
   const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
   return {
     bg:   `rgb(${r},${g},${b})`,
-    text: lum > 0.48 ? 'rgba(29,35,41,0.88)' : '#fff',
+    text: lum > 0.48 ? 'rgba(29,35,41,0.9)' : '#fff',
   }
 }
 
 const SOURCE_TABS = [
-  { key: 'all',   label: 'All' },
-  { key: 'gemma', label: 'Gemma Words' },
-  { key: 'yolo',  label: 'YOLO Objects' },
+  { key: 'all',   label: 'All Contexts' },
+  { key: 'gemma', label: 'Gemma Extractions' },
+  { key: 'yolo',  label: 'YOLO Detections' },
 ]
 
 function freqLabel(share) {
@@ -71,125 +72,127 @@ export default function PlaceSubjectAtlas({ atlas }) {
     [filteredCells, showFreq],
   )
 
-  const activeCell = atlas.cells.find((c) => `${c.place}::${c.subject}::${c.source}` === activeKey)
-    ?? null
-
+  const activeCell = atlas.cells.find((c) => `${c.place}::${c.subject}::${c.source}` === activeKey) ?? null
   const colCount = visibleSubjects.length
 
   return (
     <article style={{
-      display: 'grid', gap: '1rem', padding: '1.2rem',
+      display: 'grid', gap: '2rem', padding: '2.5rem',
       border: '1px solid var(--archive-color-rule)',
-      borderRadius: '1.75rem',
-      background: 'linear-gradient(180deg,rgba(255,255,255,0.84),rgba(247,244,237,0.9)),radial-gradient(circle at 14% 14%,rgba(62,91,113,0.08),transparent 34%)',
+      borderRadius: 'var(--radius-soft, 8px)',
+      background: 'var(--archive-color-bg)', // Relying on the clean parchment bg
+      boxShadow: '0 4px 30px -15px rgba(0,0,0,0.06)', // Very modest grounding shadow
     }}>
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'end', flexWrap: 'wrap' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', gap: '2rem', alignItems: 'flex-start', flexWrap: 'wrap', borderBottom: '1px solid var(--archive-color-rule)', paddingBottom: '1.5rem' }}>
         <div>
-          <p style={{ margin: '0 0 0.35rem', font: '600 0.72rem/1.2 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
-            Place × Subject Atlas
+          <p style={{ margin: '0 0 0.75rem', font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--archive-color-accent)' }}>
+            Figure 1. Place × Subject Matrix
           </p>
-          <h3 style={{ margin: 0, font: '500 1.55rem/1.08 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '34rem' }}>
-            Heat signatures reveal which places are remembered through which subjects.
+          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '40rem' }}>
+            Heat signatures revealing which locations are visually remembered through specific subjects.
           </h3>
         </div>
+        
+        {/* Modest Top-Right Detail Readout */}
         {activeCell && (
-          <div style={{ display: 'grid', gap: '0.1rem', textAlign: 'right' }}>
-            <p style={{ margin: 0, font: '600 1rem/1 var(--archive-font-ui)', color: 'var(--archive-color-ink)' }}>
+          <div style={{ textAlign: 'right', minWidth: '120px' }}>
+            <p style={{ margin: '0 0 0.2rem', font: 'italic 600 1.1rem/1 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
               {prettyLabel(activeCell.subject)}
             </p>
-            <p style={{ margin: 0, font: '0.82rem/1 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>
-              {activeCell.count} photographs in {activeCell.place}
+            <p style={{ margin: 0, font: '400 0.8rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>
+              n = {activeCell.count} <br/> {activeCell.place}
             </p>
           </div>
         )}
       </header>
 
-      {/* ── Source filter tabs + frequency toggle ───────────────────────── */}
-      <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        {SOURCE_TABS.map((tab) => {
-          const active = sourceFilter === tab.key
-          const count = tab.key === 'all'
-            ? atlas.subjects.length
-            : atlas.subjects.filter((s) => s.source === tab.key).length
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setSourceFilter(tab.key)}
-              style={{
-                padding: '0.32rem 0.85rem',
-                border: `1px solid ${active ? 'rgba(62,91,113,0.55)' : 'var(--archive-color-rule)'}`,
-                borderRadius: '999px',
-                background: active ? 'rgba(62,91,113,0.12)' : 'rgba(255,255,255,0.55)',
-                font: `${active ? '600' : '400'} 0.76rem/1 var(--archive-font-ui)`,
-                color: active ? 'var(--archive-color-ink)' : 'var(--archive-color-copy)',
-                cursor: 'pointer',
-                transition: 'all 0.18s ease',
-              }}
-            >
-              {tab.label}
-              <span style={{ marginLeft: '0.4rem', opacity: 0.55, font: '0.68rem/1 var(--archive-font-ui)' }}>
-                {count}
-              </span>
-            </button>
-          )
-        })}
+      {/* ── Academic Controls ───────────────────────── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'center', gap: '1rem' }}>
+        
+        {/* Filter Tabs */}
+        <div style={{ display: 'flex', gap: '1.5rem' }}>
+          {SOURCE_TABS.map((tab) => {
+            const active = sourceFilter === tab.key
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setSourceFilter(tab.key)}
+                style={{
+                  padding: '0 0 0.4rem 0',
+                  border: 'none',
+                  borderBottom: `2px solid ${active ? 'var(--archive-color-accent)' : 'transparent'}`,
+                  background: 'transparent',
+                  font: `${active ? '600' : '400'} 0.72rem/1 var(--archive-font-ui)`,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: active ? 'var(--archive-color-ink)' : 'var(--archive-color-muted)',
+                  cursor: 'pointer',
+                  transition: 'color 0.2s ease, border-color 0.2s ease',
+                }}
+              >
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
 
-        {/* divider */}
-        <span style={{ width: '1px', height: '1.2rem', background: 'var(--archive-color-rule)', margin: '0 0.15rem' }} />
-
-        {/* Frequency toggle */}
+        {/* Frequency Toggle */}
         <button
           type="button"
           onClick={() => setShowFreq((v) => !v)}
           style={{
-            padding: '0.32rem 0.85rem',
-            border: `1px solid ${showFreq ? 'rgba(62,91,113,0.55)' : 'var(--archive-color-rule)'}`,
-            borderRadius: '999px',
-            background: showFreq ? 'rgba(62,91,113,0.12)' : 'rgba(255,255,255,0.55)',
-            font: `${showFreq ? '600' : '400'} 0.76rem/1 var(--archive-font-ui)`,
-            color: showFreq ? 'var(--archive-color-ink)' : 'var(--archive-color-copy)',
+            padding: '0.4rem 0.8rem',
+            border: '1px solid var(--archive-color-rule)',
+            borderRadius: '4px',
+            background: showFreq ? 'rgba(62,91,113,0.06)' : 'transparent',
+            font: '500 0.72rem/1 var(--archive-font-ui)',
+            letterSpacing: '0.04em',
+            color: 'var(--archive-color-copy)',
             cursor: 'pointer',
-            transition: 'all 0.18s ease',
+            transition: 'all 0.2s ease',
           }}
         >
-          {showFreq ? '% frequency' : '# count'}
+          {showFreq ? 'Displaying: Frequency (%)' : 'Displaying: Absolute Count (n)'}
         </button>
-
       </div>
 
-      {/* ── Grid + detail panel ─────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(15rem,18rem)', gap: '1rem' }}>
+      {/* ── Grid + Detail Panel ─────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(16rem,20rem)', gap: '2.5rem', alignItems: 'start' }}>
 
         {/* Scrollable grid */}
-        <div style={{ overflowX: 'auto', paddingBottom: '0.4rem' }}>
+        <div style={{ overflowX: 'auto', paddingBottom: '0.5rem' }} className="custom-scrollbar">
           <div style={{
             display: 'grid',
-            gap: '0.18rem',
+            gap: '1px', // Crisp matrix lines
             alignItems: 'stretch',
-            minWidth: `${11 + colCount * 3}rem`,
-            gridTemplateColumns: `11rem repeat(${colCount}, minmax(2.8rem, 1fr))`,
+            minWidth: `${12 + colCount * 2.8}rem`,
+            gridTemplateColumns: `12rem repeat(${colCount}, minmax(2.8rem, 1fr))`,
+            background: 'var(--archive-color-rule)', // Acts as the border color between cells
+            border: '1px solid var(--archive-color-rule)',
           }}>
 
             {/* Column headers (rotated) */}
-            <div style={{ display: 'flex', alignItems: 'end', padding: '0.25rem 0.55rem', font: '600 0.76rem/1.25 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
-              Place
+            <div style={{ background: 'var(--archive-color-bg)', display: 'flex', alignItems: 'flex-end', padding: '0.5rem 0.75rem', font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+              Location Origin
             </div>
             {visibleSubjects.map((s) => (
               <div
                 key={`${s.source}:${s.subject}`}
                 title={`${prettyLabel(s.subject)} (${s.source})`}
                 style={{
+                  background: 'var(--archive-color-bg)',
                   writingMode: 'vertical-rl',
                   transform: 'rotate(180deg)',
-                  height: '8rem',
-                  padding: '0.35rem 0.15rem',
+                  height: '8.5rem',
+                  padding: '0.5rem 0',
                   textAlign: 'left',
                   overflow: 'hidden',
-                  font: '0.72rem/1.25 var(--archive-font-ui)',
-                  color: s.source === 'yolo' ? 'rgba(62,91,113,0.75)' : 'var(--archive-color-copy)',
+                  font: '400 0.75rem/1.2 var(--archive-font-ui)',
+                  letterSpacing: '0.02em',
+                  color: s.source === 'yolo' ? 'var(--archive-color-accent)' : 'var(--archive-color-copy)',
                 }}
               >
                 {prettyLabel(s.subject)}
@@ -202,14 +205,15 @@ export default function PlaceSubjectAtlas({ atlas }) {
 
                 {/* Place label + total */}
                 <div style={{
-                  display: 'flex', justifyContent: 'space-between', gap: '0.7rem',
-                  alignItems: 'center', padding: '0 0.55rem',
+                  background: 'var(--archive-color-bg)',
+                  display: 'flex', justifyContent: 'space-between', gap: '1rem',
+                  alignItems: 'center', padding: '0 0.75rem',
                   whiteSpace: 'nowrap',
-                  font: '0.76rem/1.25 var(--archive-font-ui)',
-                  color: 'var(--archive-color-copy)',
+                  font: '400 0.85rem/1.2 var(--archive-font-body)', // Using serif for places
+                  color: 'var(--archive-color-ink)',
                 }}>
                   <span>{place.place}</span>
-                  <span style={{ opacity: 0.5 }}>{place.total}</span>
+                  <span style={{ font: '400 0.7rem var(--archive-font-data)', color: 'var(--archive-color-muted)' }}>{place.total}</span>
                 </div>
 
                 {/* Cells */}
@@ -223,7 +227,8 @@ export default function PlaceSubjectAtlas({ atlas }) {
                   const { bg, text } = cellColor(val, maxVal)
                   const cellKey = cell ? `${cell.place}::${cell.subject}::${cell.source}` : null
                   const label   = showFreq ? freqLabel(share) : (count > 0 ? count : '')
-                  const small   = showFreq ? share >= 10 : count >= 100
+                  
+                  const isActive = activeKey === cellKey && cellKey !== null;
 
                   return (
                     <button
@@ -233,17 +238,18 @@ export default function PlaceSubjectAtlas({ atlas }) {
                         position: 'relative',
                         display: 'grid',
                         placeItems: 'center',
-                        minHeight: '3.1rem',
+                        minHeight: '2.8rem',
                         border: 0,
                         background: bg,
                         color: text,
-                        font: `700 ${small ? '0.66rem' : '0.74rem'}/1 var(--archive-font-ui)`,
+                        font: `400 0.75rem/1 var(--archive-font-data)`, // Use monospace for numbers
                         cursor: count > 0 ? 'pointer' : 'default',
-                        transition: 'filter 140ms ease',
+                        transition: 'box-shadow 150ms ease, opacity 150ms ease',
+                        boxShadow: isActive ? 'inset 0 0 0 2px var(--archive-color-ink)' : 'none',
+                        opacity: (activeKey && !isActive && count > 0) ? 0.6 : 1, // Dim others when one is selected
                       }}
                       aria-label={`${place.place}, ${prettyLabel(subject.subject)}, ${count} photographs (${share}%)`}
                       onClick={() => { if (cellKey) setActiveKey((prev) => prev === cellKey ? null : cellKey) }}
-                      onFocus={() => { if (cellKey) setActiveKey(cellKey) }}
                     >
                       {label}
                     </button>
@@ -254,64 +260,59 @@ export default function PlaceSubjectAtlas({ atlas }) {
           </div>
         </div>
 
-        {/* Detail panel */}
-        {activeCell ? (
-          <aside style={{
-            display: 'grid', gap: '0.85rem', padding: '0.95rem 1rem',
-            borderRadius: '1.2rem',
-            background: 'rgba(255,255,255,0.68)',
-            boxShadow: 'inset 0 0 0 1px rgba(62,91,113,0.08)',
-            alignContent: 'start',
-          }}>
-            {activeCell.exampleFilenames?.length > 0 && (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: activeCell.exampleFilenames.length === 1 ? '1fr' : '1fr 1fr',
-                gap: '0.35rem',
-                borderRadius: '0.95rem',
-                overflow: 'hidden',
-              }}>
-                {activeCell.exampleFilenames.map((filename) => (
-                  <div key={filename} style={{ aspectRatio: '4/3', background: 'rgba(29,35,41,0.08)', overflow: 'hidden' }}>
-                    <img
-                      src={imageUrl(filename)}
-                      alt={filename}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    />
-                  </div>
-                ))}
+        {/* Marginalia Detail Panel */}
+        <aside style={{
+          display: 'grid', gap: '1.25rem', padding: '0',
+          alignContent: 'start',
+        }}>
+          {activeCell ? (
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: '1rem',
+              paddingTop: '1rem',
+              borderTop: '3px solid var(--archive-color-accent)', // Strong academic framing
+            }}>
+              <div style={{ display: 'grid', gap: '0.4rem' }}>
+                <p style={{ margin: 0, font: '600 0.65rem/1.2 var(--archive-font-ui)', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+                  Selected Node Data
+                </p>
+                <p style={{ margin: 0, font: '400 1rem/1.4 var(--archive-font-body)', color: 'var(--archive-color-copy)' }}>
+                  The subject <strong>{prettyLabel(activeCell.subject)}</strong> ({activeCell.source === 'yolo' ? 'YOLO' : 'Gemma'}) appears in <strong>{activeCell.count}</strong> photograph{activeCell.count !== 1 ? 's' : ''} from <em>{activeCell.place}</em>.
+                  {activeCell.share > 0 && ` This accounts for ${activeCell.share}% of the location's total documentation.`}
+                </p>
               </div>
-            )}
-            <div style={{ display: 'grid', gap: '0.28rem' }}>
-              <p style={{ margin: 0, font: '600 0.68rem/1.2 var(--archive-font-ui)', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
-                {activeCell.source === 'yolo' ? 'YOLO Object' : 'Gemma Keyword'}
-              </p>
-              <p style={{ margin: 0, font: '500 1.1rem/1.08 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
-                {activeCell.place}
-              </p>
-              <p style={{ margin: 0, font: '0.84rem/1.5 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
-                <strong>{prettyLabel(activeCell.subject)}</strong> appears in{' '}
-                {activeCell.count} photograph{activeCell.count !== 1 ? 's' : ''} here
-                {activeCell.share > 0 && `, ${activeCell.share}% of this place's archive slice`}.
+
+              {activeCell.exampleFilenames?.length > 0 && (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: activeCell.exampleFilenames.length === 1 ? '1fr' : '1fr 1fr',
+                  gap: '0.5rem',
+                  marginTop: '0.5rem'
+                }}>
+                  {activeCell.exampleFilenames.map((filename) => (
+                    <figure key={filename} style={{ margin: 0, aspectRatio: '4/3', background: 'rgba(29,35,41,0.04)', border: '1px solid var(--archive-color-rule)', padding: '0.25rem' }}>
+                      <img
+                        src={imageUrl(filename)}
+                        alt={filename}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'grayscale(20%) contrast(1.05)' }}
+                      />
+                    </figure>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{
+              paddingTop: '1rem',
+              borderTop: '1px solid var(--archive-color-rule)',
+            }}>
+              <p style={{ margin: 0, font: 'italic 400 0.9rem/1.5 var(--archive-font-body)', color: 'var(--archive-color-muted)' }}>
+                Select a populated cell in the matrix to view specific archival examples and distribution metrics.
               </p>
             </div>
-          </aside>
-        ) : (
-          <aside style={{
-            display: 'grid', padding: '0.95rem 1rem',
-            borderRadius: '1.2rem',
-            background: 'rgba(255,255,255,0.38)',
-            boxShadow: 'inset 0 0 0 1px rgba(62,91,113,0.06)',
-            alignContent: 'center', justifyItems: 'center',
-            minHeight: '10rem',
-          }}>
-            <p style={{ margin: 0, font: '0.82rem/1.5 var(--archive-font-ui)', color: 'var(--archive-color-muted)', textAlign: 'center' }}>
-              Click a cell to see photos
-            </p>
-          </aside>
-        )}
-      </div>
+          )}
+        </aside>
 
+      </div>
     </article>
   )
 }

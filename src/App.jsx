@@ -159,7 +159,7 @@ export default function App() {
           {activeAssignment === 'assignment1' ? (
             <AssignmentOneNarrative prefersReducedMotion={prefersReducedMotion} />
           ) : activeAssignment === 'assignment2' ? (
-            <AssignmentTwoNarrative />
+            <AssignmentTwoNarrative onOpenPhotoArchive={() => handleAssignmentChange('archive-windowed')} />
           ) : (
             <PhotoArchiveWindowed />
           )}

@@ -372,7 +372,7 @@ function SeasonalHistogramPanel({ activeStep = 0 }) {
 
 // ── Main narrative ────────────────────────────────────────────────────────────
 
-export default function AssignmentTwoNarrative() {
+export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const heroRef = useRef(null)
   const overlayRef = useRef(null)
@@ -818,7 +818,20 @@ export default function AssignmentTwoNarrative() {
 
         <section style={SEC_CONT}>
           <p style={S.body}>
-            The full collection can be explored in the “Photo Archive” tab, which provides direct access to all images alongside their metadata.
+            The full collection can be explored in the{' '}
+            <a
+              href="/photoarchive"
+              onClick={(event) => {
+                if (onOpenPhotoArchive) {
+                  event.preventDefault()
+                  onOpenPhotoArchive()
+                }
+              }}
+              style={S.link}
+            >
+              Photo Archive
+            </a>{' '}
+            tab, which provides direct access to all images alongside their metadata.
           </p>
         </section>
 
@@ -882,21 +895,21 @@ export default function AssignmentTwoNarrative() {
         <section id="clustering" style={SEC_CONT}>
           <h3 style={S.h3}>3.6  Visual Similarity and Clustering</h3>
           <p style={S.body}>
-            With the CLIP and DINOv2 embeddings, I can find similar images and identify clusters. Similarity is computed using high-dimensional embeddings, and visualised through nearest-neighbour retrieval, which allows related images to be grouped. This supports the exploration of visual patterns within the archive. The two groups of images below are curated using image similarity, highlighting recurring scenes such as eating at tables and conference room settings.
+            With the CLIP and DINOv2 embeddings, I can find similar images and identify clusters. Similarity is computed using high-dimensional embeddings, and visualised through nearest-neighbour retrieval, which allows related images to be grouped. This supports the exploration of visual patterns within the archive. The four groups of images below are curated using image similarity, highlighting recurring scenes such as eating at tables, conference room settings, rail transit, and library shelves.
           </p>
 
           {/* Similarity image groups */}
           <div style={{ display: 'flex', gap: '2rem', margin: '0.5rem 0 1.8rem', flexWrap: 'wrap' }}>
             {[
               {
-                label: 'Food, eating at table',
+                label: 'Plated Dishes',
                 images: [
-                  '2014-01-30_Hangzhou_001.jpg',
-                  '2018-02-15_Shenzhen_001.jpg',
-                  '2018-02-15_Shenzhen_002.jpg',
-                  '2024-02-09_Chengdu_002.jpg',
-                  '2021-05-05_Zhuhai_001.jpg',
-                  '2017-10-05_Hongkong_001.jpg',
+                  '2025-09-21_Cork_002.jpg',
+                  '2025-07-22_Besancon_008.jpg',
+                  '2019-12-20_Hongkong_032.jpg',
+                  '2024-03-30_Zhuhai_002.JPG',
+                  '2025-07-17_Lisbon_015.jpg',
+                  '2025-08-09_Gottingen_003.jpg',
                 ],
               },
               {
@@ -908,6 +921,28 @@ export default function AssignmentTwoNarrative() {
                   '2024-03-02_Hongkong_003.JPG',
                   '2025-11-04_Vienna_005.jpg',
                   '2024-05-25_Hongkong_002.JPG',
+                ],
+              },
+              {
+                label: 'Trains & Trams',
+                images: [
+                  '2007-07-16_Tibet_002.JPG',
+                  '2025-07-13_Lisbon_005.jpg',
+                  '2025-08-05_Frankfurt_002.jpg',
+                  '2025-08-02_Strasbourg_002.jpg',
+                  '2013-08-07_Lausanne_121.JPG',
+                  '2013-08-07_Lausanne_119.JPG',
+                ],
+              },
+              {
+                label: 'Library Shelves',
+                images: [
+                  '2025-08-11_Gottingen_008.jpg',
+                  '2025-08-11_Gottingen_003.jpg',
+                  '2023-04-22_Guangzhou_002.JPG',
+                  '2023-04-22_Guangzhou_001.JPG',
+                  '2017-08-01_Oxford_001.JPG',
+                  '2025-07-30_Besancon_022.jpg',
                 ],
               },
             ].map(group => (

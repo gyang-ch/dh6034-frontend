@@ -1,8 +1,9 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { gemmaCaptionsData } from '../data/gemmaCaptionsData'
 import { photographUrl } from '../lib/photographs'
 
-const MAX_SHOWN = 60
+const BATCH = 14
+const GRID_HEIGHT = '34rem'
 
 function parseName(filename) {
   const m = filename.match(/^(\d{4}-\d{2}-\d{2})_(.+?)_\d+/)
@@ -196,9 +197,14 @@ function PhotoCard({ item, queryToks, queryPhrase }) {
 
 export default function GemmaSearch() {
   const [query, setQuery] = useState('')
+  const [visibleCount, setVisibleCount] = useState(BATCH)
   const inputRef = useRef(null)
+  const gridRef  = useRef(null)
 
   const trimmed = query.trim()
+
+  // Reset visible count whenever the query changes
+  useEffect(() => { setVisibleCount(BATCH) }, [trimmed])
 
   const { queryPhrase, queryToks, results, isSearching } = useMemo(() => {
     const queryPhrase = trimmed.toLowerCase()
@@ -208,7 +214,7 @@ export default function GemmaSearch() {
       return {
         queryPhrase: '',
         queryToks: [],
-        results: gemmaCaptionsData.slice(0, 12),
+        results: gemmaCaptionsData,
         isSearching: false,
       }
     }
@@ -227,8 +233,15 @@ export default function GemmaSearch() {
     }
   }, [trimmed])
 
-  const shown   = results.slice(0, MAX_SHOWN)
-  const hasMore = results.length > MAX_SHOWN
+  const shown = results.slice(0, visibleCount)
+
+  const onGridScroll = useCallback(() => {
+    const el = gridRef.current
+    if (!el) return
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 120) {
+      setVisibleCount(c => Math.min(c + BATCH, results.length))
+    }
+  }, [results.length])
 
   return (
     <div style={{
@@ -322,24 +335,35 @@ export default function GemmaSearch() {
 
       {/* Status line */}
       <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--archive-color-muted)' }}>
-        {!isSearching
-          ? ''
-          : results.length === 0
+        {isSearching && (
+          results.length === 0
             ? `No photos found for "${trimmed}"`
-            : <><strong style={{ color: 'var(--archive-color-ink)' }}>{results.length}</strong> photo{results.length !== 1 ? 's' : ''} found{hasMore ? ` — showing top ${MAX_SHOWN}` : ''}</>
-        }
+            : <><strong style={{ color: 'var(--archive-color-ink)' }}>{results.length}</strong> photo{results.length !== 1 ? 's' : ''} found — showing {Math.min(visibleCount, results.length)}</>
+        )}
       </p>
 
-      {/* Results grid */}
+      {/* Results grid — fixed-height scrollable container */}
       {shown.length > 0 && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-          gap: '0.75rem',
-        }}>
-          {shown.map(item => (
-            <PhotoCard key={item.f} item={item} queryToks={queryToks} queryPhrase={queryPhrase} />
-          ))}
+        <div
+          ref={gridRef}
+          onScroll={onGridScroll}
+          data-lenis-prevent
+          style={{
+            height: GRID_HEIGHT,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+          }}
+        >
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+            gap: '0.75rem',
+            paddingRight: '0.25rem',
+          }}>
+            {shown.map(item => (
+              <PhotoCard key={item.f} item={item} queryToks={queryToks} queryPhrase={queryPhrase} />
+            ))}
+          </div>
         </div>
       )}
 
