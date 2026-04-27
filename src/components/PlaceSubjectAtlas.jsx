@@ -72,7 +72,6 @@ export default function PlaceSubjectAtlas({ atlas }) {
   )
 
   const activeCell = atlas.cells.find((c) => `${c.place}::${c.subject}::${c.source}` === activeKey)
-    ?? atlas.cells.find((c) => c.count > 0)
     ?? null
 
   const colCount = visibleSubjects.length
@@ -243,7 +242,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
                         transition: 'filter 140ms ease',
                       }}
                       aria-label={`${place.place}, ${prettyLabel(subject.subject)}, ${count} photographs (${share}%)`}
-                      onMouseEnter={() => { if (cellKey) setActiveKey(cellKey) }}
+                      onClick={() => { if (cellKey) setActiveKey((prev) => prev === cellKey ? null : cellKey) }}
                       onFocus={() => { if (cellKey) setActiveKey(cellKey) }}
                     >
                       {label}
@@ -256,7 +255,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
         </div>
 
         {/* Detail panel */}
-        {activeCell && (
+        {activeCell ? (
           <aside style={{
             display: 'grid', gap: '0.85rem', padding: '0.95rem 1rem',
             borderRadius: '1.2rem',
@@ -264,13 +263,23 @@ export default function PlaceSubjectAtlas({ atlas }) {
             boxShadow: 'inset 0 0 0 1px rgba(62,91,113,0.08)',
             alignContent: 'start',
           }}>
-            {activeCell.exampleFilename && (
-              <div style={{ aspectRatio: '4/3', borderRadius: '0.95rem', overflow: 'hidden', background: 'rgba(29,35,41,0.08)' }}>
-                <img
-                  src={imageUrl(activeCell.exampleFilename)}
-                  alt={activeCell.exampleFilename}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
+            {activeCell.exampleFilenames?.length > 0 && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: activeCell.exampleFilenames.length === 1 ? '1fr' : '1fr 1fr',
+                gap: '0.35rem',
+                borderRadius: '0.95rem',
+                overflow: 'hidden',
+              }}>
+                {activeCell.exampleFilenames.map((filename) => (
+                  <div key={filename} style={{ aspectRatio: '4/3', background: 'rgba(29,35,41,0.08)', overflow: 'hidden' }}>
+                    <img
+                      src={imageUrl(filename)}
+                      alt={filename}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  </div>
+                ))}
               </div>
             )}
             <div style={{ display: 'grid', gap: '0.28rem' }}>
@@ -286,6 +295,19 @@ export default function PlaceSubjectAtlas({ atlas }) {
                 {activeCell.share > 0 && `, ${activeCell.share}% of this place's archive slice`}.
               </p>
             </div>
+          </aside>
+        ) : (
+          <aside style={{
+            display: 'grid', padding: '0.95rem 1rem',
+            borderRadius: '1.2rem',
+            background: 'rgba(255,255,255,0.38)',
+            boxShadow: 'inset 0 0 0 1px rgba(62,91,113,0.06)',
+            alignContent: 'center', justifyItems: 'center',
+            minHeight: '10rem',
+          }}>
+            <p style={{ margin: 0, font: '0.82rem/1.5 var(--archive-font-ui)', color: 'var(--archive-color-muted)', textAlign: 'center' }}>
+              Click a cell to see photos
+            </p>
           </aside>
         )}
       </div>

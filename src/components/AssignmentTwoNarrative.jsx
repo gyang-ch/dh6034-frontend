@@ -346,13 +346,15 @@ function SeasonalHistogramPanel({ activeStep = 0 }) {
           const bh = (count / maxCount) * IH
           const x  = PAD.left + monthIndex * slotW + bOff
           const y  = PAD.top + IH - bh
+          const r  = Math.min(4, bh / 2, bw / 2)
+          const d  = bh <= 0 ? '' : `M${x},${y + r} Q${x},${y} ${x + r},${y} H${x + bw - r} Q${x + bw},${y} ${x + bw},${y + r} V${y + bh} H${x} Z`
           const { fill, opacity } = barStyle(monthIndex)
           return (
             <g key={label} style={{ transition: 'opacity 0.4s ease' }}>
-              <rect x={x} y={y} width={bw} height={bh} rx="5" fill={fill} opacity={opacity}
+              <path d={d} fill={fill} opacity={opacity}
                 style={{ transition: 'fill 0.4s ease, opacity 0.4s ease' }}>
                 <title>{`${label}: ${count}`}</title>
-              </rect>
+              </path>
               <text x={x + bw / 2} y={PAD.top + IH + 16} textAnchor="middle"
                 style={{ font: '600 10px var(--archive-font-ui)', fill: 'rgba(29,35,41,0.5)' }}>
                 {label}
