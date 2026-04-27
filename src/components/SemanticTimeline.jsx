@@ -174,7 +174,7 @@ export default function SemanticTimeline({ years }) {
       <header style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'end', flexWrap: 'wrap' }}>
         <div>
           <p style={{ margin: '0 0 0.35rem', font: '600 0.72rem/1.2 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>Semantic Timeline</p>
-          <h3 style={{ margin: 0, font: '500 1.55rem/1.08 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '28rem' }}>Subjects migrate from family presence toward architecture, art, and study.</h3>
+          <h3 style={{ margin: 0, font: '500 1.55rem/1.08 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '28rem' }}>How the subjects of the photos shift across the years.</h3>
         </div>
         {activeRecord && (
           <div style={{ display: 'grid', gap: '0.1rem', textAlign: 'right' }}>
@@ -275,7 +275,7 @@ export default function SemanticTimeline({ years }) {
             )}
             {activeRecord.topKeywords.length > 0 && (
               <div style={{ display: 'grid', gap: '0.35rem' }}>
-                <p style={{ margin: 0, font: '600 0.68rem/1.2 var(--archive-font-ui)', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>Top cleaned keywords</p>
+                <p style={{ margin: 0, font: '600 0.68rem/1.2 var(--archive-font-ui)', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>Top Gemma keywords</p>
                 <p style={{ margin: 0, font: '0.84rem/1.5 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
                   {activeRecord.topKeywords.map((keyword) => `${prettyKeyword(keyword.label)} (${keyword.count})`).join(' · ')}
                 </p>

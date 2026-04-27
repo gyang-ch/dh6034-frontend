@@ -307,42 +307,28 @@ function TimelineChart({ items, series, months, groups, colorOf, defaultVisible,
               )
             }
 
-            return Object.entries(groups).map(([group, members]) => {
-              const available = members.filter((o) => items.includes(o))
-              if (!available.length) return null
-              const allOn = available.every((o) => enabled.has(o))
-              return (
-                <div key={group} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.35rem' }}>
-                  <button onClick={() => toggleGroup(available)} style={{
-                    background: 'none', border: '1px solid rgba(29,35,41,0.18)',
-                    borderRadius: '999px', padding: '0.2rem 0.6rem',
-                    font: '600 0.62rem/1.3 var(--archive-font-ui)', letterSpacing: '0.1em',
-                    textTransform: 'uppercase', cursor: 'pointer', flexShrink: 0,
-                    color: allOn ? 'var(--archive-color-ink)' : 'var(--archive-color-muted)',
-                  }}>
-                    {group}
-                  </button>
-                  {available.map((item) => {
-                    const on = enabled.has(item)
-                    const color = colorOfItem(item)
-                    return (
-                      <button key={item} onClick={() => toggle(item)} style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
-                        padding: '0.22rem 0.55rem', borderRadius: '999px',
-                        border: `1.5px solid ${on ? color : 'rgba(29,35,41,0.12)'}`,
-                        background: on ? `color-mix(in srgb,${color} 14%,white)` : 'transparent',
-                        cursor: 'pointer', font: '0.72rem/1 var(--archive-font-ui)',
-                        color: on ? color : 'var(--archive-color-muted)', transition: 'all 0.13s',
-                      }}>
-                        <span style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-                          background: on ? color : 'rgba(29,35,41,0.18)' }} />
-                        {item}
-                      </button>
-                    )
-                  })}
-                </div>
-              )
-            })
+            return (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                {items.map((item) => {
+                  const on = enabled.has(item)
+                  const color = colorOfItem(item)
+                  return (
+                    <button key={item} onClick={() => toggle(item)} style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                      padding: '0.22rem 0.55rem', borderRadius: '999px',
+                      border: `1.5px solid ${on ? color : 'rgba(29,35,41,0.12)'}`,
+                      background: on ? `color-mix(in srgb,${color} 14%,white)` : 'transparent',
+                      cursor: 'pointer', font: '0.72rem/1 var(--archive-font-ui)',
+                      color: on ? color : 'var(--archive-color-muted)', transition: 'all 0.13s',
+                    }}>
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                        background: on ? color : 'rgba(29,35,41,0.18)' }} />
+                      {item}
+                    </button>
+                  )
+                })}
+              </div>
+            )
           })()}
         </div>
       </div>

@@ -12,7 +12,6 @@ import PhotoMap from './PhotoMap'
 import StagedVisual from './StagedVisual'
 import JsonScrollExplainer from './JsonScrollExplainer'
 import YoloObjectTimeline from './YoloObjectTimeline'
-import CentralityNetwork from './CentralityNetwork'
 import GemmaSearch from './GemmaSearch'
 import AnnotationTimeline from './AnnotationTimeline'
 import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
@@ -635,10 +634,10 @@ export default function AssignmentTwoNarrative() {
             From the yellow loess of Lanzhou to the vertical neon of Hong Kong, and later to life in Europe, my life has unfolded across distinct cultural and visual environments. Over the past two decades, I have accumulated a personal archive of more than 7,000 photographs. These images record everyday moments, capturing changes in my relationships, surroundings, and routines. I analyse this collection computationally through image pre-processing and visualisation to examine how photographic patterns reflect changes in life stages, social interactions, daily activities, and personal interests over time.
           </p>
           <p style={S.body}>
-            This approach reflects a broader shift in cultural analysis, where computational methods and visualisation help identify patterns in large-scale image collections that would otherwise be difficult to discern (Manovich 2020). These collections can then be explored through interactive visualisations.
+            This approach reflects a broader shift in cultural analysis, where computational methods and visualisation help identify patterns in large-scale image collections that would otherwise be difficult to discern <span className="in-text-cite">(Manovich 2020)</span>. These collections can then be explored through interactive visualisations.
           </p>
           <p style={S.body}>
-            Following Johanna Drucker (2011), these 7,000 images are treated not as objective data (the given), but as capta (the taken). In the humanities, knowledge is always situated and partial; this archive does not present a neutral record of life, but reflects what was photographed, what was ignored, and the situations in which images were taken. In this way, the visualisation is understood as an interpretative practice of self-reflection.
+            Following Johanna Drucker <span className="in-text-cite">(2011)</span>, these 7,000 images are treated not as objective data (the given), but as capta (the taken). In the humanities, knowledge is always situated and partial; this archive does not present a neutral record of life, but reflects what was photographed, what was ignored, and the situations in which images were taken. In this way, the visualisation is understood as an interpretative practice of self-reflection.
           </p>
           <p style={S.body}>
             Although photographs are not typically treated as data in the same way as biometric or sensor logs, they are composed of pixel-based information and can be analysed computationally. At the same time, they function as a form of self-documentation, offering an indirect yet meaningful representation of lived experience. As such, photographic archives can be approached as complex datasets that encode patterns of behaviour and environment over time.
@@ -650,10 +649,10 @@ export default function AssignmentTwoNarrative() {
           <h2 style={S.h2}>2  Methodology</h2>
           <h3 style={S.h3}>2.1  Data Preparation</h3>
           <p style={S.body}>
-            I assembled a dataset of over 7,000 photographs collected from my phone, laptop, and cloud storage. While most of the images contained timestamps in the embedded EXIF metadata, all of them lacked location coordinates. To ensure temporal and spatial continuity across the archive, missing metadata was manually supplemented, including the assignment of latitude and longitude coordinates using Google Maps. This process highlights a key principle in Digital Humanities: datasets are not passively “given” but actively constructed through processes of selection, correction, and interpretation. This manual labour constitutes what Wrisley defines as pre-visualisation, defined as interdisciplinary and transmedial critical work that links the raw archive to the final visual system (Wrisley, 2018).
+            I assembled a dataset of over 7,000 photographs collected from my phone, laptop, and cloud storage. While most of the images contained timestamps in the embedded EXIF metadata, all of them lacked location coordinates. To ensure temporal and spatial continuity across the archive, missing metadata was manually supplemented, including the assignment of latitude and longitude coordinates using Google Maps. This process highlights a key principle in Digital Humanities: datasets are not passively “given” but actively constructed through processes of selection, correction, and interpretation. This manual labour constitutes what Wrisley defines as pre-visualisation, defined as interdisciplinary and transmedial critical work that links the raw archive to the final visual system <span className="in-text-cite">(Wrisley, 2018)</span>.
           </p>
           <p style={S.body}>
-            In this project, the photographic archive is treated as a form of cultural data that can be rendered computationally analysable through data science approaches to humanities materials. This aligns with cultural analytics, which applies computational and visual methods to explore patterns in large-scale cultural datasets (Manovich 2020). The dataset is therefore understood not as an objective record of lived experience, but as a partial collection shaped by what was captured and preserved. The preparation of the dataset through annotation and categorisation therefore constitutes an interpretative process that conditions all subsequent analysis.
+            In this project, the photographic archive is treated as a form of cultural data that can be rendered computationally analysable through data science approaches to humanities materials. This aligns with cultural analytics, which applies computational and visual methods to explore patterns in large-scale cultural datasets <span className="in-text-cite">(Manovich 2020)</span>. The dataset is therefore understood not as an objective record of lived experience, but as a partial collection shaped by what was captured and preserved. The preparation of the dataset through annotation and categorisation therefore constitutes an interpretative process that conditions all subsequent analysis.
           </p>
           <p style={S.body}>
             To address the limitations of automated person detection (discussed below) in capturing socially meaningful relationships, I manually annotated each photograph to record whether I appear in each photograph, the number of main people present (excluding passers-by), and the social context of the image (e.g. family, friends, or academic settings).
@@ -663,10 +662,10 @@ export default function AssignmentTwoNarrative() {
           </p>
           <h3 style={S.h3}>2.2  Feature Extraction and Multimodal Analysis</h3>
           <p style={S.body}>
-            To enable large-scale analysis, I generated high-dimensional image embeddings for each photograph using <a href="https://github.com/mlfoundations/open_clip/" target="_blank" rel="noreferrer" style={S.link}>OpenCLIP</a> and <a href="https://dinov2.metademolab.com/" target="_blank" rel="noreferrer" style={S.link}>DINOv2</a> (Cherti et al. 2023; Oquab et al. 2023). These models encode images as vectors, allowing for similarity comparison, clustering, and the discovery of latent thematic patterns. Unlike earlier approaches that rely on supervised models such as ResNet-50 (Arnold and Tilton 2023), the use of self-supervised and multimodal models allows for a more flexible and semantically rich representation of visual content.
+            To enable large-scale analysis, I generated high-dimensional image embeddings for each photograph using <a href="https://github.com/mlfoundations/open_clip/" target="_blank" rel="noreferrer" style={S.link}>OpenCLIP</a> and <a href="https://dinov2.metademolab.com/" target="_blank" rel="noreferrer" style={S.link}>DINOv2</a> <span className="in-text-cite">(Cherti et al. 2023; Oquab et al. 2023)</span>. These models encode images as vectors, allowing for similarity comparison, clustering, and the discovery of latent thematic patterns. Unlike earlier approaches that rely on supervised models such as ResNet-50 <span className="in-text-cite">(Arnold and Tilton 2023)</span>, the use of self-supervised and multimodal models allows for a more flexible and semantically rich representation of visual content.
           </p>
           <p style={S.body}>
-            In addition to visual embeddings, I extracted dominant colour values from each image to support chromatic analysis. Following Arnold and Tilton’s analysis of how colour in movie posters relates to genre (Arnold and Tilton 2023), I extracted the dominant colour of each photograph to support chromatic visualisations and examine whether colour patterns reflect broader trends.
+            In addition to visual embeddings, I extracted dominant colour values from each image to support chromatic analysis. Following Arnold and Tilton’s analysis of how colour in movie posters relates to genre <span className="in-text-cite">(Arnold and Tilton 2023)</span>, I extracted the dominant colour of each photograph to support chromatic visualisations and examine whether colour patterns reflect broader trends.
           </p>
           <p style={S.body}>
             To capture semantic and contextual information, I used a combination of computer vision and vision–language models. I applied YOLO to detect objects in each image, including estimating the number of people present. As noted earlier, object detection only provides rough counts and does not capture social relationships. 
@@ -688,7 +687,7 @@ export default function AssignmentTwoNarrative() {
 
         <section style={SEC_CONT}>
           <p style={S.body}>
-            The structured metadata results from collaboration between computational tools and humanistic inquiry, embodying the pre-visualisation phase where the archive is prepared to speak as a cohesive model (Wrisley, 2018).
+            The structured metadata results from collaboration between computational tools and humanistic inquiry, embodying the pre-visualisation phase where the archive is prepared to speak as a cohesive model <span className="in-text-cite">(Wrisley, 2018)</span>.
           </p>
         </section>
 
@@ -801,7 +800,7 @@ export default function AssignmentTwoNarrative() {
             To analyse the semantic content of the photographs, I draw on several computational descriptions, including object detection (YOLO), vision–language tagging (CLIP), and caption generation (Gemma). Each captures a different dimension of image meaning: YOLO identifies discrete objects, CLIP assigns descriptive labels, and Gemma produces full-sentence captions.
           </p>
           <p style={S.body}>
-            This approach aligns with the logic of large-scale image analysis described in Distant Viewing (Arnold and Tilton 2023), where visual collections are transformed into structured data that can be queried, aggregated, and compared. Instead of relying entirely on manual interpretation, semantic features make it possible to trace recurring elements, such as “classroom”, “calligraphy”, or “family”, across thousands of images.
+            This approach aligns with the logic of large-scale image analysis described in Distant Viewing <span className="in-text-cite">(Arnold and Tilton 2023)</span>, where visual collections are transformed into structured data that can be queried, aggregated, and compared. Instead of relying entirely on manual interpretation, semantic features make it possible to trace recurring elements, such as “classroom”, “calligraphy”, or “family”, across thousands of images.
           </p>
         </section>
 
@@ -949,12 +948,6 @@ export default function AssignmentTwoNarrative() {
           </p>
         </section>
 
-        <VisBlock>
-          <StagedVisual label="Preparing centrality network" minHeight="min(80vh,50rem)">
-            <CentralityNetwork />
-          </StagedVisual>
-        </VisBlock>
-
         {/* Beeswarm: sticky viz left, scrollable text right */}
         <div id="swarm" style={{ display: 'flex', gap: '2.5rem', alignItems: 'flex-start', padding: '4.5rem 0 2rem' }}>
           <div style={{ flex: '0 0 64%', position: 'sticky', top: '1.5rem' }}>
@@ -1016,7 +1009,7 @@ export default function AssignmentTwoNarrative() {
         <section id="conclusion" style={SEC}>
           <h2 style={S.h2}>4  Conclusion</h2>
           <p style={S.body}>
-            To communicate these findings, the website adopts a narrative visualisation framework, following the “Martini Glass” structure (Segel and Heer 2010), which combines an initial linear, guided narrative with a subsequent open, interactive exploration. The interface first leads the viewer through major temporal and geographical patterns in the archive, before allowing independent exploration of the dataset. This structure supports both guided interpretation and user-driven discovery, allowing viewers to move between patterns and individual images, for example by filtering terms such as “calligraphy” or “Paris” to examine the visual instances underlying broader trends.
+            To communicate these findings, the website adopts a narrative visualisation framework, following the “Martini Glass” structure <span className="in-text-cite">(Segel and Heer 2010)</span>, which combines an initial linear, guided narrative with a subsequent open, interactive exploration. The interface first leads the viewer through major temporal and geographical patterns in the archive, before allowing independent exploration of the dataset. This structure supports both guided interpretation and user-driven discovery, allowing viewers to move between patterns and individual images, for example by filtering terms such as “calligraphy” or “Paris” to examine the visual instances underlying broader trends.
           </p>
           <p style={S.body}>
             This project demonstrates how computational analysis can be applied to a personal photographic archive to reveal patterns in social relationships, activities, and environments over time. By combining machine-driven feature extraction with human interpretation, the project creates a structured representation of lived experience that can be explored at multiple levels of abstraction. In this sense, the archive becomes not only a collection of images, but a structured system through which personal history can be examined and reinterpreted.
@@ -1030,7 +1023,7 @@ export default function AssignmentTwoNarrative() {
         <section id="reflection" style={SEC}>
           <h2 style={S.h2}>5  Reflection on design</h2>
           <p style={S.body}>
-            The design of the web interface forms part of how the dataset is interpreted and communicated. When designing the website, I initially considered a strict two-column, scroll-based storytelling layout, similar to <a href="https://k-means-explorable.vercel.app/" target="_blank" rel="noreferrer" style={S.link}>K-Means Clustering: An Explorable Explainer</a> (Ang n.d.). However, this approach made the interface overly crowded and restrictive. Not all sections required visualisations, and the fixed two-column layout risked introducing them unnecessarily. As a result, I shifted to a primarily single-column essay format.
+            The design of the web interface forms part of how the dataset is interpreted and communicated. When designing the website, I initially considered a strict two-column, scroll-based storytelling layout, similar to <a href="https://k-means-explorable.vercel.app/" target="_blank" rel="noreferrer" style={S.link}>K-Means Clustering: An Explorable Explainer</a> <span className="in-text-cite">(Ang n.d.)</span>. However, this approach made the interface overly crowded and restrictive. Not all sections required visualisations, and the fixed two-column layout risked introducing them unnecessarily. As a result, I shifted to a primarily single-column essay format.
           </p>
           <p style={S.body}>
             In the website, I initially included a data sonification section and a beeswarm plot, but later removed them: the former relied on abstract image features that did not support meaningful interpretation, while the latter duplicated existing visualisations without adding new insight.

@@ -18,9 +18,6 @@ function barPath(x, barTop, bw, bh) {
   return `M${x},${barTop + r} Q${x},${barTop} ${x + r},${barTop} H${x + bw - r} Q${x + bw},${barTop} ${x + bw},${barTop + r} V${barTop + bh} H${x} Z`
 }
 
-function gradId(key) {
-  return `tg-${key.replace(/[^a-z0-9]/gi, '_')}`
-}
 
 export default function TemporalRibbon({ bins }) {
   const POPUP_WIDTH = 260
@@ -148,7 +145,7 @@ export default function TemporalRibbon({ bins }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gridTemplateRows: 'auto auto', alignItems: 'start', gap: '0.75rem 1.5rem' }}>
         <div>
           <p style={{ margin: 0, font: '600 0.72rem/1.2 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>Temporal Register</p>
-          <h3 style={{ margin: '0.3rem 0 0', font: '500 clamp(1.45rem,1.2vw + 1rem,1.95rem)/1.12 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>When the archive thickens.</h3>
+          <h3 style={{ margin: '0.3rem 0 0', font: '500 clamp(1.45rem,1.2vw + 1rem,1.95rem)/1.12 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>Temporal distribution of the photos</h3>
         </div>
         <div role="group" aria-label="Group by time period" style={{ display: 'flex', alignItems: 'center', padding: '3px', background: 'rgba(29,35,41,0.07)', borderRadius: '999px', gap: '2px' }}>
           {['Month', 'Year'].map((g) => {
@@ -163,9 +160,6 @@ export default function TemporalRibbon({ bins }) {
             )
           })}
         </div>
-        <p style={{ gridColumn: '1/-1', margin: 0, maxWidth: '52rem', fontSize: '0.98rem', lineHeight: '1.7', color: 'var(--archive-color-copy)' }}>
-          {granularity === 'month' ? 'The archive is plotted month by month. Drag the range selector below the bars to zoom in on any period.' : 'The archive is plotted year by year. Drag the range selector to highlight any span.'}
-        </p>
       </div>
 
       {/* Brush summary */}
@@ -183,17 +177,6 @@ export default function TemporalRibbon({ bins }) {
           onMouseLeave={() => setPopup(null)}>
           <div style={{ minWidth: '100%', width: `${chartWidth}px`, padding: '0.9rem 0.9rem 0.35rem' }}>
             <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" style={{ display: 'block', width: '100%', height: 'auto', overflow: 'visible' }}>
-              <defs>
-                {activeBins.map((bin) => {
-                  if (bin.samples.length < 2) return null
-                  const colors = bin.samples.slice(0, 3).map((s) => s.color)
-                  return (
-                    <linearGradient key={bin.key} id={gradId(bin.key)} x1="0" y1="0" x2="0" y2="1">
-                      {colors.map((color, ci) => <stop key={ci} offset={`${Math.round((ci / (colors.length - 1)) * 100)}%`} stopColor={color} />)}
-                    </linearGradient>
-                  )
-                })}
-              </defs>
               <g transform={`translate(${paddingBase.left},${paddingBase.top})`}>
                 {yTicks.map((tick) => (
                   <g key={tick}>
@@ -219,7 +202,7 @@ export default function TemporalRibbon({ bins }) {
                   const barTop = yScale(bin.count)
                   const bh = innerHeight - barTop
                   const dimmed = !isInBrush(bin.key)
-                  const fill = bin.samples.length >= 2 ? `url(#${gradId(bin.key)})` : (bin.samples[0]?.color ?? '#7b8a95')
+                  const fill = '#4e79a7'
                   return (
                     <path key={bin.key}
                       d={barPath(x, barTop, bw, Math.max(0, bh))}
@@ -265,9 +248,6 @@ export default function TemporalRibbon({ bins }) {
             </svg>
           </div>
         </div>
-        <p style={{ margin: 0, font: '0.78rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>
-          Drag the slim bar below the chart to select a {granularity === 'month' ? 'date' : 'year'} range · hover any bar for detail
-        </p>
       </div>
 
       {/* Hover popup */}
