@@ -1,7 +1,12 @@
-import { useState, useMemo } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 import { photographUrl } from '../lib/photographs'
 
 const imageUrl = photographUrl
+
+const DISPLAY_MODES = [
+  { id: 'count', label: 'Absolute Count (n)', showFreq: false },
+  { id: 'frequency', label: 'Frequency (%)', showFreq: true },
+]
 
 function prettyLabel(value) {
   return value.replace(/\b\w/g, (c) => c.toUpperCase())
@@ -45,6 +50,8 @@ function freqLabel(share) {
 export default function PlaceSubjectAtlas({ atlas }) {
   const [activeKey, setActiveKey] = useState(null)
   const [showFreq, setShowFreq]   = useState(false)
+  const displayTabRefs = useRef([])
+  const displayTabsId = useId()
 
   const visibleSubjects = atlas.subjects
   const filteredCells   = atlas.cells
@@ -58,6 +65,31 @@ export default function PlaceSubjectAtlas({ atlas }) {
 
   const activeCell = atlas.cells.find((c) => `${c.place}::${c.subject}::${c.source}` === activeKey) ?? null
   const colCount = visibleSubjects.length
+  const activeDisplayIndex = showFreq ? 1 : 0
+
+  function selectDisplayMode(index, shouldFocus = false) {
+    const nextMode = DISPLAY_MODES[index]
+    if (!nextMode) return
+
+    setShowFreq(nextMode.showFreq)
+    if (shouldFocus) {
+      window.requestAnimationFrame(() => displayTabRefs.current[index]?.focus())
+    }
+  }
+
+  function handleDisplayKeyDown(event, index) {
+    const lastIndex = DISPLAY_MODES.length - 1
+    let nextIndex = index
+
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = index === lastIndex ? 0 : index + 1
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = index === 0 ? lastIndex : index - 1
+    else if (event.key === 'Home') nextIndex = 0
+    else if (event.key === 'End') nextIndex = lastIndex
+    else return
+
+    event.preventDefault()
+    selectDisplayMode(nextIndex, true)
+  }
 
   return (
     <article style={{
@@ -93,34 +125,43 @@ export default function PlaceSubjectAtlas({ atlas }) {
       </header>
 
       {/* ── Controls ───────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-        <span style={{ font: '500 0.72rem/1 var(--archive-font-ui)', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+      <div className="atlas-display-tabs" data-orientation="horizontal">
+        <span id={`${displayTabsId}-label`} className="atlas-display-tabs__caption">
           Display
         </span>
-        <div style={{ display: 'flex', gap: '3px', padding: '3px', background: 'rgba(29,35,41,0.07)', borderRadius: '999px' }}>
-          {[
-            { key: false, label: 'Absolute Count (n)' },
-            { key: true,  label: 'Frequency (%)' },
-          ].map(({ key, label }) => (
-            <button
-              key={String(key)}
-              type="button"
-              onClick={() => setShowFreq(key)}
-              style={{
-                padding: '0.35rem 0.9rem',
-                border: 'none',
-                borderRadius: '999px',
-                font: '500 0.82rem/1 var(--archive-font-ui)',
-                cursor: 'pointer',
-                transition: 'background 150ms, color 150ms',
-                background: showFreq === key ? 'rgba(255,255,255,0.92)' : 'transparent',
-                color: showFreq === key ? 'var(--archive-color-ink)' : 'var(--archive-color-muted)',
-                boxShadow: showFreq === key ? '0 1px 4px rgba(29,35,41,0.13)' : 'none',
-              }}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="atlas-display-tabs__list-container">
+          <div
+            aria-labelledby={`${displayTabsId}-label`}
+            className="atlas-display-tabs__list"
+            data-orientation="horizontal"
+            role="tablist"
+            style={{ '--atlas-active-tab-index': activeDisplayIndex }}
+          >
+            <span aria-hidden="true" className="atlas-display-tabs__indicator" />
+            {DISPLAY_MODES.map((mode, index) => {
+              const active = showFreq === mode.showFreq
+
+              return (
+                <button
+                  aria-controls={`${displayTabsId}-panel`}
+                  aria-selected={active}
+                  className="atlas-display-tabs__tab"
+                  data-selected={active}
+                  id={`${displayTabsId}-${mode.id}-tab`}
+                  key={mode.id}
+                  onClick={() => selectDisplayMode(index)}
+                  onKeyDown={(event) => handleDisplayKeyDown(event, index)}
+                  ref={(node) => { displayTabRefs.current[index] = node }}
+                  role="tab"
+                  tabIndex={active ? 0 : -1}
+                  type="button"
+                >
+                  {index > 0 && <span aria-hidden="true" className="atlas-display-tabs__separator" />}
+                  <span className="atlas-display-tabs__label">{mode.label}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
 
@@ -128,7 +169,13 @@ export default function PlaceSubjectAtlas({ atlas }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(16rem,20rem)', gap: '2.5rem', alignItems: 'start' }}>
 
         {/* Scrollable grid */}
-        <div style={{ overflowX: 'auto', paddingBottom: '0.5rem' }} className="custom-scrollbar">
+        <div
+          aria-labelledby={`${displayTabsId}-${DISPLAY_MODES[activeDisplayIndex].id}-tab`}
+          className="custom-scrollbar"
+          id={`${displayTabsId}-panel`}
+          role="tabpanel"
+          style={{ overflowX: 'auto', paddingBottom: '0.5rem' }}
+        >
           <div style={{
             display: 'grid',
             gap: '1px', // Crisp matrix lines
