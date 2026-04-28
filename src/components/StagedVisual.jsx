@@ -38,7 +38,7 @@ export default function StagedVisual({ label = 'Preparing visual field', minHeig
           position: 'relative',
           minHeight,
           borderRadius: '1.5rem',
-          background: 'linear-gradient(180deg,#f4f0e7,#eee9df)',
+          background: revealed ? 'transparent' : '#f7f4ed',
         }}
       >
         {mounted && (
@@ -54,7 +54,7 @@ export default function StagedVisual({ label = 'Preparing visual field', minHeig
               position: 'absolute', inset: 0,
               display: 'grid', placeContent: 'center', gap: '0.9rem',
               padding: '1.5rem',
-              background: 'linear-gradient(180deg,#f2ede3,#eae4d9),radial-gradient(circle at 18% 22%,rgba(62,91,113,0.06),transparent 34%)',
+              background: '#f7f4ed',
               borderRadius: 'inherit',
               transition: 'opacity 420ms ease',
               opacity: revealed ? 0 : 1,

@@ -208,7 +208,7 @@ export default function TemporalRibbon({ bins }) {
                       d={barPath(x, barTop, bw, Math.max(0, bh))}
                       fill={fill}
                       fillOpacity={dimmed ? 0.18 : activeKey === bin.key ? 1 : 0.72}
-                      style={{ cursor: 'pointer', shapeRendering: 'crispEdges', animationDelay: `${i * (granularity === 'year' ? 22 : 6)}ms` }}
+                      style={{ cursor: 'pointer', shapeRendering: 'crispEdges', animationDelay: `${i * (granularity === 'year' ? 22 : 6)}ms`, outline: 'none' }}
                       onMouseEnter={(event) => {
                         setActiveKey(bin.key)
                         const rect = shellRef.current?.getBoundingClientRect()

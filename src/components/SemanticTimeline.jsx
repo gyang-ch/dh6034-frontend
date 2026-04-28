@@ -194,7 +194,7 @@ export default function SemanticTimeline({ years }) {
             motionConfig="gentle"
             theme={chartTheme}
             role="img"
-            isFocusable
+            isFocusable={false}
             onMouseEnter={(datum) => setActiveYear(String(datum.indexValue))}
             onClick={(datum) => setActiveYear(String(datum.indexValue))}
             tooltip={(bar) => <SemanticTooltip {...bar} />}
