@@ -366,21 +366,6 @@
   text-transform: uppercase;
 }
 
-@keyframes move-gradients {
-  0% {
-    background-position: 18% 16%, 84% 14%, 0% 0%;
-  }
-  50% {
-    background-position: 25% 20%, 75% 10%, 0% 0%;
-  }
-  100% {
-    background-position: 18% 16%, 84% 14%, 0% 0%;
-  }
-}
-
-.essay {
-  animation: move-gradients 30s ease-in-out infinite;
-}
 
 .assignment-tabs {
   background: rgba(247, 246, 241, 0.84);

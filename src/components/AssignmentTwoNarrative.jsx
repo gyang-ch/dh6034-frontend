@@ -630,7 +630,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
       <div style={{ margin: '0 auto', width: 'min(112rem,calc(100vw - 2rem))', padding: '0 1.5rem 6rem' }}>
 
         {/* 1 – Introduction */}
-        <section id="intro" style={SEC}>
+        <section id="intro" style={{ ...SEC, paddingTop: '4.5rem' }}>
           <h2 style={S.h2}>1  Introduction</h2>
           <p style={S.body}>
             From the yellow loess of Lanzhou to the vertical neon of Hong Kong, and later to life in Europe, my life has unfolded across distinct cultural and visual environments. Over the past two decades, I have accumulated a personal archive of more than 7,000 photographs. These images record everyday moments, capturing changes in my relationships, surroundings, and routines. I analyse this collection computationally through image pre-processing and visualisation to examine how photographic patterns reflect changes in life stages, social interactions, daily activities, and personal interests over time.

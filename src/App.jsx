@@ -115,7 +115,7 @@ export default function App() {
   return (
     <>
       <main
-        className={`essay min-h-screen bg-[radial-gradient(circle_at_18%_16%,#f8f4de_0%,transparent_42%),radial-gradient(circle_at_84%_14%,#d7ebe8_0%,transparent_44%),linear-gradient(155deg,#f7f6f1_0%,#f0f7fb_100%)] text-slate-800 ${prefersReducedMotion ? 'reduced-motion' : ''}`}
+        className={`min-h-screen bg-[#f7f4ed] text-slate-800 ${prefersReducedMotion ? 'reduced-motion' : ''}`}
       >
         <nav className="assignment-tabs z-40">
           <div className="assignment-tabs-inner mx-auto flex w-[min(112rem,calc(100vw-1.5rem))] items-center gap-4 px-3 md:w-[min(112rem,calc(100vw-3rem))] md:px-6">
