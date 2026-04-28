@@ -35,12 +35,6 @@ function cellColor(count, maxCount) {
   }
 }
 
-const SOURCE_TABS = [
-  { key: 'all',   label: 'All Contexts' },
-  { key: 'gemma', label: 'Gemma Extractions' },
-  { key: 'yolo',  label: 'YOLO Detections' },
-]
-
 function freqLabel(share) {
   if (share <= 0)  return ''
   if (share < 1)   return '<1%'
@@ -49,21 +43,11 @@ function freqLabel(share) {
 }
 
 export default function PlaceSubjectAtlas({ atlas }) {
-  const [sourceFilter, setSourceFilter] = useState('all')
-  const [activeKey, setActiveKey]       = useState(null)
-  const [showFreq, setShowFreq]         = useState(false)
+  const [activeKey, setActiveKey] = useState(null)
+  const [showFreq, setShowFreq]   = useState(false)
 
-  const visibleSubjects = useMemo(
-    () => sourceFilter === 'all'
-      ? atlas.subjects
-      : atlas.subjects.filter((s) => s.source === sourceFilter),
-    [atlas.subjects, sourceFilter],
-  )
-
-  const filteredCells = useMemo(
-    () => sourceFilter === 'all' ? atlas.cells : atlas.cells.filter((c) => c.source === sourceFilter),
-    [atlas.cells, sourceFilter],
-  )
+  const visibleSubjects = atlas.subjects
+  const filteredCells   = atlas.cells
 
   const maxVal = useMemo(
     () => showFreq
@@ -108,55 +92,36 @@ export default function PlaceSubjectAtlas({ atlas }) {
         )}
       </header>
 
-      {/* ── Academic Controls ───────────────────────── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'center', gap: '1rem' }}>
-        
-        {/* Filter Tabs */}
-        <div style={{ display: 'flex', gap: '1.5rem' }}>
-          {SOURCE_TABS.map((tab) => {
-            const active = sourceFilter === tab.key
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setSourceFilter(tab.key)}
-                style={{
-                  padding: '0 0 0.4rem 0',
-                  border: 'none',
-                  borderBottom: `2px solid ${active ? 'var(--archive-color-accent)' : 'transparent'}`,
-                  background: 'transparent',
-                  font: `${active ? '600' : '400'} 0.72rem/1 var(--archive-font-ui)`,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  color: active ? 'var(--archive-color-ink)' : 'var(--archive-color-muted)',
-                  cursor: 'pointer',
-                  transition: 'color 0.2s ease, border-color 0.2s ease',
-                }}
-              >
-                {tab.label}
-              </button>
-            )
-          })}
+      {/* ── Controls ───────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <span style={{ font: '500 0.72rem/1 var(--archive-font-ui)', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+          Display
+        </span>
+        <div style={{ display: 'flex', gap: '3px', padding: '3px', background: 'rgba(29,35,41,0.07)', borderRadius: '999px' }}>
+          {[
+            { key: false, label: 'Absolute Count (n)' },
+            { key: true,  label: 'Frequency (%)' },
+          ].map(({ key, label }) => (
+            <button
+              key={String(key)}
+              type="button"
+              onClick={() => setShowFreq(key)}
+              style={{
+                padding: '0.35rem 0.9rem',
+                border: 'none',
+                borderRadius: '999px',
+                font: '500 0.82rem/1 var(--archive-font-ui)',
+                cursor: 'pointer',
+                transition: 'background 150ms, color 150ms',
+                background: showFreq === key ? 'rgba(255,255,255,0.92)' : 'transparent',
+                color: showFreq === key ? 'var(--archive-color-ink)' : 'var(--archive-color-muted)',
+                boxShadow: showFreq === key ? '0 1px 4px rgba(29,35,41,0.13)' : 'none',
+              }}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-
-        {/* Frequency Toggle */}
-        <button
-          type="button"
-          onClick={() => setShowFreq((v) => !v)}
-          style={{
-            padding: '0.4rem 0.8rem',
-            border: '1px solid var(--archive-color-rule)',
-            borderRadius: '4px',
-            background: showFreq ? 'rgba(62,91,113,0.06)' : 'transparent',
-            font: '500 0.72rem/1 var(--archive-font-ui)',
-            letterSpacing: '0.04em',
-            color: 'var(--archive-color-copy)',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          {showFreq ? 'Displaying: Frequency (%)' : 'Displaying: Absolute Count (n)'}
-        </button>
       </div>
 
       {/* ── Grid + Detail Panel ─────────────────────────────────────────── */}

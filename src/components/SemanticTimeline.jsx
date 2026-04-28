@@ -42,7 +42,7 @@ function SemanticTooltip({ id, value, color, data }) {
       <p style={{ margin: 0, font: '600 0.65rem/1.2 var(--archive-font-ui)', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
         {data.year}
       </p>
-      <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', font: 'italic 600 0.9rem/1.2 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
+      <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', font: '600 0.9rem/1.2 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-ink)' }}>
         <span style={{ width: '0.6rem', height: '0.6rem', background: color, display: 'inline-block' }} />
         {family.label}
       </p>
@@ -152,13 +152,13 @@ export default function SemanticTimeline({ years }) {
           <p style={{ margin: '0 0 0.75rem', font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--archive-color-accent)' }}>
             Figure 2. Semantic Timeline
           </p>
-          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '40rem' }}>
+          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-ink)', maxWidth: '40rem' }}>
             How the visual subjects of the archival photographs shift across the years.
           </h3>
         </div>
         {activeRecord && (
           <div style={{ textAlign: 'right', minWidth: '120px' }}>
-            <p style={{ margin: '0 0 0.2rem', font: 'italic 600 1.1rem/1 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>{activeRecord.year}</p>
+            <p style={{ margin: '0 0 0.2rem', font: '600 1.1rem/1 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-ink)' }}>{activeRecord.year}</p>
             <p style={{ margin: 0, font: '400 0.8rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>{activeRecord.total.toLocaleString()} annotated</p>
           </div>
         )}
@@ -216,13 +216,13 @@ export default function SemanticTimeline({ years }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
             <div style={{ display: 'grid', gap: '0.5rem' }}>
               <p style={{ margin: 0, font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--archive-color-accent)' }}>Keyword Cloud</p>
-              <p style={{ margin: 0, maxWidth: '34rem', font: 'italic 400 0.95rem/1.55 var(--archive-font-body)', color: 'var(--archive-color-copy)' }}>
+              <p style={{ margin: 0, maxWidth: '34rem', font: '400 0.95rem/1.55 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-copy)' }}>
                 Cleaned keywords aggregated across the timeline. Hover a word to inspect how insistently it recurs in the archive.
               </p>
             </div>
             {keywordFocus && (
               <div style={{ textAlign: 'right' }}>
-                <p style={{ margin: '0 0 0.2rem', font: 'italic 600 1.25rem/1 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>{prettyKeyword(keywordFocus.text)}</p>
+                <p style={{ margin: '0 0 0.2rem', font: '600 1.25rem/1 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-ink)' }}>{prettyKeyword(keywordFocus.text)}</p>
                 <p style={{ margin: 0, font: '400 0.8rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>
                   n = {keywordFocus.count.toLocaleString()} occurrences
                 </p>
@@ -235,8 +235,8 @@ export default function SemanticTimeline({ years }) {
               words={keywordWords}
               width={880}
               height={340}
-              font="var(--archive-font-display)" // Changed to Serif for elegance
-              fontStyle="italic"
+              font='"Aptos", "Segoe UI", sans-serif'
+              fontStyle="normal"
               fontWeight={400}
               padding={6}
               spiral="archimedean"
@@ -276,9 +276,10 @@ export default function SemanticTimeline({ years }) {
             </Wordcloud>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
             {keywordWords.slice(0, 8).map((keyword) => {
-              const isActive = keywordFocus?.text === keyword.text;
+              const isActive = keywordFocus?.text === keyword.text
+              const dotColor = keywordPalette[keyword.rank % keywordPalette.length]
               return (
                 <button
                   key={keyword.text}
@@ -289,18 +290,19 @@ export default function SemanticTimeline({ years }) {
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.4rem',
-                    padding: '0.35rem 0',
-                    border: 'none',
-                    borderBottom: `1px solid ${isActive ? 'var(--archive-color-ink)' : 'transparent'}`,
-                    background: 'transparent',
-                    font: `${isActive ? '600' : '400'} 0.75rem/1 var(--archive-font-ui)`,
-                    color: isActive ? 'var(--archive-color-ink)' : 'var(--archive-color-muted)',
-                    transition: 'all 0.2s ease'
+                    gap: '0.35rem',
+                    padding: '0.3rem 0.7rem',
+                    border: `1px solid ${isActive ? dotColor : 'var(--archive-color-rule)'}`,
+                    borderRadius: '999px',
+                    background: isActive ? `${dotColor}18` : 'var(--archive-color-bg)',
+                    font: `${isActive ? '600' : '400'} 0.78rem/1 var(--archive-font-ui)`,
+                    color: isActive ? 'var(--archive-color-ink)' : 'var(--archive-color-copy)',
+                    transition: 'all 0.15s ease',
                   }}
                 >
-                  <span style={{ width: '0.5rem', height: '0.5rem', background: keywordPalette[keyword.rank % keywordPalette.length], display: 'inline-block' }} />
-                  {prettyKeyword(keyword.text)} · {keyword.count}
+                  <span style={{ width: '0.45rem', height: '0.45rem', borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+                  {prettyKeyword(keyword.text)}
+                  <span style={{ font: '400 0.72rem/1 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>{keyword.count}</span>
                 </button>
               )
             })}

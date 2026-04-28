@@ -112,7 +112,7 @@ const S = {
   },
   body: {
     margin: '0 0 1.15rem',
-    font: '1rem/1.8 "Aptos", "Aptos Display", "Segoe UI", "Calibri", sans-serif',
+    font: 'clamp(1.16rem,1.34vw,1.3rem)/2rem "Times New Roman", Times, serif',
     color: 'var(--archive-color-copy)',
     maxWidth: 'none',
   },
@@ -124,7 +124,7 @@ const S = {
   },
 }
 
-const SEC = { width: 'min(100%, 88ch)', margin: '0 auto', padding: '4.5rem 0 2rem' }
+const SEC = { width: 'min(100%, 88ch)', margin: '0 auto', padding: '2.5rem 0 1.5rem' }
 const SEC_CONT = { width: 'min(100%, 88ch)', margin: '0 auto', padding: '1.5rem 0 1rem' }
 
 function VisBlock({ children }) {
@@ -773,7 +773,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
             Changes over time can also be examined through semantic features derived from Gemma-generated keywords. The line graph below visualises the frequency of selected terms across different periods. The terms “boy” and “child” appear frequently in earlier years but decline sharply in later periods, reflecting a transition in how subjects are represented within the archive. This shift corresponds to my own ageing, as the collection moves from documenting childhood to adult life.
           </p>
           <p style={S.body}>
-            Other terms highlight changes in activities and interests. “Calligraphy” and “Chinese calligraphy” increase significantly between 2022 and 2024, a period when I actively practised calligraphy and visited exhibitions featuring both contemporary and historical calligraphy. The term “classroom” appears much more frequently after 2023, aligning with my transition into a more structured academic environment.
+            Other terms highlight changes in activities and interests. “Chinese calligraphy” increase significantly between 2022 and 2024, a period when I actively practised calligraphy and visited exhibitions featuring both contemporary and historical calligraphy. The term “classroom” appears much more frequently after 2023, aligning with my transition into a more structured academic environment.
           </p>
         </section>
 
@@ -895,7 +895,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
         <section id="clustering" style={SEC_CONT}>
           <h3 style={S.h3}>3.6  Visual Similarity and Clustering</h3>
           <p style={S.body}>
-            With the CLIP and DINOv2 embeddings, I can find similar images and identify clusters. Similarity is computed using high-dimensional embeddings, and visualised through nearest-neighbour retrieval, which allows related images to be grouped. This supports the exploration of visual patterns within the archive. The four groups of images below are curated using image similarity, highlighting recurring scenes such as eating at tables, conference room settings, rail transit, and library shelves.
+            With the CLIP and DINOv2 embeddings, I can find similar images and identify clusters. Similarity is computed using high-dimensional embeddings, and visualised through nearest-neighbour retrieval, which allows related images to be grouped. This supports the exploration of visual patterns within the archive. The four groups of images below are curated using image similarity, highlighting recurring scenes such as plated dishes, conference room settings, trains, and library shelves.
           </p>
 
           {/* Similarity image groups */}
@@ -1091,7 +1091,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
               <>Segel, Edward, and Jeffrey Heer. 2010. “Narrative Visualization: Telling Stories with Data.” <em>IEEE Transactions on Visualization and Computer Graphics</em> 16 (6): 1139–1148.</>,
               <>Wrisley, David Joseph. 2018. “Pre-visualization.” In <em>Proceedings of the IEEE 3rd Workshop on Visualization for the Digital Humanities</em>.</>,
             ].map((ref, i) => (
-              <p key={i} style={{ ...S.body, margin: 0, fontSize: '0.92rem', lineHeight: '1.65', paddingLeft: '2em', textIndent: '-2em' }}>
+              <p key={i} style={{ ...S.body, margin: 0, fontSize: '1rem', lineHeight: '1.5', paddingLeft: '2em', textIndent: '-2em' }}>
                 {ref}
               </p>
             ))}

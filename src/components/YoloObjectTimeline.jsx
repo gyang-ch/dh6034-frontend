@@ -183,7 +183,7 @@ function TimelineChart({ items, series, months, groups, colorOf, defaultVisible,
             {tooltip.rows.map(({ item, v, color }) => (
               <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
                 <span style={{ width: 8, height: 8, background: color, flexShrink: 0 }} />
-                <span style={{ font: 'italic 400 0.85rem/1 var(--archive-font-body)', color: 'var(--archive-color-copy)', flex: 1 }}>{item}</span>
+                <span style={{ font: '400 0.85rem/1 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-copy)', flex: 1 }}>{item}</span>
                 <span style={{ font: '400 0.8rem/1 var(--archive-font-data)', color: 'var(--archive-color-ink)', marginLeft: '0.5rem' }}>
                   {formatTooltipVal(v)}
                 </span>
@@ -208,7 +208,7 @@ function TimelineChart({ items, series, months, groups, colorOf, defaultVisible,
                 border: 'none',
                 borderBottom: '1px solid var(--archive-color-ink)', // Academic input style
                 background: 'transparent',
-                font: 'italic 400 0.9rem/1 var(--archive-font-body)',
+                font: '400 0.9rem/1 "Aptos", "Segoe UI", sans-serif',
                 color: 'var(--archive-color-ink)',
                 outline: 'none',
               }}
@@ -226,26 +226,29 @@ function TimelineChart({ items, series, months, groups, colorOf, defaultVisible,
             const displayItems = q ? items.filter((i) => i.toLowerCase().includes(q)) : items
 
             if (q && !displayItems.length) return (
-              <p style={{ margin: 0, font: 'italic 400 0.85rem var(--archive-font-body)', color: 'var(--archive-color-muted)' }}>
+              <p style={{ margin: 0, font: '400 0.85rem "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-muted)' }}>
                 No records match "{legendSearch}".
               </p>
             )
 
             return (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                 {displayItems.map((item) => {
                   const on = enabled.has(item)
                   const color = colorOfItem(item)
                   return (
                     <button key={item} onClick={() => toggle(item)} style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                      padding: '0.2rem 0', border: 'none', background: 'transparent',
-                      cursor: 'pointer', font: `${on ? '600' : '400'} 0.75rem/1 var(--archive-font-ui)`,
-                      textTransform: 'uppercase', letterSpacing: '0.04em',
-                      color: on ? 'var(--archive-color-ink)' : 'var(--archive-color-muted)',
-                      transition: 'color 0.2s',
+                      display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                      padding: '0.28rem 0.65rem',
+                      border: `1px solid ${on ? color : 'var(--archive-color-rule)'}`,
+                      borderRadius: '999px',
+                      background: on ? `${color}18` : 'var(--archive-color-bg)',
+                      cursor: 'pointer',
+                      font: `${on ? '600' : '400'} 0.78rem/1 var(--archive-font-ui)`,
+                      color: on ? 'var(--archive-color-ink)' : 'var(--archive-color-copy)',
+                      transition: 'all 0.15s ease',
                     }}>
-                      <span style={{ width: 10, height: 10, flexShrink: 0, border: `1px solid ${on ? color : 'var(--archive-color-rule)'}`, background: on ? color : 'transparent' }} />
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: on ? color : 'var(--archive-color-rule)' }} />
                       {item}
                     </button>
                   )
@@ -293,10 +296,10 @@ export default function YoloObjectTimeline() {
           <p style={{ margin: 0, font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--archive-color-accent)' }}>
             Figure 3. Visual Signals Over Time — YOLO Objects
           </p>
-          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '45rem' }}>
+          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-ink)', maxWidth: '45rem' }}>
             Average number of each detected object per photograph.
           </h3>
-          <p style={{ margin: 0, maxWidth: '45rem', font: '400 0.9rem/1.6 var(--archive-font-body)', color: 'var(--archive-color-copy)' }}>
+          <p style={{ margin: 0, maxWidth: '45rem', font: '400 0.9rem/1.6 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-copy)' }}>
             YOLO counts every instance in each photo. The y-axis shows the average count per photo that month, so values above 1 mean the object appeared multiple times per photo on average.
           </p>
         </header>
@@ -309,10 +312,10 @@ export default function YoloObjectTimeline() {
           <p style={{ margin: 0, font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--archive-color-accent)' }}>
             Figure 4. Visual Signals Over Time — Gemma Keywords
           </p>
-          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '45rem' }}>
+          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-ink)', maxWidth: '45rem' }}>
             Share of photos each month mentioning specific concepts.
           </h3>
-          <p style={{ margin: 0, maxWidth: '45rem', font: '400 0.9rem/1.6 var(--archive-font-body)', color: 'var(--archive-color-copy)' }}>
+          <p style={{ margin: 0, maxWidth: '45rem', font: '400 0.9rem/1.6 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-copy)' }}>
             Each value represents the fraction of photos in a given month where the generated caption contains the exact keyword. Presence or absence is noted per photo, regardless of multiple occurrences.
           </p>
         </header>
