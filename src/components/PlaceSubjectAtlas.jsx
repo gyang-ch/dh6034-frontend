@@ -82,7 +82,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
         {/* Modest Top-Right Detail Readout */}
         {activeCell && (
           <div style={{ textAlign: 'right', minWidth: '120px' }}>
-            <p style={{ margin: '0 0 0.2rem', font: 'italic 600 1.1rem/1 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
+            <p style={{ margin: '0 0 0.2rem', font: '600 1.1rem/1 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-ink)' }}>
               {prettyLabel(activeCell.subject)}
             </p>
             <p style={{ margin: 0, font: '400 0.8rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>
@@ -174,7 +174,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
                   display: 'flex', justifyContent: 'space-between', gap: '1rem',
                   alignItems: 'center', padding: '0 0.75rem',
                   whiteSpace: 'nowrap',
-                  font: '400 0.85rem/1.2 var(--archive-font-body)', // Using serif for places
+                  font: '400 0.85rem/1.2 "Aptos", "Segoe UI", sans-serif',
                   color: 'var(--archive-color-ink)',
                 }}>
                   <span>{place.place}</span>
@@ -240,7 +240,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
                 <p style={{ margin: 0, font: '600 0.65rem/1.2 var(--archive-font-ui)', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
                   Selected Node Data
                 </p>
-                <p style={{ margin: 0, font: '400 1rem/1.4 var(--archive-font-body)', color: 'var(--archive-color-copy)' }}>
+                <p style={{ margin: 0, font: '400 1rem/1.4 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-copy)' }}>
                   The subject <strong>{prettyLabel(activeCell.subject)}</strong> ({activeCell.source === 'yolo' ? 'YOLO' : 'Gemma'}) appears in <strong>{activeCell.count}</strong> photograph{activeCell.count !== 1 ? 's' : ''} from <em>{activeCell.place}</em>.
                   {activeCell.share > 0 && ` This accounts for ${activeCell.share}% of the location's total documentation.`}
                 </p>
@@ -270,7 +270,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
               paddingTop: '1rem',
               borderTop: '1px solid var(--archive-color-rule)',
             }}>
-              <p style={{ margin: 0, font: 'italic 400 0.9rem/1.5 var(--archive-font-body)', color: 'var(--archive-color-muted)' }}>
+              <p style={{ margin: 0, font: '400 0.9rem/1.5 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-muted)' }}>
                 Select a populated cell in the matrix to view specific archival examples and distribution metrics.
               </p>
             </div>
