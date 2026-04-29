@@ -13,7 +13,7 @@ import StagedVisual from './StagedVisual'
 import JsonScrollExplainer from './JsonScrollExplainer'
 import YoloObjectTimeline from './YoloObjectTimeline'
 import GemmaSearch from './GemmaSearch'
-import AnnotationTimeline from './AnnotationTimeline'
+import { PresenceLineChart, PeopleCountLineChart } from './AnnotationTimeline'
 import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 import { photographUrl } from '../lib/photographs'
 
@@ -165,10 +165,10 @@ function DonutChart({ slices, title, defaultCenter }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.55rem' }}>
-      <p style={{ margin: 0, font: '600 0.68rem/1 var(--archive-font-ui)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--archive-color-muted)', textAlign: 'center' }}>
+      <p style={{ margin: 0, font: '600 0.78rem/1 var(--archive-font-ui)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--archive-color-muted)', textAlign: 'center' }}>
         {title}
       </p>
-      <svg viewBox="0 0 160 160" style={{ width: '100%', maxWidth: 160, display: 'block' }}>
+      <svg viewBox="0 0 160 160" style={{ width: '100%', maxWidth: 220, display: 'block' }}>
         {arcs.map((arc, i) => (
           <path key={i} d={donutArc(CX, CY, R, r, arc.a0, arc.a1)} fill={arc.color}
             opacity={hov === null || hov === i ? 1 : 0.28}
@@ -184,11 +184,11 @@ function DonutChart({ slices, title, defaultCenter }) {
           {cSub}
         </text>
       </svg>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.18rem 0.5rem', width: '100%' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.25rem 0.6rem', width: '100%' }}>
         {slices.map((sl, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.28rem', minWidth: 0 }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: sl.color, flexShrink: 0 }} />
-            <span style={{ font: '9.5px var(--archive-font-ui)', color: 'var(--archive-color-copy)', lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', minWidth: 0 }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: sl.color, flexShrink: 0 }} />
+            <span style={{ font: '11.5px var(--archive-font-ui)', color: 'var(--archive-color-copy)', lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {sl.shortLabel ?? sl.label}{' '}
               <span style={{ color: 'var(--archive-color-muted)' }}>
                 {((sl.count / total) * 100).toFixed(0)}%
@@ -207,7 +207,7 @@ const SHORT_CLUSTER = {
 }
 
 function SocialDonutPanel() {
-  const { totals, personCountHistogram, clusterCentroids, clusterNames } = assignment2Data
+  const { totals, personCountHistogram } = assignment2Data
   const PERSON_COLORS = ['#8a9aaa', '#7d8f7e', '#b09070', '#c28d5b', '#7f5539']
 
   return (
@@ -215,7 +215,7 @@ function SocialDonutPanel() {
       borderRadius: '1.6rem', border: '1px solid var(--archive-color-rule)',
       background: 'rgba(255,255,255,0.72)', padding: '1.6rem 1.8rem',
       boxShadow: '0 30px 80px -36px rgba(15,23,42,0.38)',
-      maxWidth: '680px', margin: '0 auto',
+      maxWidth: '560px', margin: '0 auto',
     }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.8rem 2.4rem' }}>
         <DonutChart
@@ -231,25 +231,30 @@ function SocialDonutPanel() {
           ]}
           defaultCenter={{ value: '40%', label: 'I appear' }}
         />
-        <DonutChart
-          title="Visual Themes"
-          slices={[...clusterCentroids].sort((a, b) => b.count - a.count).map(c => ({
-            label: clusterNames[c.cluster_id],
-            shortLabel: SHORT_CLUSTER[c.cluster_id],
-            count: c.count,
-            color: CLUSTER_COLOURS[c.cluster_id],
-          }))}
-          defaultCenter={{ value: '8', label: 'clusters' }}
-        />
-        <DonutChart
-          title="Orientation"
-          slices={[
-            { label: 'Landscape', count: totals.landscape, color: '#4d6a6d' },
-            { label: 'Portrait',  count: totals.portrait,  color: '#e09f3e' },
-          ]}
-          defaultCenter={{ value: '85%', label: 'landscape' }}
-        />
       </div>
+    </div>
+  )
+}
+
+function VisualThemesDonutPanel() {
+  const { clusterCentroids, clusterNames } = assignment2Data
+  return (
+    <div style={{
+      borderRadius: '1.6rem', border: '1px solid var(--archive-color-rule)',
+      background: 'rgba(255,255,255,0.72)', padding: '1.6rem 1.8rem',
+      boxShadow: '0 30px 80px -36px rgba(15,23,42,0.38)',
+      maxWidth: '300px', margin: '0 auto',
+    }}>
+      <DonutChart
+        title="Visual Themes"
+        slices={[...clusterCentroids].sort((a, b) => b.count - a.count).map(c => ({
+          label: clusterNames[c.cluster_id],
+          shortLabel: SHORT_CLUSTER[c.cluster_id],
+          count: c.count,
+          color: CLUSTER_COLOURS[c.cluster_id],
+        }))}
+        defaultCenter={{ value: '8', label: 'clusters' }}
+      />
     </div>
   )
 }
@@ -651,10 +656,10 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           <h2 style={S.h2}>2  Methodology</h2>
           <h3 style={S.h3}>2.1  Data Preparation</h3>
           <p style={S.body}>
-            I assembled a dataset of over 7,000 photographs collected from my phone, laptop, and cloud storage. While most of the images contained timestamps in the embedded EXIF metadata, all of them lacked location coordinates. To ensure temporal and spatial continuity across the archive, missing metadata was manually supplemented, including the assignment of latitude and longitude coordinates using Google Maps. This process highlights a key principle in Digital Humanities: datasets are not passively “given” but actively constructed through processes of selection, correction, and interpretation. This manual labour constitutes what Wrisley defines as pre-visualisation, defined as interdisciplinary and transmedial critical work that links the raw archive to the final visual system <span className="in-text-cite">(Wrisley, 2018)</span>.
+            I assembled a dataset of over 7,000 photographs collected from my phone, laptop, and cloud storage. While most of the images contained timestamps in the embedded EXIF metadata, all of them lacked location coordinates. To ensure temporal and spatial continuity across the archive, missing metadata was manually supplemented, including the assignment of latitude and longitude coordinates using Google Maps. This process highlights a key principle in Digital Humanities: datasets are not passively “given” but actively constructed through processes of selection and interpretation. This manual labour constitutes what Wrisley defines as pre-visualisation, defined as interdisciplinary and transmedial critical work that links the raw archive to the final visual system <span className="in-text-cite">(Wrisley, 2018)</span>.
           </p>
           <p style={S.body}>
-            In this project, the photographic archive is treated as a form of cultural data that can be rendered computationally analysable through data science approaches to humanities materials. This aligns with cultural analytics, which applies computational and visual methods to explore patterns in large-scale cultural datasets <span className="in-text-cite">(Manovich 2020)</span>. The dataset is therefore understood not as an objective record of lived experience, but as a partial collection shaped by what was captured and preserved. The preparation of the dataset through annotation and categorisation therefore constitutes an interpretative process that conditions all subsequent analysis.
+            In this project, the photographic archive is treated as a form of cultural data that can be analysed computationally through data science approaches to humanities materials. This aligns with cultural analytics, which applies computational and visual methods to explore patterns in large-scale cultural datasets <span className="in-text-cite">(Manovich 2020)</span>. The dataset is therefore understood not as an objective record of lived experience, but as a partial collection shaped by what was captured and preserved. The preparation of the dataset through annotation and categorisation therefore constitutes an interpretative process that conditions all subsequent analysis.
           </p>
           <p style={S.body}>
             To address the limitations of automated person detection (discussed below) in capturing socially meaningful relationships, I manually annotated each photograph to record whether I appear in each photograph, the number of main people present (excluding passers-by), and the social context of the image (e.g. family, friends, or academic settings).
@@ -670,7 +675,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
             In addition to visual embeddings, I extracted dominant colour values from each image to support chromatic analysis. Following Arnold and Tilton’s analysis of how colour in movie posters relates to genre <span className="in-text-cite">(Arnold and Tilton 2023)</span>, I extracted the dominant colour of each photograph to support chromatic visualisations and examine whether colour patterns reflect broader trends.
           </p>
           <p style={S.body}>
-            To capture semantic and contextual information, I used a combination of computer vision and vision–language models. I applied YOLO to detect objects in each image, including estimating the number of people present. As noted earlier, object detection only provides rough counts and does not capture social relationships. 
+            To capture semantic and contextual information, I used a combination of computer vision and vision–language models. I applied YOLO to detect objects in each image, including people counts. As noted earlier, object detection only provides rough counts and does not capture social relationships. 
           </p>
           <p style={S.body}>
             This combination of automated detection and manual annotation captures both visual content and socially relevant information. It also reflects a broader principle in Digital Humanities: computational methods support, but do not replace, human interpretation when working with complex cultural data.
@@ -679,7 +684,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
             Furthermore, textual descriptions of the images were generated using vision–language models. Initially, I used BLIP to generate captions and keywords, but the results were not accurate enough, so I switched to the Gemma 4 31B-it model via Together AI, which produced more reliable semantic descriptions. To improve consistency and reduce hallucinated or interpretative outputs, the model was prompted to generate short, literal descriptions restricted to observable visual content, and to return results in a structured JSON format (including a single-sentence caption and a fixed set of keywords). The integration of visual features (embeddings), detected objects, and generated text reflects a “multimodal turn” in Digital Humanities, in which computational analysis operates across multiple representational layers rather than relying on a single data modality.
           </p>
           <p style={S.body}>
-            All extracted features and annotations were stored in a structured JSON format, linking each image to its associated metadata, embeddings, captions, and categorical labels, as shown below. 
+            All extracted features and annotations were stored in JSON format, linking each image to its associated metadata, embeddings, captions, and categorical labels, as shown below. 
           </p>
         </section>
 
@@ -707,10 +712,6 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
             The archive reveals a gradual shift in the structure of my lived experience: from family-oriented documentation in childhood toward a more individualised and academically shaped visual record in adulthood.
           </p>
         </section>
-
-        <VisBlock>
-          <AnnotationTimeline />
-        </VisBlock>
 
         {/* 3.2 – Temporal Patterns */}
         <section id="temporal" style={SEC_CONT}>
@@ -885,6 +886,14 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
         </section>
 
         <VisBlock>
+          <PresenceLineChart />
+        </VisBlock>
+
+        <VisBlock>
+          <PeopleCountLineChart />
+        </VisBlock>
+
+        <VisBlock>
           <SocialDonutPanel />
         </VisBlock>
 
@@ -971,6 +980,10 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           <StagedVisual label="Preparing visual constellation" minHeight="min(75vh,44rem)">
             <AssignmentTwoGraph />
           </StagedVisual>
+        </VisBlock>
+
+        <VisBlock>
+          <VisualThemesDonutPanel />
         </VisBlock>
 
         <section style={SEC_CONT}>
