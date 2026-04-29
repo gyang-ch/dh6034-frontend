@@ -6,7 +6,7 @@ const PCT_COLOR    = '#5c7c92'
 const PEOPLE_COLOR = '#c28d5b'
 const YOLO_COLOR   = '#7b6f9c'
 
-const W = 700, H = 225
+const W = 700, H = 210
 const PAD = { top: 20, right: 16, bottom: 36, left: 52 }
 const IW = W - PAD.left - PAD.right
 const IH = H - PAD.top  - PAD.bottom
@@ -65,7 +65,7 @@ const CARD = {
   background: 'rgba(255,255,255,0.72)',
   padding: '1.4rem 1.6rem',
   boxShadow: '0 30px 80px -36px rgba(15,23,42,0.38)',
-  margin: '0 auto',
+  margin: '0 4rem',
 }
 
 function XAxis() {

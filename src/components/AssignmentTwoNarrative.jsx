@@ -886,15 +886,15 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
         </section>
 
         <VisBlock>
+          <SocialDonutPanel />
+        </VisBlock>
+
+        <VisBlock>
           <PresenceLineChart />
         </VisBlock>
 
         <VisBlock>
           <PeopleCountLineChart />
-        </VisBlock>
-
-        <VisBlock>
-          <SocialDonutPanel />
         </VisBlock>
 
         {/* 3.6 – Visual Similarity and Clustering */}

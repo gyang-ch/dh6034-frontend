@@ -247,6 +247,7 @@ export default function GemmaSearch() {
     <div style={{
       display: 'grid', gap: '1.25rem',
       padding: '1.4rem 1.6rem',
+      margin: '0 6rem',
       border: '1px solid var(--archive-color-rule)',
       borderRadius: '1.75rem',
       background:
