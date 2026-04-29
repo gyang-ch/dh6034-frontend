@@ -47,6 +47,12 @@ function freqLabel(share) {
   return `${Math.round(share)}%`
 }
 
+function legendValueLabel(value, showFreq) {
+  if (value <= 0) return '0'
+  if (showFreq) return freqLabel(value)
+  return Math.max(1, Math.round(value)).toLocaleString()
+}
+
 export default function PlaceSubjectAtlas({ atlas }) {
   const [activeKey, setActiveKey] = useState(null)
   const [showFreq, setShowFreq]   = useState(false)
@@ -66,6 +72,18 @@ export default function PlaceSubjectAtlas({ atlas }) {
   const activeCell = atlas.cells.find((c) => `${c.place}::${c.subject}::${c.source}` === activeKey) ?? null
   const colCount = visibleSubjects.length
   const activeDisplayIndex = showFreq ? 1 : 0
+  const legendStops = useMemo(() => {
+    const high = maxVal
+    const mid = maxVal * 0.5
+    const low = showFreq ? Math.max(maxVal * 0.15, 0.1) : 1
+
+    return [
+      { id: 'empty', label: 'None', color: cellColor(0, maxVal).bg },
+      { id: 'low', label: `Low ${legendValueLabel(low, showFreq)}`, color: cellColor(low, maxVal).bg },
+      { id: 'mid', label: `Mid ${legendValueLabel(mid, showFreq)}`, color: cellColor(mid, maxVal).bg },
+      { id: 'high', label: `High ${legendValueLabel(high, showFreq)}`, color: cellColor(high, maxVal).bg },
+    ]
+  }, [maxVal, showFreq])
 
   function selectDisplayMode(index, shouldFocus = false) {
     const nextMode = DISPLAY_MODES[index]
@@ -171,11 +189,57 @@ export default function PlaceSubjectAtlas({ atlas }) {
         {/* Scrollable grid */}
         <div
           aria-labelledby={`${displayTabsId}-${DISPLAY_MODES[activeDisplayIndex].id}-tab`}
-          className="custom-scrollbar"
           id={`${displayTabsId}-panel`}
           role="tabpanel"
-          style={{ overflowX: 'auto', paddingBottom: '0.5rem' }}
+          style={{ display: 'grid', gap: '0.75rem', minWidth: 0 }}
         >
+          <div
+            aria-label={`Heatmap colour legend for ${showFreq ? 'frequency percentage' : 'absolute count'}`}
+            style={{
+              justifySelf: 'end',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.55rem',
+              maxWidth: '100%',
+              padding: '0.35rem 0.55rem',
+              border: '1px solid var(--archive-color-rule)',
+              background: 'rgba(255,255,255,0.42)',
+              font: '500 0.68rem/1 var(--archive-font-ui)',
+              color: 'var(--archive-color-muted)',
+              overflowX: 'auto',
+            }}
+          >
+            <span style={{ letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+              Colour
+            </span>
+            {legendStops.map((stop) => (
+              <span
+                key={stop.id}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    width: '0.8rem',
+                    height: '0.8rem',
+                    border: '1px solid rgba(29,35,41,0.12)',
+                    background: stop.color,
+                  }}
+                />
+                {stop.label}
+              </span>
+            ))}
+          </div>
+
+          <div
+            className="custom-scrollbar"
+            style={{ overflowX: 'auto', paddingBottom: '0.5rem' }}
+          >
           <div style={{
             display: 'grid',
             gap: '1px', // Crisp matrix lines
@@ -269,6 +333,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
                 })}
               </div>
             ))}
+          </div>
           </div>
         </div>
 

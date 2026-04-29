@@ -340,7 +340,7 @@ export default function PhotoMap({ semanticMap }) {
   }
 
   return (
-    <div style={{ display: 'grid', gap: '0.75rem', padding: '1.2rem', border: '1px solid var(--archive-color-rule)', borderRadius: '1.75rem', background: 'rgba(255,255,255,0.9)', maxWidth: 'min(100%, 1020px)', margin: '0 auto' }}>
+    <div style={{ display: 'grid', gap: '0.75rem', padding: '1.2rem', border: '1px solid var(--archive-color-rule)', borderRadius: '1.75rem', background: 'rgba(255,255,255,0.9)', maxWidth: 'min(100%, 1120px)', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'flex-end', gap: '0.75rem' }}>
         <div>
           <p style={{ margin: '0 0 0.3rem', font: '600 0.72rem/1.2 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>Geographic Distribution</p>
@@ -417,7 +417,7 @@ export default function PhotoMap({ semanticMap }) {
           </button>
         </div>
 
-        <div ref={containerRef} style={{ width: '100%', height: '520px', borderRadius: '1.1rem', overflow: 'hidden', background: '#d4d0c8' }} />
+        <div ref={containerRef} style={{ width: '100%', height: '580px', borderRadius: '1.1rem', overflow: 'hidden', background: '#d4d0c8' }} />
       </div>
 
     </div>

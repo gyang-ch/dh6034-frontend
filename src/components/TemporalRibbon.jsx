@@ -147,18 +147,29 @@ export default function TemporalRibbon({ bins }) {
           <p style={{ margin: 0, font: '600 0.72rem/1.2 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>Temporal Register</p>
           <h3 style={{ margin: '0.3rem 0 0', font: '500 clamp(1.45rem,1.2vw + 1rem,1.95rem)/1.12 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>Temporal distribution of the photos</h3>
         </div>
-        <div role="group" aria-label="Group by time period" style={{ display: 'flex', alignItems: 'center', padding: '3px', background: 'rgba(29,35,41,0.07)', borderRadius: '999px', gap: '2px' }}>
-          {['Month', 'Year'].map((g) => {
-            const key = g.toLowerCase()
-            const active = granularity === key
-            return (
-              <button key={key} type="button" aria-pressed={active}
-                onClick={() => handleGranularityChange(key)}
-                style={{ padding: '0.35rem 0.95rem', border: 'none', borderRadius: '999px', font: '500 0.82rem/1 var(--archive-font-ui)', cursor: 'pointer', transition: 'background 150ms ease,color 150ms ease', background: active ? 'rgba(255,255,255,0.92)' : 'transparent', color: active ? 'var(--archive-color-ink)' : 'var(--archive-color-muted)', boxShadow: active ? '0 1px 4px rgba(29,35,41,0.13)' : 'none' }}>
-                {g}
-              </button>
-            )
-          })}
+        <div className="atlas-display-tabs__list-container">
+          <div
+            className="atlas-display-tabs__list"
+            role="group"
+            aria-label="Group by time period"
+            style={{ '--atlas-active-tab-index': granularity === 'month' ? 0 : 1, '--atlas-tab-gap': '3px' }}
+          >
+            <span aria-hidden="true" className="atlas-display-tabs__indicator" />
+            {['Month', 'Year'].map((g, index) => {
+              const key = g.toLowerCase()
+              const active = granularity === key
+              return (
+                <button key={key} type="button" aria-pressed={active}
+                  className="atlas-display-tabs__tab"
+                  data-selected={active}
+                  style={{ minWidth: 0, minHeight: 0, padding: '0.35rem 0.95rem' }}
+                  onClick={() => handleGranularityChange(key)}>
+                  {index > 0 && <span aria-hidden="true" className="atlas-display-tabs__separator" />}
+                  <span className="atlas-display-tabs__label">{g}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
 

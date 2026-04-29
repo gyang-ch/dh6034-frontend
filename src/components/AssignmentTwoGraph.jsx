@@ -260,7 +260,7 @@ export default function AssignmentTwoGraph() {
       ]
 
   return (
-    <div className="assignment2-panel overflow-hidden rounded-[1.6rem] border border-slate-300/70 bg-white/72 p-5 shadow-[0_30px_80px_-36px_rgba(15,23,42,0.45)] backdrop-blur-sm md:p-7">
+    <div className="assignment2-panel overflow-hidden rounded-[1.6rem] border border-slate-300/70 bg-white/72 p-5 shadow-[0_30px_80px_-36px_rgba(15,23,42,0.45)] backdrop-blur-sm md:p-7 max-w-[95%] mx-auto">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="font-data text-[0.72rem] uppercase tracking-[0.22em] text-slate-500">Image Constellation</p>
@@ -298,7 +298,7 @@ export default function AssignmentTwoGraph() {
       </div>
 
       <div className="assignment2-graph-shell relative">
-        <div ref={containerRef} className="assignment2-graph h-[38rem] w-full rounded-[1.2rem]" />
+        <div ref={containerRef} className="assignment2-graph h-[34rem] w-full rounded-[1.2rem]" />
 
         {hoveredNode && (
           <article
