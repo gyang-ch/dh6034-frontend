@@ -1,26 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ResponsiveBar } from '@nivo/bar'
-import { Wordcloud } from '@visx/wordcloud'
 import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
-
-function prettyKeyword(value) {
-  return value.replace(/\b\w/g, (c) => c.toUpperCase())
-}
-
-function createSeededRandom(seed) {
-  let h = 1779033703 ^ seed.length
-  for (let i = 0; i < seed.length; i += 1) {
-    h = Math.imul(h ^ seed.charCodeAt(i), 3432918353)
-    h = (h << 13) | (h >>> 19)
-  }
-
-  return function seededRandom() {
-    h = Math.imul(h ^ (h >>> 16), 2246822507)
-    h = Math.imul(h ^ (h >>> 13), 3266489909)
-    const t = (h ^= h >>> 16) >>> 0
-    return t / 4294967296
-  }
-}
 
 function SemanticTooltip({ id, value, color, data }) {
   const family = data.families.find((item) => item.key === id)
@@ -86,31 +66,6 @@ export default function SemanticTimeline({ years }) {
     [years]
   )
 
-  const keywordWords = useMemo(() => {
-    const totals = new Map()
-
-    years.forEach((year) => {
-      year.topKeywords.forEach((keyword) => {
-        totals.set(keyword.label, (totals.get(keyword.label) ?? 0) + keyword.count)
-      })
-    })
-
-    return [...totals.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 24)
-      .map(([text, count], index) => ({
-        text,
-        value: count,
-        count,
-        rank: index,
-      }))
-  }, [years])
-
-  const [activeKeyword, setActiveKeyword] = useState(null)
-  const keywordFocus = activeKeyword ?? keywordWords[0] ?? null
-  const keywordPalette = useMemo(() => ['#7a4f4f', '#4c6378', '#8b6b4a', '#5f8065', '#7a6a92', '#8f8a80'], [])
-  const keywordRandom = useMemo(() => createSeededRandom('semantic-keywords'), [])
-
   const chartTheme = useMemo(
     () => ({
       background: 'transparent',
@@ -171,7 +126,7 @@ export default function SemanticTimeline({ years }) {
             keys={familyOrder}
             indexBy="year"
             groupMode="stacked"
-            margin={{ top: 10, right: 14, bottom: 52, left: 52 }}
+            margin={{ top: 10, right: 14, bottom: 40, left: 52 }}
             padding={0.2}
             innerPadding={1}
             valueScale={{ type: 'linear' }}
@@ -183,7 +138,7 @@ export default function SemanticTimeline({ years }) {
             enableGridY
             axisTop={null}
             axisRight={null}
-            axisBottom={{ tickSize: 5, tickPadding: 14 }}
+            axisBottom={{ tickSize: 5, tickPadding: 6 }}
             axisLeft={{
               tickSize: 5, tickPadding: 12, tickValues: 4,
               legend: 'Annotated photographs', legendPosition: 'middle', legendOffset: -42,
@@ -210,105 +165,6 @@ export default function SemanticTimeline({ years }) {
           </span>
         ))}
       </div>
-
-      {keywordWords.length > 0 && (
-        <section style={{ display: 'grid', gap: '1.5rem', marginTop: '1rem', paddingTop: '2rem', borderTop: '2px solid var(--archive-color-ink)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
-            <div style={{ display: 'grid', gap: '0.5rem' }}>
-              <p style={{ margin: 0, font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--archive-color-accent)' }}>Keyword Cloud</p>
-              <p style={{ margin: 0, maxWidth: '34rem', font: '400 0.95rem/1.55 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-copy)' }}>
-                Cleaned keywords aggregated across the timeline. Hover a word to inspect how insistently it recurs in the archive.
-              </p>
-            </div>
-            {keywordFocus && (
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ margin: '0 0 0.2rem', font: '600 1.25rem/1 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-ink)' }}>{prettyKeyword(keywordFocus.text)}</p>
-                <p style={{ margin: 0, font: '400 0.8rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>
-                  n = {keywordFocus.count.toLocaleString()} occurrences
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div style={{ minHeight: '22rem', padding: '0', display: 'grid', placeItems: 'center', background: 'rgba(29,35,41,0.02)', border: '1px solid var(--archive-color-rule)' }}>
-            <Wordcloud
-              words={keywordWords}
-              width={880}
-              height={340}
-              font='"Aptos", "Segoe UI", sans-serif'
-              fontStyle="normal"
-              fontWeight={400}
-              padding={6}
-              spiral="archimedean"
-              random={keywordRandom}
-              rotate={() => 0}
-              fontSize={(word) => {
-                const maxValue = keywordWords[0]?.count ?? 1
-                const emphasis = Math.sqrt(word.count / maxValue)
-                return 18 + emphasis * 50
-              }}
-            >
-              {(words) =>
-                words.map((word) => {
-                  const keyword = keywordWords.find((item) => item.text === word.text)
-                  if (!keyword) return null
-                  const isActive = keywordFocus?.text === keyword.text
-                  return (
-                    <text
-                      key={word.text}
-                      textAnchor="middle"
-                      transform={`translate(${word.x}, ${word.y})`}
-                      fontSize={word.size}
-                      fontFamily={word.font}
-                      fontStyle={word.fontStyle}
-                      fontWeight={isActive ? 600 : 400}
-                      fill={isActive ? 'var(--archive-color-ink)' : keywordPalette[keyword.rank % keywordPalette.length]}
-                      fillOpacity={isActive ? 1 : 0.65}
-                      style={{ cursor: 'pointer', transition: prefersReducedMotion ? 'none' : 'all 180ms ease' }}
-                      onMouseEnter={() => setActiveKeyword(keyword)}
-                      onClick={() => setActiveKeyword(keyword)}
-                    >
-                      {prettyKeyword(word.text)}
-                    </text>
-                  )
-                })
-              }
-            </Wordcloud>
-          </div>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-            {keywordWords.slice(0, 8).map((keyword) => {
-              const isActive = keywordFocus?.text === keyword.text
-              const dotColor = keywordPalette[keyword.rank % keywordPalette.length]
-              return (
-                <button
-                  key={keyword.text}
-                  type="button"
-                  onMouseEnter={() => setActiveKeyword(keyword)}
-                  onClick={() => setActiveKeyword(keyword)}
-                  style={{
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    padding: '0.3rem 0.7rem',
-                    border: `1px solid ${isActive ? dotColor : 'var(--archive-color-rule)'}`,
-                    borderRadius: '999px',
-                    background: isActive ? `${dotColor}18` : 'var(--archive-color-bg)',
-                    font: `${isActive ? '600' : '400'} 0.78rem/1 var(--archive-font-ui)`,
-                    color: isActive ? 'var(--archive-color-ink)' : 'var(--archive-color-copy)',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  <span style={{ width: '0.45rem', height: '0.45rem', borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
-                  {prettyKeyword(keyword.text)}
-                  <span style={{ font: '400 0.72rem/1 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>{keyword.count}</span>
-                </button>
-              )
-            })}
-          </div>
-        </section>
-      )}
     </article>
   )
 }

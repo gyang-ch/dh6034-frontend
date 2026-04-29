@@ -319,7 +319,7 @@ export default function YoloObjectTimeline() {
             Each value represents the fraction of photos in a given month where the generated caption contains the exact keyword. Presence or absence is noted per photo, regardless of multiple occurrences.
           </p>
         </header>
-        <TimelineChart items={gemmaItems} series={gemmaSeries} months={gemmaMonths} groups={gemmaGroups} colorOf={gemmaColorOf} yFormat="percent" />
+        <TimelineChart items={gemmaItems} series={gemmaSeries} months={gemmaMonths} groups={gemmaGroups} colorOf={gemmaColorOf} defaultVisible={gemmaKeywordsData.defaultVisible} yFormat="percent" />
       </article>
     </div>
   )

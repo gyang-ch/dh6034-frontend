@@ -462,25 +462,13 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
       z: 0,
     })
 
-    const entranceTimeline = gsap.timeline({ defaults: { ease: 'power3.out' } })
-    entranceTimeline.fromTo(
-      tiles,
-      { opacity: 0, y: 36, scale: 0.92 },
-      {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: prefersReducedMotion ? 0.01 : 1.45,
-        stagger: prefersReducedMotion ? 0 : 0.025,
-      }
-    )
+    gsap.set(tiles, { opacity: 1, y: 0, scale: 1 })
 
     if (overlayRef.current) {
-      entranceTimeline.fromTo(
+      gsap.fromTo(
         overlayRef.current,
         { opacity: 0, y: 28, scale: 0.96 },
-        { opacity: 1, y: 0, scale: 1, duration: prefersReducedMotion ? 0.01 : 1.05 },
-        prefersReducedMotion ? 0 : 0.18
+        { opacity: 1, y: 0, scale: 1, duration: prefersReducedMotion ? 0.01 : 1.05, ease: 'power3.out' }
       )
     }
 
@@ -685,7 +673,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
                               <img
                                 src={imageUrl(filename)}
                                 alt=""
-                                loading={currentTileIndex < 12 ? 'eager' : 'lazy'}
+                                loading="eager"
                                 decoding="async"
                               />
                             </div>
