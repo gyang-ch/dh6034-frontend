@@ -1045,14 +1045,6 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           </div>
           <div style={{ flex: 1, minWidth: 0, paddingBottom: 'calc(50vh - 40vh - 1rem)' }}>
             <div style={{ padding: '0 0 1rem' }}>
-              <p style={{ ...S.kicker, marginBottom: '0.4rem' }}>Scroll-Driven Beeswarm</p>
-              <h3 style={{ ...S.h3, marginTop: 0 }}>The same corpus read as freely moving circles.</h3>
-              <p style={S.body}>
-                Here the corpus is read as a field of moving circles rather than a fixed grid. Each point can drift, cluster, or align along an axis, making broader patterns easier to perceive.
-              </p>
-              <p style={S.body}>
-                Hover any circle to inspect the photograph and click to pin a detail strip. Radius encodes style energy; colour is the dominant hue.
-              </p>
             </div>
             {SWARM_STEPS.map((s, i) => (
               <div
