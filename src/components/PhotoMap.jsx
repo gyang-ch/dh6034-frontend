@@ -345,7 +345,7 @@ export default function PhotoMap({ semanticMap }) {
         <div>
           <p style={{ margin: '0 0 0.3rem', font: '600 0.72rem/1.2 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>Geographic Distribution</p>
           <h3 style={{ margin: 0, font: '500 1.45rem/1.12 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>
-            {mode === 'count' ? 'Archive density across the map' : mode === 'subject' ? 'Dominant semantic families by place' : 'Indoor vs outdoor balance by place'}
+            {mode === 'count' ? 'Where my photos were taken' : mode === 'subject' ? 'Dominant semantic families by place' : 'Indoor vs outdoor balance by place'}
           </h3>
         </div>
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import tippy, { followCursor } from 'tippy.js'
 import 'tippy.js/dist/tippy.css'
 import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { assignment2Data } from '../data/assignment2Data'
 import AssignmentTwoGraph from './AssignmentTwoGraph'
@@ -569,34 +570,64 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
     const groups = similarityGroupRefs.current.filter(Boolean)
     if (!groups.length) return undefined
 
-    if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+    if (prefersReducedMotion) {
       groups.forEach((group) => gsap.set(group.querySelectorAll('[data-similarity-piece]'), { clearProps: 'all' }))
       return undefined
     }
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return
+    const triggers = []
 
-        const pieces = entry.target.querySelectorAll('[data-similarity-piece]')
-        gsap.fromTo(
-          pieces,
-          { autoAlpha: 0, y: 6 },
-          {
+    groups.forEach((group) => {
+      const label = group.querySelector('p[data-similarity-piece]')
+      const images = [...group.querySelectorAll('img[data-similarity-piece]')]
+
+      // Initial hidden state: tilted back in 3D, shifted down, invisible
+      // Inspired by codrops/ScrollAnimationsGrid demo7 rotationX perspective technique
+      gsap.set(images, {
+        autoAlpha: 0,
+        y: 52,
+        rotationX: 26,
+        scale: 0.86,
+        transformPerspective: 900,
+        transformOrigin: '50% 110%',
+      })
+      if (label) gsap.set(label, { autoAlpha: 0, y: 14 })
+
+      const st = ScrollTrigger.create({
+        trigger: group,
+        start: 'top 84%',
+        once: true,
+        onEnter: () => {
+          // Label lifts in first
+          if (label) {
+            gsap.to(label, {
+              autoAlpha: 1,
+              y: 0,
+              duration: 0.38,
+              ease: 'power2.out',
+            })
+          }
+          // Images flip up with a grid-aware stagger (2 rows × 3 cols)
+          gsap.to(images, {
             autoAlpha: 1,
             y: 0,
-            duration: 0.22,
-            ease: 'power2.out',
-            stagger: 0.012,
-            overwrite: 'auto',
-          }
-        )
-        observer.unobserve(entry.target)
+            rotationX: 0,
+            scale: 1,
+            duration: 0.72,
+            ease: 'power3.out',
+            stagger: { amount: 0.42, from: 'start', grid: [2, 3] },
+            delay: 0.08,
+            onComplete() {
+              gsap.set(images, { clearProps: 'rotationX,transformPerspective,transformOrigin,scale' })
+            },
+          })
+        },
       })
-    }, { threshold: 0.28, rootMargin: '0px 0px -12% 0px' })
 
-    groups.forEach((group) => observer.observe(group))
-    return () => observer.disconnect()
+      triggers.push(st)
+    })
+
+    return () => triggers.forEach((t) => t.kill())
   }, [prefersReducedMotion])
 
   let tileIndex = 0
