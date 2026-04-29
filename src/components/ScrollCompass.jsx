@@ -4,43 +4,58 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 export default function ScrollCompass({ onScrollTop }) {
   const [isVisible, setIsVisible] = useState(false)
+  const [scrollPercent, setScrollPercent] = useState(0)
   const circleRef = useRef(null)
   const needleRef = useRef(null)
   const containerRef = useRef(null)
   const wrapRef = useRef(null)
+  // Ref tracks current visibility inside the scroll callback to avoid stale closures
+  const isVisibleRef = useRef(false)
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
 
-    // Progress animation linked to scroll
     const st = ScrollTrigger.create({
       start: 'top top',
       end: 'bottom bottom',
       onUpdate: (self) => {
         const progress = self.progress
         const offset = 283 * (1 - progress)
-        
-        // Update progress ring and its glow
+
         if (circleRef.current) {
           gsap.set([circleRef.current, '.progress-glow'], { strokeDashoffset: offset })
         }
-        
-        // Rotate compass needle based on scroll (2 full rotations over the page)
+
         if (needleRef.current) {
           gsap.set(needleRef.current, { rotation: progress * 720 })
         }
-        
-        // Visibility toggle
-        if (self.scroll() > 400) {
-          if (!isVisible) setIsVisible(true)
-        } else {
-          if (isVisible) setIsVisible(false)
+
+        setScrollPercent(Math.round(progress * 100))
+
+        const shouldBeVisible = self.scroll() > 400
+        if (shouldBeVisible !== isVisibleRef.current) {
+          isVisibleRef.current = shouldBeVisible
+          setIsVisible(shouldBeVisible)
         }
       },
     })
 
-    return () => st.kill()
-  }, [isVisible])
+    // Refresh ScrollTrigger whenever the page height changes — handles lazy-loaded
+    // content expanding the page after mount, and tab switches changing content height.
+    // Debounced to avoid rapid successive calls during layout transitions.
+    let refreshTimer = null
+    const observer = new ResizeObserver(() => {
+      clearTimeout(refreshTimer)
+      refreshTimer = setTimeout(() => ScrollTrigger.refresh(), 80)
+    })
+    observer.observe(document.documentElement)
+
+    return () => {
+      st.kill()
+      observer.disconnect()
+      clearTimeout(refreshTimer)
+    }
+  }, [])
 
   const handleMouseMove = (e) => {
     if (!wrapRef.current) return
@@ -126,8 +141,8 @@ export default function ScrollCompass({ onScrollTop }) {
         {/* Compass Needle Icon */}
         <div ref={needleRef} className="relative z-10 flex items-center justify-center">
           <svg
-            width="32"
-            height="32"
+            width="28"
+            height="28"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -150,9 +165,14 @@ export default function ScrollCompass({ onScrollTop }) {
           </svg>
         </div>
 
+        {/* Scroll percentage — sits outside needle so it doesn't rotate; fades on hover */}
+        <span className="absolute bottom-1 left-1/2 z-20 -translate-x-1/2 font-mono text-[9px] font-bold leading-none text-teal-500 opacity-70 transition-opacity duration-300 group-hover:opacity-0 tabular-nums pointer-events-none">
+          {scrollPercent}%
+        </span>
+
         {/* Hover Label */}
         <span className="absolute -top-8 left-1/2 -translate-x-1/2 scale-50 opacity-0 font-major text-[10px] uppercase tracking-widest text-teal-600 font-semibold transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 whitespace-nowrap">
-          Return North
+          Back to Top
         </span>
       </button>
     </div>

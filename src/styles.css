@@ -1090,9 +1090,9 @@
 }
 
 .in-text-cite {
-  font-size: 0.9em;
-  color: #64748b;
-  opacity: 0.9;
+  font-size: 1em;
+  color: #3d516c;
+  opacity: 0.95;
   font-weight: 400;
   letter-spacing: 0.01em;
 }
