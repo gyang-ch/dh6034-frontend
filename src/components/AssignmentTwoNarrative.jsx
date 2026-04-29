@@ -72,6 +72,53 @@ const HERO_RAILS = Array.from({ length: HERO_RAIL_COUNT }, (_, railIndex) =>
   HERO_PREVIEW_IMAGES.filter((_, imageIndex) => imageIndex % HERO_RAIL_COUNT === railIndex)
 )
 
+const SIMILARITY_GROUPS = [
+  {
+    label: 'Plated Dishes',
+    images: [
+      '2025-09-21_Cork_002.jpg',
+      '2025-07-22_Besancon_008.jpg',
+      '2019-12-20_Hongkong_032.jpg',
+      '2024-03-30_Zhuhai_002.JPG',
+      '2025-07-17_Lisbon_015.jpg',
+      '2025-08-09_Gottingen_003.jpg',
+    ],
+  },
+  {
+    label: 'Conference room',
+    images: [
+      '2023-07-22_Beijing_001.JPG',
+      '2023-07-22_Beijing_002.JPG',
+      '2024-03-28_Hongkong_001.JPG',
+      '2024-03-02_Hongkong_003.JPG',
+      '2025-11-04_Vienna_005.jpg',
+      '2024-05-25_Hongkong_002.JPG',
+    ],
+  },
+  {
+    label: 'Trains & Trams',
+    images: [
+      '2007-07-16_Tibet_002.JPG',
+      '2025-07-13_Lisbon_005.jpg',
+      '2025-08-05_Frankfurt_002.jpg',
+      '2025-08-02_Strasbourg_002.jpg',
+      '2013-08-07_Lausanne_121.JPG',
+      '2013-08-07_Lausanne_119.JPG',
+    ],
+  },
+  {
+    label: 'Library Shelves',
+    images: [
+      '2025-08-11_Gottingen_008.jpg',
+      '2025-08-11_Gottingen_003.jpg',
+      '2023-04-22_Guangzhou_002.JPG',
+      '2023-04-22_Guangzhou_001.JPG',
+      '2017-08-01_Oxford_001.JPG',
+      '2025-07-30_Besancon_022.jpg',
+    ],
+  },
+]
+
 // ── Shared prose styles ───────────────────────────────────────────────────────
 
 const S = {
@@ -392,6 +439,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
   // Seasonal histogram scroll-driven step
   const [seasonalStep, setSeasonalStep] = useState(0)
   const seasonalCardRefs = useRef([])
+  const similarityGroupRefs = useRef([])
 
   useGSAP(() => {
     const railTracks = railTracksRef.current.filter(Boolean)
@@ -508,6 +556,40 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
       duration: 0.5, ease: 'power2.out', overwrite: 'auto',
     }))
   }, [seasonalStep])
+
+  useEffect(() => {
+    const groups = similarityGroupRefs.current.filter(Boolean)
+    if (!groups.length) return undefined
+
+    if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+      groups.forEach((group) => gsap.set(group.querySelectorAll('[data-similarity-piece]'), { clearProps: 'all' }))
+      return undefined
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return
+
+        const pieces = entry.target.querySelectorAll('[data-similarity-piece]')
+        gsap.fromTo(
+          pieces,
+          { autoAlpha: 0, y: 6 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.22,
+            ease: 'power2.out',
+            stagger: 0.012,
+            overwrite: 'auto',
+          }
+        )
+        observer.unobserve(entry.target)
+      })
+    }, { threshold: 0.28, rootMargin: '0px 0px -12% 0px' })
+
+    groups.forEach((group) => observer.observe(group))
+    return () => observer.disconnect()
+  }, [prefersReducedMotion])
 
   let tileIndex = 0
 
@@ -906,59 +988,18 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
 
           {/* Similarity image groups */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem', margin: '0.5rem -3rem 1.8rem' }}>
-            {[
-              {
-                label: 'Plated Dishes',
-                images: [
-                  '2025-09-21_Cork_002.jpg',
-                  '2025-07-22_Besancon_008.jpg',
-                  '2019-12-20_Hongkong_032.jpg',
-                  '2024-03-30_Zhuhai_002.JPG',
-                  '2025-07-17_Lisbon_015.jpg',
-                  '2025-08-09_Gottingen_003.jpg',
-                ],
-              },
-              {
-                label: 'Conference room',
-                images: [
-                  '2023-07-22_Beijing_001.JPG',
-                  '2023-07-22_Beijing_002.JPG',
-                  '2024-03-28_Hongkong_001.JPG',
-                  '2024-03-02_Hongkong_003.JPG',
-                  '2025-11-04_Vienna_005.jpg',
-                  '2024-05-25_Hongkong_002.JPG',
-                ],
-              },
-              {
-                label: 'Trains & Trams',
-                images: [
-                  '2007-07-16_Tibet_002.JPG',
-                  '2025-07-13_Lisbon_005.jpg',
-                  '2025-08-05_Frankfurt_002.jpg',
-                  '2025-08-02_Strasbourg_002.jpg',
-                  '2013-08-07_Lausanne_121.JPG',
-                  '2013-08-07_Lausanne_119.JPG',
-                ],
-              },
-              {
-                label: 'Library Shelves',
-                images: [
-                  '2025-08-11_Gottingen_008.jpg',
-                  '2025-08-11_Gottingen_003.jpg',
-                  '2023-04-22_Guangzhou_002.JPG',
-                  '2023-04-22_Guangzhou_001.JPG',
-                  '2017-08-01_Oxford_001.JPG',
-                  '2025-07-30_Besancon_022.jpg',
-                ],
-              },
-            ].map(group => (
-              <div key={group.label}>
-                <p style={{ margin: '0 0 0.5rem', font: '600 0.68rem/1 var(--archive-font-ui)', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+            {SIMILARITY_GROUPS.map((group, groupIndex) => (
+              <div
+                key={group.label}
+                ref={(element) => { similarityGroupRefs.current[groupIndex] = element }}
+              >
+                <p data-similarity-piece style={{ margin: '0 0 0.5rem', font: '600 0.68rem/1 var(--archive-font-ui)', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
                   {group.label}
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.35rem' }}>
                   {group.images.map(filename => (
                     <img
+                      data-similarity-piece
                       key={filename}
                       src={imageUrl(filename)}
                       alt=""

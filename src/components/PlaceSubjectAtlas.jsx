@@ -1,5 +1,7 @@
-import { useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import gsap from 'gsap'
 import { photographUrl } from '../lib/photographs'
+import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 
 const imageUrl = photographUrl
 
@@ -54,10 +56,15 @@ function legendValueLabel(value, showFreq) {
 }
 
 export default function PlaceSubjectAtlas({ atlas }) {
+  const prefersReducedMotion = usePrefersReducedMotion()
   const [activeKey, setActiveKey] = useState(null)
   const [showFreq, setShowFreq]   = useState(false)
+  const rootRef = useRef(null)
+  const matrixRef = useRef(null)
+  const legendRef = useRef(null)
   const displayTabRefs = useRef([])
   const displayTabsId = useId()
+  const hasModeAnimatedRef = useRef(false)
 
   const visibleSubjects = atlas.subjects
   const filteredCells   = atlas.cells
@@ -109,8 +116,76 @@ export default function PlaceSubjectAtlas({ atlas }) {
     selectDisplayMode(nextIndex, true)
   }
 
+  useEffect(() => {
+    const root = rootRef.current
+    const matrix = matrixRef.current
+    if (!root || !matrix) return undefined
+
+    const cells = matrix.querySelectorAll('[data-atlas-cell]')
+    const legend = legendRef.current
+
+    if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+      gsap.set([legend, cells], { clearProps: 'all' })
+      return undefined
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return
+
+      const timeline = gsap.timeline({ defaults: { ease: 'power3.out' } })
+      if (legend) {
+        timeline.fromTo(
+          legend,
+          { autoAlpha: 0, y: -4 },
+          { autoAlpha: 1, y: 0, duration: 0.18 },
+          0
+        )
+      }
+      timeline.fromTo(
+        cells,
+        { autoAlpha: 0 },
+        {
+          autoAlpha: 1,
+          duration: 0.16,
+          stagger: { each: 0.0015, from: 'start' },
+          overwrite: 'auto',
+        },
+        legend ? 0.04 : 0
+      )
+      observer.disconnect()
+    }, { threshold: 0.18 })
+
+    observer.observe(root)
+    return () => observer.disconnect()
+  }, [prefersReducedMotion])
+
+  useEffect(() => {
+    const matrix = matrixRef.current
+    if (!matrix) return
+
+    if (!hasModeAnimatedRef.current) {
+      hasModeAnimatedRef.current = true
+      return
+    }
+
+    if (prefersReducedMotion) return
+
+    const populatedCells = matrix.querySelectorAll('[data-atlas-cell="populated"]')
+    gsap.fromTo(
+      populatedCells,
+      { autoAlpha: 0.86 },
+      {
+        autoAlpha: 1,
+        duration: 0.16,
+        ease: 'power2.out',
+        stagger: { each: 0.001, from: 'center' },
+        overwrite: 'auto',
+      }
+    )
+  }, [prefersReducedMotion, showFreq])
+
   return (
-    <article style={{
+    <article ref={rootRef} style={{
       display: 'grid', gap: '2rem', padding: '2.5rem',
       border: '1px solid var(--archive-color-rule)',
       borderRadius: 'var(--radius-soft, 8px)',
@@ -195,6 +270,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
         >
           <div
             aria-label={`Heatmap colour legend for ${showFreq ? 'frequency percentage' : 'absolute count'}`}
+            ref={legendRef}
             style={{
               justifySelf: 'end',
               display: 'inline-flex',
@@ -240,7 +316,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
             className="custom-scrollbar"
             style={{ overflowX: 'auto', paddingBottom: '0.5rem' }}
           >
-          <div style={{
+          <div ref={matrixRef} style={{
             display: 'grid',
             gap: '1px', // Crisp matrix lines
             alignItems: 'stretch',
@@ -310,6 +386,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
                     <button
                       key={`${subject.source}:${subject.subject}`}
                       type="button"
+                      data-atlas-cell={count > 0 ? 'populated' : 'empty'}
                       style={{
                         position: 'relative',
                         display: 'grid',

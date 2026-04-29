@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { List, useListRef } from 'react-window'
+import gsap from 'gsap'
 import Lightbox from 'yet-another-react-lightbox'
 import Inline from 'yet-another-react-lightbox/plugins/inline'
 import 'yet-another-react-lightbox/styles.css'
 import { galleryData } from '../data/galleryData'
 import { photoNearestNeighbours } from '../data/photoNearestNeighbours'
 import { photographFullUrl, photographThumbnailUrl } from '../lib/photographs'
+import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 
 const YEAR_ROW_HEIGHT = 46
 const PHOTO_ROW_HEIGHT = 72
@@ -189,7 +191,11 @@ function MetadataLine({ label, value }) {
 }
 
 export default function PhotoArchiveWindowed() {
+  const prefersReducedMotion = usePrefersReducedMotion()
   const [rootRef, rootSize] = useElementSize()
+  const viewerTransitionRef = useRef(null)
+  const metadataPanelRef = useRef(null)
+  const similarRailRef = useRef(null)
   const [photoSupplementMap, setPhotoSupplementMap] = useState({})
   const years = useMemo(() => {
     const grouped = new Map()
@@ -343,6 +349,44 @@ export default function PhotoArchiveWindowed() {
     })
   }
 
+  useEffect(() => {
+    if (prefersReducedMotion || !selectedPhoto) return
+
+    if (viewerTransitionRef.current) {
+      gsap.fromTo(
+        viewerTransitionRef.current,
+        { autoAlpha: 0.72 },
+        { autoAlpha: 1, duration: 0.22, ease: 'power1.out', overwrite: 'auto' }
+      )
+    }
+
+    if (metadataPanelRef.current) {
+      gsap.fromTo(
+        Array.from(metadataPanelRef.current.children),
+        { autoAlpha: 0.88, y: 4 },
+        { autoAlpha: 1, y: 0, duration: 0.18, ease: 'power2.out', stagger: 0.008, overwrite: 'auto' }
+      )
+    }
+  }, [prefersReducedMotion, selectedFilename, selectedPhoto])
+
+  useEffect(() => {
+    const rail = similarRailRef.current
+    if (prefersReducedMotion || !rail || !selectedPhoto || nearestNeighbours.length === 0) return
+
+    gsap.fromTo(
+      rail.querySelectorAll('[data-similar-image]'),
+      { autoAlpha: 0.86, y: 5 },
+      {
+        autoAlpha: 1,
+        y: 0,
+        duration: 0.18,
+        ease: 'power2.out',
+        stagger: 0.01,
+        overwrite: 'auto',
+      }
+    )
+  }, [nearestNeighbours.length, prefersReducedMotion, selectedFilename, selectedPhoto])
+
   return (
     <div
       ref={rootRef}
@@ -447,7 +491,7 @@ export default function PhotoArchiveWindowed() {
       <main style={{ display: 'grid', gridTemplateRows: 'minmax(0,1fr) auto', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
         <div style={{ minHeight: 0, overflow: 'hidden', padding: '1.5rem', background: '#e8e4da' }}>
           {selectedPhoto ? (
-            <div style={{ height: '100%', minHeight: 0, display: 'grid' }}>
+            <div ref={viewerTransitionRef} style={{ height: '100%', minHeight: 0, display: 'grid' }}>
               <div style={{ minWidth: 0, minHeight: 0, background: 'rgba(11,18,32,0.92)', boxShadow: '0 32px 70px -42px rgba(15,23,42,0.6)', display: 'grid', placeItems: 'center', overflow: 'hidden' }}>
                 <div style={{ width: 'min(100%, 42rem)', maxHeight: '100%', aspectRatio: '4 / 3', overflow: 'hidden' }}>
                   <Lightbox
@@ -513,6 +557,7 @@ export default function PhotoArchiveWindowed() {
 
         {selectedPhoto ? (
           <section
+            ref={metadataPanelRef}
             data-lenis-prevent
             data-lenis-prevent-wheel
             style={{ display: 'grid', gap: '0.9rem', maxHeight: isNarrow ? '34vh' : '32vh', overflowY: 'auto', padding: '1rem 1.15rem 1.15rem', borderTop: '1px solid var(--archive-color-rule)', background: 'rgba(255,255,255,0.72)' }}
@@ -613,9 +658,10 @@ export default function PhotoArchiveWindowed() {
               >
                 Similar Images
               </p>
-              <div style={{ display: 'grid', gap: '0.5rem' }}>
+              <div ref={similarRailRef} style={{ display: 'grid', gap: '0.5rem' }}>
                 {nearestNeighbours.map((neighbor) => (
                   <button
+                    data-similar-image
                     key={neighbor.filename}
                     type="button"
                     onClick={() => setSelectedFilename(neighbor.filename)}
