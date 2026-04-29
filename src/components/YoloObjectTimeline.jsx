@@ -296,7 +296,7 @@ export default function YoloObjectTimeline() {
           <p style={{ margin: 0, font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--archive-color-accent)' }}>
             Figure 3. Visual Signals Over Time — YOLO Objects
           </p>
-          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-ink)', maxWidth: '45rem' }}>
+          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '45rem' }}>
             Average number of each detected object per photograph.
           </h3>
           <p style={{ margin: 0, maxWidth: '45rem', font: '400 0.9rem/1.6 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-copy)' }}>
@@ -312,7 +312,7 @@ export default function YoloObjectTimeline() {
           <p style={{ margin: 0, font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--archive-color-accent)' }}>
             Figure 4. Visual Signals Over Time — Gemma Keywords
           </p>
-          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-ink)', maxWidth: '45rem' }}>
+          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '45rem' }}>
             Share of photos each month mentioning specific concepts.
           </h3>
           <p style={{ margin: 0, maxWidth: '45rem', font: '400 0.9rem/1.6 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-copy)' }}>

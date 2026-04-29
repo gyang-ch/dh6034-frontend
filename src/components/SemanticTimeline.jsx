@@ -152,7 +152,7 @@ export default function SemanticTimeline({ years }) {
           <p style={{ margin: '0 0 0.75rem', font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--archive-color-accent)' }}>
             Figure 2. Semantic Timeline
           </p>
-          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-ink)', maxWidth: '40rem' }}>
+          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '40rem' }}>
             How the visual subjects of the archival photographs shift across the years.
           </h3>
         </div>

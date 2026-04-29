@@ -905,7 +905,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           </p>
 
           {/* Similarity image groups */}
-          <div style={{ display: 'flex', gap: '2rem', margin: '0.5rem 0 1.8rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '2rem', margin: '0.5rem -3rem 1.8rem', flexWrap: 'wrap' }}>
             {[
               {
                 label: 'Plated Dishes',
