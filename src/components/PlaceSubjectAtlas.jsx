@@ -273,43 +273,49 @@ export default function PlaceSubjectAtlas({ atlas }) {
             ref={legendRef}
             style={{
               justifySelf: 'end',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.55rem',
-              maxWidth: '100%',
-              padding: '0.35rem 0.55rem',
-              border: '1px solid var(--archive-color-rule)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.35rem',
+              padding: '0.45rem 0.6rem',
               background: 'rgba(255,255,255,0.42)',
               font: '500 0.68rem/1 var(--archive-font-ui)',
               color: 'var(--archive-color-muted)',
-              overflowX: 'auto',
             }}
           >
-            <span style={{ letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-              Colour
-            </span>
-            {legendStops.map((stop) => (
-              <span
-                key={stop.id}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+            {/* Header row */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem' }}>
+              <span style={{ letterSpacing: '0.08em', textTransform: 'uppercase' }}>Colour</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
                 <span
                   aria-hidden="true"
                   style={{
-                    width: '0.8rem',
-                    height: '0.8rem',
+                    width: '0.75rem',
+                    height: '0.75rem',
                     border: '1px solid rgba(29,35,41,0.12)',
-                    background: stop.color,
+                    background: 'rgba(29,35,41,0.02)',
+                    flexShrink: 0,
                   }}
                 />
-                {stop.label}
+                None
               </span>
-            ))}
+            </div>
+
+            {/* Gradient bar + tick labels */}
+            <div style={{ minWidth: '18rem' }}>
+              <div
+                aria-hidden="true"
+                style={{
+                  height: '0.55rem',
+                  background: 'linear-gradient(to right, rgb(248,238,210) 0%, rgb(241,168,82) 33%, rgb(48,148,164) 66%, rgb(16,52,98) 100%)',
+                  borderRadius: '1px',
+                }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.22rem' }}>
+                {[legendStops[1], legendStops[2], legendStops[3]].map((s) => (
+                  <span key={s.id} style={{ whiteSpace: 'nowrap' }}>{s.label}</span>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div
