@@ -70,6 +70,40 @@ const HERO_PREVIEW_IMAGES = [
   '2021-03-27_Linxia_005.jpg',
 ]
 
+// Extra images not initially displayed — drawn from as flip candidates
+const HERO_CANDIDATE_IMAGES = [
+  '2004-04-25_Lanzhou_001.JPG',
+  '2004-04-25_Lanzhou_002.JPG',
+  '2006-07-27_Beidaihe_008.JPG',
+  '2006-07-27_Beidaihe_009.JPG',
+  '2006-07-27_Beidaihe_019.JPG',
+  '2006-07-27_Beidaihe_020.JPG',
+  '2007-07-16_Tibet_002.JPG',
+  '2013-08-07_Lausanne_119.JPG',
+  '2013-08-07_Lausanne_121.JPG',
+  '2017-08-01_Oxford_001.JPG',
+  '2019-12-20_Hongkong_032.jpg',
+  '2023-04-22_Guangzhou_001.JPG',
+  '2023-04-22_Guangzhou_002.JPG',
+  '2023-07-22_Beijing_001.JPG',
+  '2023-07-22_Beijing_002.JPG',
+  '2024-03-02_Hongkong_003.JPG',
+  '2024-03-28_Hongkong_001.JPG',
+  '2024-03-30_Zhuhai_002.JPG',
+  '2024-05-25_Hongkong_002.JPG',
+  '2025-07-13_Lisbon_005.jpg',
+  '2025-07-17_Lisbon_015.jpg',
+  '2025-07-22_Besancon_008.jpg',
+  '2025-07-30_Besancon_022.jpg',
+  '2025-08-02_Strasbourg_002.jpg',
+  '2025-08-05_Frankfurt_002.jpg',
+  '2025-08-09_Gottingen_003.jpg',
+  '2025-08-11_Gottingen_003.jpg',
+  '2025-08-11_Gottingen_008.jpg',
+  '2025-09-21_Cork_002.jpg',
+  '2025-11-04_Vienna_005.jpg',
+]
+
 const HERO_RAIL_COUNT = 6
 const HERO_RAILS = Array.from({ length: HERO_RAIL_COUNT }, (_, railIndex) =>
   HERO_PREVIEW_IMAGES.filter((_, imageIndex) => imageIndex % HERO_RAIL_COUNT === railIndex)
@@ -452,6 +486,17 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
   const railTracksRef = useRef([])
   const tilesRef = useRef([])
   const tileFramesRef = useRef([])
+  const tileImagesRef = useRef([])
+  const flippingTilesRef = useRef(new Set())
+  const candidatePoolRef = useRef([...HERO_CANDIDATE_IMAGES])
+  // Track how many tiles currently show each filename (each image appears in 2 copies)
+  const imageRefCountRef = useRef(null)
+  if (imageRefCountRef.current === null) {
+    const counts = {}
+    HERO_PREVIEW_IMAGES.forEach(f => { counts[f] = 2 })
+    HERO_CANDIDATE_IMAGES.forEach(f => { counts[f] = 0 })
+    imageRefCountRef.current = counts
+  }
 
   // Beeswarm scroll-driven step
   const [swarmStep, setSwarmStep] = useState(0)
@@ -470,19 +515,10 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
     if (!tiles.length) return
 
     gsap.set(railTracks, { yPercent: 0 })
-    gsap.set(tiles, {
-      transformOrigin: '50% 50%',
-      transformPerspective: 1200,
-    })
     gsap.set(frames, {
       transformOrigin: '50% 50%',
-      transformPerspective: 1200,
-      rotationX: 0,
       rotationY: 0,
-      rotateZ: 0,
-      z: 0,
     })
-
     gsap.set(tiles, { opacity: 1, y: 0, scale: 1 })
 
     if (overlayRef.current) {
@@ -638,44 +674,57 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
     return current
   }
 
-  function handleMouseMove(event) {
-    if (prefersReducedMotion || !heroRef.current) return
-
-    const { left, top, width, height } = heroRef.current.getBoundingClientRect()
-    const x = ((event.clientX - left) / width - 0.5) * 2
-    const y = ((event.clientY - top) / height - 0.5) * 2
-
-    tileFramesRef.current.forEach((frame, index) => {
-      if (!frame) return
-
-      const depth = (index % 5) + 1
-      gsap.to(frame, {
-        rotationY: x * (9.2 + depth * 0.95),
-        rotationX: -y * (8.6 + depth * 0.82),
-        rotateZ: x * 1.05,
-        z: 40 + depth * 11,
-        duration: 0.38,
-        ease: 'power3.out',
-        overwrite: 'auto',
-      })
-    })
-  }
-
-  function handleMouseLeave() {
+  function handleTileEnter(tileIdx) {
     if (prefersReducedMotion) return
+    if (flippingTilesRef.current.has(tileIdx)) return
 
-    tileFramesRef.current.forEach((frame) => {
-      if (!frame) return
+    const pool = candidatePoolRef.current
+    if (!pool.length) return
 
-      gsap.to(frame, {
-        rotationX: 0,
-        rotationY: 0,
-        rotateZ: 0,
-        z: 0,
-        duration: 0.95,
-        ease: 'power3.out',
-        overwrite: 'auto',
-      })
+    const frame = tileFramesRef.current[tileIdx]
+    const img = tileImagesRef.current[tileIdx]
+    if (!frame || !img) return
+
+    const counts = imageRefCountRef.current
+
+    // Pick a random candidate (pool only holds images with refCount === 0)
+    const randomIdx = Math.floor(Math.random() * pool.length)
+    const newFilename = pool.splice(randomIdx, 1)[0]
+    counts[newFilename] = (counts[newFilename] || 0) + 1
+
+    // Decrement refcount for the outgoing image; return it to pool only when
+    // no other tile is still showing it (handles the two-copy scroll duplicate)
+    const oldFilename = img.dataset.filename
+    if (oldFilename) {
+      counts[oldFilename] = (counts[oldFilename] || 1) - 1
+      if (counts[oldFilename] === 0) pool.push(oldFilename)
+    }
+
+    flippingTilesRef.current.add(tileIdx)
+
+    // Phase 1: rotate to edge-on + blur in
+    gsap.to(frame, {
+      rotationY: 90,
+      filter: 'blur(8px)',
+      duration: 0.2,
+      ease: 'power2.in',
+      overwrite: 'auto',
+      onComplete() {
+        // Swap image while tile is edge-on (invisible)
+        img.src = imageUrl(newFilename)
+        img.dataset.filename = newFilename
+
+        // Phase 2: rotate back to flat + blur out
+        gsap.to(frame, {
+          rotationY: 0,
+          filter: 'blur(0px)',
+          duration: 0.3,
+          ease: 'back.out(1.4)',
+          onComplete() {
+            flippingTilesRef.current.delete(tileIdx)
+          }
+        })
+      }
     })
   }
 
@@ -686,8 +735,6 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
       <header
         ref={heroRef}
         className="assignment2-hero-shell hero-shell"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
       >
         <div className="assignment2-hero-bg" aria-hidden="true">
           <div className="assignment2-hero-aurora" />
@@ -714,6 +761,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
                               tilesRef.current[currentTileIndex] = element
                             }}
                             className={`assignment2-hero-tile assignment2-hero-tile-${(currentTileIndex % 5) + 1}`}
+                            onMouseEnter={() => handleTileEnter(currentTileIndex)}
                           >
                             <div
                               ref={(element) => {
@@ -722,7 +770,11 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
                               className="assignment2-hero-tile-frame"
                             >
                               <img
+                                ref={(element) => {
+                                  tileImagesRef.current[currentTileIndex] = element
+                                }}
                                 src={imageUrl(filename)}
+                                data-filename={filename}
                                 alt=""
                                 loading="eager"
                                 decoding="async"
@@ -1026,7 +1078,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           </p>
 
           {/* Similarity image groups */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem', margin: '0.5rem -3rem 1.8rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem', margin: '2.5rem -3rem 2.75rem' }}>
             {SIMILARITY_GROUPS.map((group, groupIndex) => (
               <div
                 key={group.label}

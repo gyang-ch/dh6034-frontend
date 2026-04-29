@@ -115,7 +115,7 @@ export default function App() {
   return (
     <>
       <main
-        className={`min-h-screen bg-[#f7f4ed] text-slate-800 ${prefersReducedMotion ? 'reduced-motion' : ''}`}
+        className={`bg-[#f7f4ed] text-slate-800 ${activeAssignment === 'archive-windowed' ? 'flex flex-col h-screen overflow-hidden' : 'min-h-screen'} ${prefersReducedMotion ? 'reduced-motion' : ''}`}
       >
         <nav className="assignment-tabs z-40">
           <div className="assignment-tabs-inner mx-auto flex w-[min(112rem,calc(100vw-1.5rem))] items-center gap-4 px-3 md:w-[min(112rem,calc(100vw-3rem))] md:px-6">
@@ -161,7 +161,9 @@ export default function App() {
           ) : activeAssignment === 'assignment2' ? (
             <AssignmentTwoNarrative onOpenPhotoArchive={() => handleAssignmentChange('archive-windowed')} />
           ) : (
-            <PhotoArchiveWindowed />
+            <div className="flex-1 min-h-0">
+              <PhotoArchiveWindowed />
+            </div>
           )}
         </Suspense>
         {activeAssignment !== 'archive-windowed' ? (

@@ -355,16 +355,16 @@ export default function PhotoArchiveWindowed() {
     if (viewerTransitionRef.current) {
       gsap.fromTo(
         viewerTransitionRef.current,
-        { autoAlpha: 0.72 },
-        { autoAlpha: 1, duration: 0.22, ease: 'power1.out', overwrite: 'auto' }
+        { autoAlpha: 0.35, scale: 0.975 },
+        { autoAlpha: 1, scale: 1, duration: 0.32, ease: 'expo.out', overwrite: 'auto' }
       )
     }
 
     if (metadataPanelRef.current) {
       gsap.fromTo(
         Array.from(metadataPanelRef.current.children),
-        { autoAlpha: 0.88, y: 4 },
-        { autoAlpha: 1, y: 0, duration: 0.18, ease: 'power2.out', stagger: 0.008, overwrite: 'auto' }
+        { autoAlpha: 0, y: 16 },
+        { autoAlpha: 1, y: 0, duration: 0.42, ease: 'power3.out', stagger: 0.05, overwrite: 'auto' }
       )
     }
   }, [prefersReducedMotion, selectedFilename, selectedPhoto])
@@ -373,15 +373,17 @@ export default function PhotoArchiveWindowed() {
     const rail = similarRailRef.current
     if (prefersReducedMotion || !rail || !selectedPhoto || nearestNeighbours.length === 0) return
 
+    // Slide in from right — natural for the right panel, inspired by codrops/ScrollAnimationsGrid demo3
     gsap.fromTo(
       rail.querySelectorAll('[data-similar-image]'),
-      { autoAlpha: 0.86, y: 5 },
+      { autoAlpha: 0, x: 20, scale: 0.95 },
       {
         autoAlpha: 1,
-        y: 0,
-        duration: 0.18,
+        x: 0,
+        scale: 1,
+        duration: 0.38,
         ease: 'power2.out',
-        stagger: 0.01,
+        stagger: 0.055,
         overwrite: 'auto',
       }
     )
@@ -394,9 +396,9 @@ export default function PhotoArchiveWindowed() {
       data-lenis-prevent-wheel
       style={{
         display: 'grid',
-        gridTemplateColumns: isNarrow ? '1fr' : 'minmax(15rem, 18rem) minmax(0, 0.92fr) 14rem',
+        gridTemplateColumns: isNarrow ? '1fr' : 'minmax(15rem, 18rem) minmax(0, 1fr) 14rem',
         gridTemplateRows: isNarrow ? 'minmax(18rem, 38vh) minmax(0, 1fr)' : '1fr',
-        height: 'calc(100vh - 88px)',
+        height: '100%',
         overflow: 'hidden',
         background: 'linear-gradient(180deg, rgba(247,244,237,0.88), rgba(241,246,249,0.9))',
       }}
@@ -489,11 +491,10 @@ export default function PhotoArchiveWindowed() {
       </aside>
 
       <main style={{ display: 'grid', gridTemplateRows: 'minmax(0,1fr) auto', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
-        <div style={{ minHeight: 0, overflow: 'hidden', padding: '1.5rem', background: '#e8e4da' }}>
+        <div style={{ minHeight: 0, overflow: 'hidden', background: '#e8e4da' }}>
           {selectedPhoto ? (
             <div ref={viewerTransitionRef} style={{ height: '100%', minHeight: 0, display: 'grid' }}>
-              <div style={{ minWidth: 0, minHeight: 0, background: 'rgba(11,18,32,0.92)', boxShadow: '0 32px 70px -42px rgba(15,23,42,0.6)', display: 'grid', placeItems: 'center', overflow: 'hidden' }}>
-                <div style={{ width: 'min(100%, 42rem)', maxHeight: '100%', aspectRatio: '4 / 3', overflow: 'hidden' }}>
+              <div style={{ minWidth: 0, minHeight: 0, background: 'rgba(11,18,32,0.92)', boxShadow: '0 32px 70px -42px rgba(15,23,42,0.6)', overflow: 'hidden' }}>
                   <Lightbox
                     plugins={[Inline]}
                     index={selectedIndex}
@@ -507,7 +508,7 @@ export default function PhotoArchiveWindowed() {
                     carousel={{
                       finite: true,
                       preload: 3,
-                      padding: '18px',
+                      padding: '0',
                       spacing: '10%',
                       imageFit: 'contain',
                     }}
@@ -529,7 +530,6 @@ export default function PhotoArchiveWindowed() {
                     }}
                     toolbar={{ buttons: [] }}
                   />
-                </div>
               </div>
             </div>
           ) : (
