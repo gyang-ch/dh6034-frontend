@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import tippy, { followCursor } from 'tippy.js'
+import 'tippy.js/dist/tippy.css'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { assignment2Data } from '../data/assignment2Data'
@@ -422,6 +424,24 @@ function SeasonalHistogramPanel({ activeStep = 0 }) {
   )
 }
 
+function TooltipLink({ href, children, style, ...rest }) {
+  const ref = useRef(null)
+  useEffect(() => {
+    if (!ref.current) return
+    const instance = tippy(ref.current, {
+      content: `<span style="font-family:monospace;font-size:0.72rem;letter-spacing:0.01em">${href}</span>`,
+      allowHTML: true,
+      animation: false,
+      placement: 'top',
+      followCursor: true,
+      plugins: [followCursor],
+      offset: [0, 12],
+    })
+    return () => instance.destroy()
+  }, [href])
+  return <a ref={ref} href={href} style={style} {...rest}>{children}</a>
+}
+
 // ── Main narrative ────────────────────────────────────────────────────────────
 
 export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
@@ -739,7 +759,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           </p>
           <h3 style={S.h3}>2.2  Feature Extraction and Multimodal Analysis</h3>
           <p style={S.body}>
-            To enable large-scale analysis, I generated high-dimensional image embeddings for each photograph using <a href="https://github.com/mlfoundations/open_clip/" target="_blank" rel="noreferrer" style={S.link}>OpenCLIP</a> and <a href="https://dinov2.metademolab.com/" target="_blank" rel="noreferrer" style={S.link}>DINOv2</a> <span className="in-text-cite">(Cherti et al. 2023; Oquab et al. 2023)</span>. These models encode images as vectors, allowing for similarity comparison, clustering, and the discovery of latent thematic patterns. Unlike earlier approaches that rely on supervised models such as ResNet-50 <span className="in-text-cite">(Arnold and Tilton 2023)</span>, the use of self-supervised and multimodal models allows for a more flexible and semantically rich representation of visual content.
+            To enable large-scale analysis, I generated high-dimensional image embeddings for each photograph using <TooltipLink href="https://github.com/mlfoundations/open_clip/" target="_blank" rel="noreferrer" style={S.link}>OpenCLIP</TooltipLink> and <TooltipLink href="https://dinov2.metademolab.com/" target="_blank" rel="noreferrer" style={S.link}>DINOv2</TooltipLink> <span className="in-text-cite">(Cherti et al. 2023; Oquab et al. 2023)</span>. These models encode images as vectors, allowing for similarity comparison, clustering, and the discovery of latent thematic patterns. Unlike earlier approaches that rely on supervised models such as ResNet-50 <span className="in-text-cite">(Arnold and Tilton 2023)</span>, the use of self-supervised and multimodal models allows for a more flexible and semantically rich representation of visual content.
           </p>
           <p style={S.body}>
             In addition to visual embeddings, I extracted dominant colour values from each image to support chromatic analysis. Following Arnold and Tilton’s analysis of how colour in movie posters relates to genre <span className="in-text-cite">(Arnold and Tilton 2023)</span>, I extracted the dominant colour of each photograph to support chromatic visualisations and examine whether colour patterns reflect broader trends.
@@ -1091,7 +1111,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
         <section id="reflection" style={SEC}>
           <h2 style={S.h2}>5  Reflection on design</h2>
           <p style={S.body}>
-            The design of the web interface forms part of how the dataset is interpreted and communicated. When designing the website, I initially considered a strict two-column, scroll-based storytelling layout, similar to <a href="https://k-means-explorable.vercel.app/" target="_blank" rel="noreferrer" style={S.link}>K-Means Clustering: An Explorable Explainer</a> <span className="in-text-cite">(Ang n.d.)</span>. However, this approach made the interface overly crowded and restrictive. Not all sections required visualisations, and the fixed two-column layout risked introducing them unnecessarily. As a result, I shifted to a primarily single-column essay format.
+            The design of the web interface forms part of how the dataset is interpreted and communicated. When designing the website, I initially considered a strict two-column, scroll-based storytelling layout, similar to <TooltipLink href="https://k-means-explorable.vercel.app/" target="_blank" rel="noreferrer" style={S.link}>K-Means Clustering: An Explorable Explainer</TooltipLink> <span className="in-text-cite">(Ang n.d.)</span>. However, this approach made the interface overly crowded and restrictive. Not all sections required visualisations, and the fixed two-column layout risked introducing them unnecessarily. As a result, I shifted to a primarily single-column essay format.
           </p>
           <p style={S.body}>
             In the website, I initially included a data sonification section and a beeswarm plot, but later removed them: the former relied on abstract image features that did not support meaningful interpretation, while the latter duplicated existing visualisations without adding new insight.
