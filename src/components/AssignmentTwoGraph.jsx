@@ -14,27 +14,49 @@ function kmeansColour(clusterId) {
   return KMEANS_COLOURS[clusterId % KMEANS_COLOURS.length]
 }
 
-// ── HDBSCAN palette (68 clusters + noise) ───────────────────────────────────
-// Sigma WebGL renderer requires hex strings — hsl() is not supported.
+// ── HDBSCAN palette — 33 comfortable, distinct muted tones ──────────────────
 const HDBSCAN_NOISE_COLOUR = '#94a3b8'
 
-function hslToHex(h, s, l) {
-  s /= 100; l /= 100
-  const a = s * Math.min(l, 1 - l)
-  const f = (n) => {
-    const k = (n + h / 30) % 12
-    const v = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1)
-    return Math.round(255 * v).toString(16).padStart(2, '0')
-  }
-  return `#${f(0)}${f(8)}${f(4)}`
-}
+const HDBSCAN_PALETTE = [
+  '#d97b7b', // muted red
+  '#d8905e', // terracotta
+  '#d4a84e', // amber
+  '#b8b83c', // olive
+  '#88c45a', // lime
+  '#50c47e', // mint
+  '#3cb89a', // seafoam
+  '#42a8cc', // sky
+  '#4e86d4', // cornflower
+  '#6270cc', // periwinkle
+  '#8258c8', // violet
+  '#a448b4', // purple
+  '#c2489e', // magenta
+  '#cc5484', // rose
+  '#cc6e6e', // salmon
+  '#c49060', // sandy brown
+  '#b0b45a', // khaki
+  '#80bc54', // yellow-green
+  '#4cb48a', // teal-green
+  '#3aa0b0', // cyan-teal
+  '#4488c4', // medium blue
+  '#5c6cbc', // slate blue
+  '#7458b4', // medium violet
+  '#9454a4', // plum
+  '#b44494', // orchid
+  '#cc547a', // warm pink
+  '#d08858', // peach
+  '#a4b43c', // yellow-olive
+  '#68b44c', // grass green
+  '#3cb49e', // aqua
+  '#4478b8', // azure
+  '#5458a4', // indigo
+  '#7c4ca4', // deep violet
+]
 
 function hdbscanColour(clusterId) {
   if (clusterId === -1) return HDBSCAN_NOISE_COLOUR
-  const hue = (clusterId * 137.508) % 360
-  const sat = 58 + (clusterId % 3) * 7
-  const lit = 48 + (clusterId % 5) * 4
-  return hslToHex(hue, sat, lit)
+  const idx = ALL_HDBSCAN_CLUSTERS.indexOf(clusterId)
+  return HDBSCAN_PALETTE[idx >= 0 ? idx % HDBSCAN_PALETTE.length : clusterId % HDBSCAN_PALETTE.length]
 }
 
 function nodeColour(node, mode) {
@@ -43,7 +65,7 @@ function nodeColour(node, mode) {
 
 const imageUrl = photographUrl
 
-// Pre-compute top HDBSCAN clusters by node count in the sampled graph
+// Pre-compute HDBSCAN cluster counts from graph nodes
 const hdbscanClusterCounts = (() => {
   const counts = new Map()
   for (const node of assignment2GraphData.nodes) {
@@ -53,11 +75,9 @@ const hdbscanClusterCounts = (() => {
   return counts
 })()
 
-const TOP_HDBSCAN_CLUSTERS = [...hdbscanClusterCounts.entries()]
-  .filter(([id]) => id !== -1)
-  .sort((a, b) => b[1] - a[1])
-  .slice(0, 10)
-  .map(([id]) => id)
+const ALL_HDBSCAN_CLUSTERS = [...hdbscanClusterCounts.keys()]
+  .filter((id) => id !== -1)
+  .sort((a, b) => a - b)
 
 // Cluster name maps derived from node attributes
 const KMEANS_NAMES = (() => {
@@ -84,9 +104,11 @@ export default function AssignmentTwoGraph() {
   const graphRef = useRef(null)
   const neighborMapRef = useRef(null)
   const hoveredNodeRef = useRef(null)
+  const hoveredClusterRef = useRef(null)
   const clusterModeRef = useRef('kmeans')
   const [clusterMode, setClusterMode] = useState('kmeans')
   const [hoveredNode, setHoveredNode] = useState(null)
+  const [hoveredCluster, setHoveredCluster] = useState(null)
   const [imageFailed, setImageFailed] = useState(false)
 
   // ── Main sigma setup (run once) ────────────────────────────────────────────
@@ -168,30 +190,30 @@ export default function AssignmentTwoGraph() {
     sigma.setSetting('nodeReducer', (node, data) => {
       const mode = clusterModeRef.current
       const hovered = hoveredNodeRef.current
+      const highlightCluster = hoveredClusterRef.current
       const attrs = graph.getNodeAttributes(node)
       const baseColor = nodeColour(attrs, mode)
 
-      if (!hovered) {
-        return { ...data, color: baseColor }
-      }
-
-      const isFocus = node === hovered.filename
-      const isNeighbour = neighborMapRef.current?.get(hovered.filename)?.has(node)
-
-      if (isFocus || isNeighbour) {
-        return {
-          ...data,
-          color: baseColor,
-          zIndex: 1,
-          size: isFocus ? data.size * 1.35 : data.size * 1.08,
+      // Node hover takes priority over cluster hover
+      if (hovered) {
+        const isFocus = node === hovered.filename
+        const isNeighbour = neighborMapRef.current?.get(hovered.filename)?.has(node)
+        if (isFocus || isNeighbour) {
+          return { ...data, color: baseColor, zIndex: 1, size: isFocus ? data.size * 1.35 : data.size * 1.08 }
         }
+        return { ...data, color: 'rgba(148, 163, 184, 0.18)', size: Math.max(1.4, data.size * 0.72) }
       }
 
-      return {
-        ...data,
-        color: 'rgba(148, 163, 184, 0.18)',
-        size: Math.max(1.4, data.size * 0.72),
+      // Cluster hover from legend
+      if (highlightCluster !== null) {
+        const nodeCluster = mode === 'hdbscan' ? attrs.hdbscanClusterId : attrs.clusterId
+        if (nodeCluster === highlightCluster) {
+          return { ...data, color: baseColor, zIndex: 1 }
+        }
+        return { ...data, color: 'rgba(148, 163, 184, 0.1)', size: Math.max(1.4, data.size * 0.72) }
       }
+
+      return { ...data, color: baseColor }
     })
 
     sigma.setSetting('edgeReducer', (edge, data) => {
@@ -233,6 +255,12 @@ export default function AssignmentTwoGraph() {
     sigmaRef.current?.refresh()
   }, [hoveredNode])
 
+  // ── Sync hovered cluster ref + refresh ───────────────────────────────────
+  useEffect(() => {
+    hoveredClusterRef.current = hoveredCluster
+    sigmaRef.current?.refresh()
+  }, [hoveredCluster])
+
   // ── Sync cluster mode ref + re-colour nodes + refresh ────────────────────
   useEffect(() => {
     clusterModeRef.current = clusterMode
@@ -250,14 +278,13 @@ export default function AssignmentTwoGraph() {
     ? KMEANS_COLOURS.map((colour, i) => ({
         colour,
         label: KMEANS_NAMES[i] ?? `Cluster ${i}`,
+        clusterId: i,
       }))
-    : [
-        ...TOP_HDBSCAN_CLUSTERS.map((id) => ({
-          colour: hdbscanColour(id),
-          label: HDBSCAN_NAMES[id] ?? `Cluster ${id}`,
-        })),
-        { colour: HDBSCAN_NOISE_COLOUR, label: `noise / outlier (${hdbscanClusterCounts.get(-1) ?? 0})` },
-      ]
+    : ALL_HDBSCAN_CLUSTERS.map((id) => ({
+        colour: hdbscanColour(id),
+        label: HDBSCAN_NAMES[id] ?? `Cluster ${id}`,
+        clusterId: id,
+      }))
 
   return (
     <div className="assignment2-panel overflow-hidden rounded-[1.6rem] border border-slate-300/70 bg-white/72 p-5 shadow-[0_30px_80px_-36px_rgba(15,23,42,0.45)] backdrop-blur-sm md:p-7 max-w-[95%] mx-auto">
@@ -385,17 +412,15 @@ export default function AssignmentTwoGraph() {
         {legendItems.map((item) => (
           <div
             key={item.label}
-            className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/80 px-3 py-1.5 text-xs text-slate-700"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-300/80 bg-white/80 px-3 py-1.5 text-xs text-slate-700 transition-all"
+            style={{ opacity: hoveredCluster !== null && hoveredCluster !== item.clusterId ? 0.4 : 1 }}
+            onMouseEnter={() => setHoveredCluster(item.clusterId)}
+            onMouseLeave={() => setHoveredCluster(null)}
           >
             <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.colour }} />
             <span className="font-data">{item.label}</span>
           </div>
         ))}
-        {clusterMode === 'hdbscan' && (
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 bg-slate-50/80 px-3 py-1.5 text-xs text-slate-500">
-            <span className="font-data">+ {Math.max(0, (new Set(assignment2GraphData.nodes.map(n => n.hdbscanClusterId)).size - 1) - TOP_HDBSCAN_CLUSTERS.length)} more clusters</span>
-          </div>
-        )}
       </div>
     </div>
   )
