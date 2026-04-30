@@ -1121,7 +1121,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
             This form of visualisation supports exploratory analysis, enabling patterns to emerge through interaction rather than predefined classification. This makes thematic exploration more effective. Such patterns would be difficult to identify without computational similarity search.
           </p>
           <p style={S.body}>
-            What surprised me most was how easy it became to find similar moments across the archive. For instance, by using image similarity search, I found these two photos of same activity from different time.
+            What surprised me most was how easily I could find similar moments across the archive. For instance, using image similarity search, I found two photos of the same activity (walking on wooden posts) taken at different times.
           </p>
 
           <div
@@ -1146,7 +1146,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           </div>
 
           <p style={S.body}>
-            Using image similarity and keyword search, I could connect photos that I would never have linked manually. Images that seemed unrelated on their own started to form clear patterns. This changed how I looked at the archive, shifting my focus from individual memories to recurring themes.
+            These methods allowed me to connect images I would not have linked manually. Photos that once felt unrelated began to form clear patterns, shifting my focus from individual memories to recurring themes.
           </p>
         </section>
 
