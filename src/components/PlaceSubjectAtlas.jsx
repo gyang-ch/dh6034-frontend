@@ -55,6 +55,46 @@ function legendValueLabel(value, showFreq) {
   return Math.max(1, Math.round(value)).toLocaleString()
 }
 
+// Explicit column order: dense YOLO items → Gemma scenes/people → animals cluster → sparse right end
+const SUBJECT_ORDER = [
+  // YOLO high-density everyday items (18–20/20 places)
+  { source: 'yolo', subject: 'handbag' },
+  { source: 'yolo', subject: 'backpack' },
+  { source: 'yolo', subject: 'car' },
+  { source: 'yolo', subject: 'chair' },
+  { source: 'yolo', subject: 'potted plant' },
+  { source: 'yolo', subject: 'bench' },
+  { source: 'yolo', subject: 'cell phone' },
+  { source: 'yolo', subject: 'bottle' },
+  { source: 'yolo', subject: 'bicycle' },
+  { source: 'yolo', subject: 'bus' },
+  { source: 'yolo', subject: 'dining table' },
+  { source: 'yolo', subject: 'suitcase' },
+  { source: 'yolo', subject: 'book' },
+  // Gemma high-count (people / scenes)
+  { source: 'gemma', subject: 'boy' },
+  { source: 'gemma', subject: 'night' },
+  // Gemma medium (nature / activities / objects)
+  { source: 'gemma', subject: 'wall' },
+  { source: 'gemma', subject: 'tree' },
+  { source: 'gemma', subject: 'painting' },
+  { source: 'gemma', subject: 'walking' },
+  // Animals semantic cluster
+  { source: 'yolo', subject: 'horse' },
+  { source: 'yolo', subject: 'bird' },
+  { source: 'yolo', subject: 'cow' },
+  { source: 'yolo', subject: 'sheep' },
+  { source: 'gemma', subject: 'yak' },
+  // Sparse / low-count columns → right end
+  { source: 'yolo', subject: 'airplane' },
+  { source: 'gemma', subject: 'beach' },
+  { source: 'gemma', subject: 'desert' },
+  { source: 'gemma', subject: 'ink' },
+  { source: 'gemma', subject: 'award' },
+]
+
+const EXCLUDED_SUBJECTS = new Set(['gemma:horse', 'gemma:horses', 'gemma:sheep'])
+
 export default function PlaceSubjectAtlas({ atlas }) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const [activeKey, setActiveKey] = useState(null)
@@ -66,8 +106,18 @@ export default function PlaceSubjectAtlas({ atlas }) {
   const displayTabsId = useId()
   const hasModeAnimatedRef = useRef(false)
 
-  const visibleSubjects = atlas.subjects
-  const filteredCells   = atlas.cells
+  const visibleSubjects = useMemo(() => {
+    const subjectMap = new Map(atlas.subjects.map((s) => [`${s.source}:${s.subject}`, s]))
+    return SUBJECT_ORDER
+      .filter(({ source, subject }) => !EXCLUDED_SUBJECTS.has(`${source}:${subject}`))
+      .map(({ source, subject }) => subjectMap.get(`${source}:${subject}`))
+      .filter(Boolean)
+  }, [atlas.subjects])
+
+  const filteredCells = useMemo(
+    () => atlas.cells.filter((c) => !EXCLUDED_SUBJECTS.has(`${c.source}:${c.subject}`)),
+    [atlas.cells],
+  )
 
   const maxVal = useMemo(
     () => showFreq
@@ -328,7 +378,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
             alignItems: 'stretch',
             minWidth: `${9 + colCount * 2.8}rem`,
             gridTemplateColumns: `9rem repeat(${colCount}, minmax(2.8rem, 1fr))`,
-            gridTemplateRows: '8.5rem',
+            gridTemplateRows: '6.5rem',
             background: 'var(--archive-color-rule)',
             border: '1px solid var(--archive-color-rule)',
           }}>
