@@ -699,9 +699,51 @@
 .hero-separator {
   width: 48px;
   height: 1px;
-  background: rgba(255, 255, 255, 0.2);
+  background: #6ee7b7;
   border: none;
   margin: 2rem 0;
+}
+
+.sim-pair-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.sim-pair-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 34%;
+  background: rgba(15, 15, 15, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transform: translateY(100%);
+  transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0.6rem 0.9rem;
+  gap: 0.18rem;
+}
+
+.sim-pair-item:hover .sim-pair-caption {
+  transform: translateY(0);
+}
+
+.sim-pair-place {
+  margin: 0;
+  font: 600 1.35rem/1.2 var(--archive-font-body);
+  color: #22d3ee;
+  letter-spacing: 0.01em;
+}
+
+.sim-pair-date {
+  margin: 0;
+  font: 400 italic 1.05rem/1.2 var(--archive-font-body);
+  color: rgba(34, 211, 238, 0.65);
+  letter-spacing: 0.01em;
 }
 
 .assignment2-hero-subtitle {

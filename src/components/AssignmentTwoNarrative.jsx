@@ -111,6 +111,11 @@ const HERO_RAILS = Array.from({ length: HERO_RAIL_COUNT }, (_, railIndex) =>
   HERO_PREVIEW_IMAGES.filter((_, imageIndex) => imageIndex % HERO_RAIL_COUNT === railIndex)
 )
 
+const SIMILARITY_PAIR = [
+  { filename: '2004-08-19_Suzhou_006.JPG',     date: '19 Aug 2004', place: 'Suzhou'   },
+  { filename: '2015-06-16_Dunhuang_00031.jpg', date: '16 Jun 2015', place: 'Dunhuang' },
+]
+
 const SIMILARITY_GROUPS = [
   {
     label: 'Plated Dishes',
@@ -1116,7 +1121,32 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
             This form of visualisation supports exploratory analysis, enabling patterns to emerge through interaction rather than predefined classification. This makes thematic exploration more effective. Such patterns would be difficult to identify without computational similarity search.
           </p>
           <p style={S.body}>
-            What surprised me most was how easy it became to find similar moments across the archive. Using image similarity and keyword search, I could connect photos that I would never have linked manually. Images that seemed unrelated on their own started to form clear patterns. This changed how I looked at the archive, shifting my focus from individual memories to recurring themes.
+            What surprised me most was how easy it became to find similar moments across the archive. For instance, by using image similarity search, I found these two photos of same activity from different time.
+          </p>
+
+          <div
+            ref={(element) => { similarityGroupRefs.current[4] = element }}
+            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', margin: '1.5rem auto', maxWidth: '82%' }}
+          >
+            {SIMILARITY_PAIR.map(({ filename, date, place }) => (
+              <div key={filename} className="sim-pair-item">
+                <img
+                  data-similarity-piece
+                  src={imageUrl(filename)}
+                  alt=""
+                  loading="lazy"
+                  style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block' }}
+                />
+                <div className="sim-pair-caption" aria-hidden="true">
+                  <p className="sim-pair-place">{place}</p>
+                  <p className="sim-pair-date">{date}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p style={S.body}>
+            Using image similarity and keyword search, I could connect photos that I would never have linked manually. Images that seemed unrelated on their own started to form clear patterns. This changed how I looked at the archive, shifting my focus from individual memories to recurring themes.
           </p>
         </section>
 
