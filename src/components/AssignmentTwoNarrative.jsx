@@ -72,12 +72,12 @@ const HERO_PREVIEW_IMAGES = [
 
 // Extra images not initially displayed — drawn from as flip candidates
 const HERO_CANDIDATE_IMAGES = [
-  '2004-04-25_Lanzhou_001.JPG',
-  '2004-04-25_Lanzhou_002.JPG',
-  '2006-07-27_Beidaihe_008.JPG',
-  '2006-07-27_Beidaihe_009.JPG',
-  '2006-07-27_Beidaihe_019.JPG',
-  '2006-07-27_Beidaihe_020.JPG',
+  '2010-06-15_Baiyin_004.JPG',
+  '2010-06-23_Shanghai_001.JPG',
+  '2025-11-04_Vienna_002.jpg',
+  '2024-01-07_Macau_004.JPG',
+  '2018-02-16_Hongkong_002.jpg',
+  '2018-02-16_Hongkong_018.jpg',
   '2007-07-16_Tibet_002.JPG',
   '2013-08-07_Lausanne_119.JPG',
   '2013-08-07_Lausanne_121.JPG',
@@ -91,18 +91,20 @@ const HERO_CANDIDATE_IMAGES = [
   '2024-03-28_Hongkong_001.JPG',
   '2024-03-30_Zhuhai_002.JPG',
   '2024-05-25_Hongkong_002.JPG',
-  '2025-07-13_Lisbon_005.jpg',
-  '2025-07-17_Lisbon_015.jpg',
-  '2025-07-22_Besancon_008.jpg',
-  '2025-07-30_Besancon_022.jpg',
-  '2025-08-02_Strasbourg_002.jpg',
-  '2025-08-05_Frankfurt_002.jpg',
-  '2025-08-09_Gottingen_003.jpg',
-  '2025-08-11_Gottingen_003.jpg',
-  '2025-08-11_Gottingen_008.jpg',
+  '2016-08-19_Hongkong_014.jpg',
+  '2025-08-24_Ulaanbaatar_003.jpg',
+  '2016-08-19_Hongkong_065.jpg',
+  '2025-11-16_Nuremberg_006.jpg',
+  '2025-11-04_Vienna_003.jpg',
+  '2025-11-04_Vienna_028.jpg',
+  '2024-01-22_Hangzhou_008.JPG',
+  '2024-02-09_Chengdu_040.JPG',
+  '2024-02-14_Qinan_001.JPG',
   '2025-09-21_Cork_002.jpg',
-  '2025-11-04_Vienna_005.jpg',
+  '2025-11-06_Odense_001.jpg',
 ]
+
+const ALL_HERO_IMAGES = [...HERO_PREVIEW_IMAGES, ...HERO_CANDIDATE_IMAGES]
 
 const HERO_RAIL_COUNT = 6
 const HERO_RAILS = Array.from({ length: HERO_RAIL_COUNT }, (_, railIndex) =>
@@ -488,15 +490,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
   const tileFramesRef = useRef([])
   const tileImagesRef = useRef([])
   const flippingTilesRef = useRef(new Set())
-  const candidatePoolRef = useRef([...HERO_CANDIDATE_IMAGES])
-  // Track how many tiles currently show each filename (each image appears in 2 copies)
-  const imageRefCountRef = useRef(null)
-  if (imageRefCountRef.current === null) {
-    const counts = {}
-    HERO_PREVIEW_IMAGES.forEach(f => { counts[f] = 2 })
-    HERO_CANDIDATE_IMAGES.forEach(f => { counts[f] = 0 })
-    imageRefCountRef.current = counts
-  }
+  const lastCursorMoveRef = useRef(0)
 
   // Beeswarm scroll-driven step
   const [swarmStep, setSwarmStep] = useState(0)
@@ -536,7 +530,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           { yPercent: direction > 0 ? -50 : 0 },
           {
             yPercent: direction > 0 ? 0 : -50,
-            duration: 24 + rail * 1.4,
+            duration: 34 + rail * 2,
             repeat: -1,
             ease: 'none',
           }
@@ -677,28 +671,26 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
   function handleTileEnter(tileIdx) {
     if (prefersReducedMotion) return
     if (flippingTilesRef.current.has(tileIdx)) return
-
-    const pool = candidatePoolRef.current
-    if (!pool.length) return
+    // Ignore scroll-induced mouseenter (tile moved into stationary cursor)
+    if (Date.now() - lastCursorMoveRef.current > 150) return
 
     const frame = tileFramesRef.current[tileIdx]
     const img = tileImagesRef.current[tileIdx]
     if (!frame || !img) return
 
-    const counts = imageRefCountRef.current
+    // Build the set of filenames currently displayed across all tiles
+    const displayed = new Set(
+      tileImagesRef.current
+        .filter(Boolean)
+        .map(el => el.dataset.filename)
+        .filter(Boolean)
+    )
 
-    // Pick a random candidate (pool only holds images with refCount === 0)
-    const randomIdx = Math.floor(Math.random() * pool.length)
-    const newFilename = pool.splice(randomIdx, 1)[0]
-    counts[newFilename] = (counts[newFilename] || 0) + 1
+    // Pick any image not currently shown in any tile
+    const available = ALL_HERO_IMAGES.filter(f => !displayed.has(f))
+    if (!available.length) return
 
-    // Decrement refcount for the outgoing image; return it to pool only when
-    // no other tile is still showing it (handles the two-copy scroll duplicate)
-    const oldFilename = img.dataset.filename
-    if (oldFilename) {
-      counts[oldFilename] = (counts[oldFilename] || 1) - 1
-      if (counts[oldFilename] === 0) pool.push(oldFilename)
-    }
+    const newFilename = available[Math.floor(Math.random() * available.length)]
 
     flippingTilesRef.current.add(tileIdx)
 
@@ -735,6 +727,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
       <header
         ref={heroRef}
         className="assignment2-hero-shell hero-shell"
+        onMouseMove={() => { lastCursorMoveRef.current = Date.now() }}
       >
         <div className="assignment2-hero-bg" aria-hidden="true">
           <div className="assignment2-hero-aurora" />
