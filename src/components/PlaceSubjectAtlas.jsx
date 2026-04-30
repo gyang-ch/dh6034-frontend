@@ -267,45 +267,95 @@ export default function PlaceSubjectAtlas({ atlas }) {
         )}
       </header>
 
-      {/* ── Controls ───────────────────────────────────── */}
-      <div className="atlas-display-tabs" data-orientation="horizontal">
-        <span id={`${displayTabsId}-label`} className="atlas-display-tabs__caption">
-          Display
-        </span>
-        <div className="atlas-display-tabs__list-container">
-          <div
-            aria-labelledby={`${displayTabsId}-label`}
-            className="atlas-display-tabs__list"
-            data-orientation="horizontal"
-            role="tablist"
-            style={{ '--atlas-active-tab-index': activeDisplayIndex }}
-          >
-            <span aria-hidden="true" className="atlas-display-tabs__indicator" />
-            {DISPLAY_MODES.map((mode, index) => {
-              const active = showFreq === mode.showFreq
+      {/* ── Controls + Legend (same row, heatmap column only) ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(16rem,20rem)', gap: '2.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '1.5rem', flexWrap: 'wrap' }}>
+        <div className="atlas-display-tabs" data-orientation="horizontal">
+          <span id={`${displayTabsId}-label`} className="atlas-display-tabs__caption">
+            Display
+          </span>
+          <div className="atlas-display-tabs__list-container">
+            <div
+              aria-labelledby={`${displayTabsId}-label`}
+              className="atlas-display-tabs__list"
+              data-orientation="horizontal"
+              role="tablist"
+              style={{ '--atlas-active-tab-index': activeDisplayIndex }}
+            >
+              <span aria-hidden="true" className="atlas-display-tabs__indicator" />
+              {DISPLAY_MODES.map((mode, index) => {
+                const active = showFreq === mode.showFreq
 
-              return (
-                <button
-                  aria-controls={`${displayTabsId}-panel`}
-                  aria-selected={active}
-                  className="atlas-display-tabs__tab"
-                  data-selected={active}
-                  id={`${displayTabsId}-${mode.id}-tab`}
-                  key={mode.id}
-                  onClick={() => selectDisplayMode(index)}
-                  onKeyDown={(event) => handleDisplayKeyDown(event, index)}
-                  ref={(node) => { displayTabRefs.current[index] = node }}
-                  role="tab"
-                  tabIndex={active ? 0 : -1}
-                  type="button"
-                >
-                  {index > 0 && <span aria-hidden="true" className="atlas-display-tabs__separator" />}
-                  <span className="atlas-display-tabs__label">{mode.label}</span>
-                </button>
-              )
-            })}
+                return (
+                  <button
+                    aria-controls={`${displayTabsId}-panel`}
+                    aria-selected={active}
+                    className="atlas-display-tabs__tab"
+                    data-selected={active}
+                    id={`${displayTabsId}-${mode.id}-tab`}
+                    key={mode.id}
+                    onClick={() => selectDisplayMode(index)}
+                    onKeyDown={(event) => handleDisplayKeyDown(event, index)}
+                    ref={(node) => { displayTabRefs.current[index] = node }}
+                    role="tab"
+                    tabIndex={active ? 0 : -1}
+                    type="button"
+                  >
+                    {index > 0 && <span aria-hidden="true" className="atlas-display-tabs__separator" />}
+                    <span className="atlas-display-tabs__label">{mode.label}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
+
+        <div
+          aria-label={`Heatmap colour legend for ${showFreq ? 'frequency percentage' : 'absolute count'}`}
+          ref={legendRef}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.35rem',
+            padding: '0.45rem 0.6rem',
+            background: 'rgba(255,255,255,0.42)',
+            font: '500 0.68rem/1 var(--archive-font-ui)',
+            color: 'var(--archive-color-muted)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem' }}>
+            <span style={{ letterSpacing: '0.08em', textTransform: 'uppercase' }}>Colour</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span
+                aria-hidden="true"
+                style={{
+                  width: '0.75rem',
+                  height: '0.75rem',
+                  border: '1px solid rgba(29,35,41,0.12)',
+                  background: 'rgba(29,35,41,0.02)',
+                  flexShrink: 0,
+                }}
+              />
+              None
+            </span>
+          </div>
+          <div style={{ minWidth: '18rem' }}>
+            <div
+              aria-hidden="true"
+              style={{
+                height: '0.55rem',
+                background: 'linear-gradient(to right, rgb(248,238,210) 0%, rgb(241,168,82) 33%, rgb(48,148,164) 66%, rgb(16,52,98) 100%)',
+                borderRadius: '1px',
+              }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.22rem' }}>
+              {[legendStops[1], legendStops[2], legendStops[3]].map((s) => (
+                <span key={s.id} style={{ whiteSpace: 'nowrap' }}>{s.label}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
       </div>
 
       {/* ── Grid + Detail Panel ─────────────────────────────────────────── */}
@@ -316,58 +366,8 @@ export default function PlaceSubjectAtlas({ atlas }) {
           aria-labelledby={`${displayTabsId}-${DISPLAY_MODES[activeDisplayIndex].id}-tab`}
           id={`${displayTabsId}-panel`}
           role="tabpanel"
-          style={{ display: 'grid', gap: '0.75rem', minWidth: 0 }}
+          style={{ minWidth: 0 }}
         >
-          <div
-            aria-label={`Heatmap colour legend for ${showFreq ? 'frequency percentage' : 'absolute count'}`}
-            ref={legendRef}
-            style={{
-              justifySelf: 'end',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.35rem',
-              padding: '0.45rem 0.6rem',
-              background: 'rgba(255,255,255,0.42)',
-              font: '500 0.68rem/1 var(--archive-font-ui)',
-              color: 'var(--archive-color-muted)',
-            }}
-          >
-            {/* Header row */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem' }}>
-              <span style={{ letterSpacing: '0.08em', textTransform: 'uppercase' }}>Colour</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                <span
-                  aria-hidden="true"
-                  style={{
-                    width: '0.75rem',
-                    height: '0.75rem',
-                    border: '1px solid rgba(29,35,41,0.12)',
-                    background: 'rgba(29,35,41,0.02)',
-                    flexShrink: 0,
-                  }}
-                />
-                None
-              </span>
-            </div>
-
-            {/* Gradient bar + tick labels */}
-            <div style={{ minWidth: '18rem' }}>
-              <div
-                aria-hidden="true"
-                style={{
-                  height: '0.55rem',
-                  background: 'linear-gradient(to right, rgb(248,238,210) 0%, rgb(241,168,82) 33%, rgb(48,148,164) 66%, rgb(16,52,98) 100%)',
-                  borderRadius: '1px',
-                }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.22rem' }}>
-                {[legendStops[1], legendStops[2], legendStops[3]].map((s) => (
-                  <span key={s.id} style={{ whiteSpace: 'nowrap' }}>{s.label}</span>
-                ))}
-              </div>
-            </div>
-          </div>
-
           <div
             className="custom-scrollbar"
             style={{ overflowX: 'auto', paddingBottom: '0.5rem' }}
