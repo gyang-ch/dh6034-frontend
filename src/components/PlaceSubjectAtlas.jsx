@@ -70,9 +70,11 @@ const SUBJECT_ORDER = [
   { source: 'yolo', subject: 'bus' },
   { source: 'yolo', subject: 'dining table' },
   { source: 'yolo', subject: 'suitcase' },
-  { source: 'yolo', subject: 'book' },
-  // Gemma high-count (people / scenes)
+  { source: 'gemma', subject: 'beach' },
+  { source: 'gemma', subject: 'desert' },
   { source: 'gemma', subject: 'boy' },
+  { source: 'yolo', subject: 'book' },
+  // Gemma (scenes / activities)
   { source: 'gemma', subject: 'night' },
   // Gemma medium (nature / activities / objects)
   { source: 'gemma', subject: 'wall' },
@@ -87,8 +89,6 @@ const SUBJECT_ORDER = [
   { source: 'gemma', subject: 'yak' },
   // Sparse / low-count columns → right end
   { source: 'yolo', subject: 'airplane' },
-  { source: 'gemma', subject: 'beach' },
-  { source: 'gemma', subject: 'desert' },
   { source: 'gemma', subject: 'ink' },
   { source: 'gemma', subject: 'award' },
 ]
