@@ -326,15 +326,16 @@ export default function PlaceSubjectAtlas({ atlas }) {
             display: 'grid',
             gap: '1px', // Crisp matrix lines
             alignItems: 'stretch',
-            minWidth: `${12 + colCount * 2.8}rem`,
-            gridTemplateColumns: `12rem repeat(${colCount}, minmax(2.8rem, 1fr))`,
+            minWidth: `${9 + colCount * 2.8}rem`,
+            gridTemplateColumns: `9rem repeat(${colCount}, minmax(2.8rem, 1fr))`,
+            gridTemplateRows: '8.5rem',
             background: 'var(--archive-color-rule)', // Acts as the border color between cells
             border: '1px solid var(--archive-color-rule)',
           }}>
 
             {/* Column headers (rotated) */}
-            <div style={{ background: 'var(--archive-color-bg)', display: 'flex', alignItems: 'flex-end', padding: '0.5rem 0.75rem', font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
-              Location Origin
+            <div style={{ position: 'sticky', left: 0, zIndex: 2, background: 'var(--archive-color-bg)', display: 'flex', alignItems: 'flex-end', padding: '0.5rem 0.75rem', font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--archive-color-muted)', boxShadow: '2px 0 4px rgba(0,0,0,0.06)' }}>
+              Location
             </div>
             {visibleSubjects.map((s) => (
               <div
@@ -344,7 +345,6 @@ export default function PlaceSubjectAtlas({ atlas }) {
                   background: 'var(--archive-color-bg)',
                   writingMode: 'vertical-rl',
                   transform: 'rotate(180deg)',
-                  height: '8.5rem',
                   padding: '0.5rem 0',
                   textAlign: 'left',
                   overflow: 'hidden',
@@ -363,12 +363,14 @@ export default function PlaceSubjectAtlas({ atlas }) {
 
                 {/* Place label + total */}
                 <div style={{
+                  position: 'sticky', left: 0, zIndex: 1,
                   background: 'var(--archive-color-bg)',
                   display: 'flex', justifyContent: 'space-between', gap: '1rem',
                   alignItems: 'center', padding: '0 0.75rem',
                   whiteSpace: 'nowrap',
                   font: '400 0.85rem/1.2 "Aptos", "Segoe UI", sans-serif',
                   color: 'var(--archive-color-ink)',
+                  boxShadow: '2px 0 4px rgba(0,0,0,0.06)',
                 }}>
                   <span>{place.place}</span>
                   <span style={{ font: '400 0.7rem var(--archive-font-data)', color: 'var(--archive-color-muted)' }}>{place.total}</span>
@@ -405,7 +407,6 @@ export default function PlaceSubjectAtlas({ atlas }) {
                         cursor: count > 0 ? 'pointer' : 'default',
                         transition: 'box-shadow 150ms ease, opacity 150ms ease',
                         boxShadow: isActive ? 'inset 0 0 0 2px var(--archive-color-ink)' : 'none',
-                        opacity: (activeKey && !isActive && count > 0) ? 0.6 : 1, // Dim others when one is selected
                       }}
                       aria-label={`${place.place}, ${prettyLabel(subject.subject)}, ${count} photographs (${share}%)`}
                       onClick={() => { if (cellKey) setActiveKey((prev) => prev === cellKey ? null : cellKey) }}
