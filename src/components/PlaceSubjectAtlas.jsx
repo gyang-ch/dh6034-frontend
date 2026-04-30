@@ -189,8 +189,8 @@ export default function PlaceSubjectAtlas({ atlas }) {
       display: 'grid', gap: '2rem', padding: '2.5rem',
       border: '1px solid var(--archive-color-rule)',
       borderRadius: 'var(--radius-soft, 8px)',
-      background: 'var(--archive-color-bg)', // Relying on the clean parchment bg
-      boxShadow: '0 4px 30px -15px rgba(0,0,0,0.06)', // Very modest grounding shadow
+      background: 'var(--archive-color-bg)',
+      boxShadow: '0 4px 30px -15px rgba(0,0,0,0.06)',
     }}>
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
@@ -203,7 +203,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
             Heat signatures revealing which locations are visually remembered through specific subjects.
           </h3>
         </div>
-        
+
         {/* Modest Top-Right Detail Readout */}
         {activeCell && (
           <div style={{ textAlign: 'right', minWidth: '120px' }}>
@@ -329,7 +329,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
             minWidth: `${9 + colCount * 2.8}rem`,
             gridTemplateColumns: `9rem repeat(${colCount}, minmax(2.8rem, 1fr))`,
             gridTemplateRows: '8.5rem',
-            background: 'var(--archive-color-rule)', // Acts as the border color between cells
+            background: 'var(--archive-color-rule)',
             border: '1px solid var(--archive-color-rule)',
           }}>
 
@@ -430,7 +430,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
             <div style={{
               display: 'flex', flexDirection: 'column', gap: '1rem',
               paddingTop: '1rem',
-              borderTop: '3px solid var(--archive-color-accent)', // Strong academic framing
+              borderTop: '3px solid var(--archive-color-accent)',
             }}>
               <div style={{ display: 'grid', gap: '0.4rem' }}>
                 <p style={{ margin: 0, font: '600 0.65rem/1.2 var(--archive-font-ui)', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
