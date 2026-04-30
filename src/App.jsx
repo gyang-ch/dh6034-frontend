@@ -48,7 +48,7 @@ export default function App() {
       pathname === '/' ||
       (!isAssignmentOnePath && !isAssignmentTwoPath && !isArchiveWindowedPath)
     ) {
-      window.history.replaceState({}, '', '/assignment1')
+      window.history.replaceState({}, '', '/assignment2')
     }
 
     const handlePopState = () => {

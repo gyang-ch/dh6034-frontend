@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Graph from 'graphology'
 import Sigma from 'sigma'
-import { assignment2GraphData } from '../data/assignment2GraphData'
 import { photographUrl } from '../lib/photographs'
 
 // ── K-Means palette (8 fixed clusters) ──────────────────────────────────────
@@ -53,50 +52,30 @@ const HDBSCAN_PALETTE = [
   '#7c4ca4', // deep violet
 ]
 
-function hdbscanColour(clusterId) {
-  if (clusterId === -1) return HDBSCAN_NOISE_COLOUR
-  const idx = ALL_HDBSCAN_CLUSTERS.indexOf(clusterId)
-  return HDBSCAN_PALETTE[idx >= 0 ? idx % HDBSCAN_PALETTE.length : clusterId % HDBSCAN_PALETTE.length]
-}
-
-function nodeColour(node, mode) {
-  return mode === 'hdbscan' ? hdbscanColour(node.hdbscanClusterId) : kmeansColour(node.clusterId)
-}
-
 const imageUrl = photographUrl
 
-// Pre-compute HDBSCAN cluster counts from graph nodes
-const hdbscanClusterCounts = (() => {
+function computeDerived(nodes) {
   const counts = new Map()
-  for (const node of assignment2GraphData.nodes) {
+  for (const node of nodes) {
     const id = node.hdbscanClusterId
     counts.set(id, (counts.get(id) ?? 0) + 1)
   }
-  return counts
-})()
+  const ALL_HDBSCAN_CLUSTERS = [...counts.keys()].filter((id) => id !== -1).sort((a, b) => a - b)
 
-const ALL_HDBSCAN_CLUSTERS = [...hdbscanClusterCounts.keys()]
-  .filter((id) => id !== -1)
-  .sort((a, b) => a - b)
-
-// Cluster name maps derived from node attributes
-const KMEANS_NAMES = (() => {
-  const map = {}
-  for (const node of assignment2GraphData.nodes) {
-    if (node.clusterId != null && node.clusterName && !(node.clusterId in map))
-      map[node.clusterId] = node.clusterName
+  const KMEANS_NAMES = {}
+  for (const node of nodes) {
+    if (node.clusterId != null && node.clusterName && !(node.clusterId in KMEANS_NAMES))
+      KMEANS_NAMES[node.clusterId] = node.clusterName
   }
-  return map
-})()
 
-const HDBSCAN_NAMES = (() => {
-  const map = { [-1]: 'noise / outlier' }
-  for (const node of assignment2GraphData.nodes) {
-    if (node.hdbscanClusterId != null && node.hdbscanClusterName && !(node.hdbscanClusterId in map))
-      map[node.hdbscanClusterId] = node.hdbscanClusterName
+  const HDBSCAN_NAMES = { [-1]: 'noise / outlier' }
+  for (const node of nodes) {
+    if (node.hdbscanClusterId != null && node.hdbscanClusterName && !(node.hdbscanClusterId in HDBSCAN_NAMES))
+      HDBSCAN_NAMES[node.hdbscanClusterId] = node.hdbscanClusterName
   }
-  return map
-})()
+
+  return { ALL_HDBSCAN_CLUSTERS, KMEANS_NAMES, HDBSCAN_NAMES }
+}
 
 export default function AssignmentTwoGraph() {
   const containerRef = useRef(null)
@@ -106,21 +85,46 @@ export default function AssignmentTwoGraph() {
   const hoveredNodeRef = useRef(null)
   const hoveredClusterRef = useRef(null)
   const clusterModeRef = useRef('kmeans')
+  const derivedRef = useRef(null)
   const [clusterMode, setClusterMode] = useState('kmeans')
   const [hoveredNode, setHoveredNode] = useState(null)
   const [hoveredCluster, setHoveredCluster] = useState(null)
   const [imageFailed, setImageFailed] = useState(false)
+  const [graphData, setGraphData] = useState(null)
+  const [derived, setDerived] = useState(null)
 
-  // ── Main sigma setup (run once) ────────────────────────────────────────────
+  // ── Load graph data on mount (deferred so the 5 MB file isn't parsed eagerly)
+  useEffect(() => {
+    import('../data/assignment2GraphData').then(({ assignment2GraphData }) => {
+      const d = computeDerived(assignment2GraphData.nodes)
+      derivedRef.current = d
+      setDerived(d)
+      setGraphData(assignment2GraphData)
+    })
+  }, [])
+
+  // ── Colour helpers (inside component so they close over derivedRef) ─────────
+  function hdbscanColour(clusterId) {
+    if (clusterId === -1) return HDBSCAN_NOISE_COLOUR
+    const allClusters = derivedRef.current?.ALL_HDBSCAN_CLUSTERS ?? []
+    const idx = allClusters.indexOf(clusterId)
+    return HDBSCAN_PALETTE[idx >= 0 ? idx % HDBSCAN_PALETTE.length : clusterId % HDBSCAN_PALETTE.length]
+  }
+
+  function nodeColour(node, mode) {
+    return mode === 'hdbscan' ? hdbscanColour(node.hdbscanClusterId) : kmeansColour(node.clusterId)
+  }
+
+  // ── Main sigma setup (runs once graphData is available) ───────────────────
   useEffect(() => {
     const container = containerRef.current
-    if (!container) return undefined
+    if (!container || !graphData) return undefined
 
     const graph = new Graph({ multi: true })
     const neighborMap = new Map()
 
     // Build neighbour map for both edge sets (union)
-    for (const edgeSet of [assignment2GraphData.edges, assignment2GraphData.hdbscanEdges ?? []]) {
+    for (const edgeSet of [graphData.edges, graphData.hdbscanEdges ?? []]) {
       for (const edge of edgeSet) {
         if (!neighborMap.has(edge.source)) neighborMap.set(edge.source, new Set())
         if (!neighborMap.has(edge.target)) neighborMap.set(edge.target, new Set())
@@ -129,7 +133,7 @@ export default function AssignmentTwoGraph() {
       }
     }
 
-    for (const node of assignment2GraphData.nodes) {
+    for (const node of graphData.nodes) {
       graph.addNode(node.filename, {
         ...node,
         x: node.x,
@@ -141,7 +145,7 @@ export default function AssignmentTwoGraph() {
     }
 
     // Add both edge sets with a mode tag to filter in edgeReducer
-    for (const edge of assignment2GraphData.edges) {
+    for (const edge of graphData.edges) {
       graph.addEdge(edge.source, edge.target, {
         mode: 'kmeans',
         size: Math.max(0.35, 1.2 - edge.distance),
@@ -149,7 +153,7 @@ export default function AssignmentTwoGraph() {
         distance: edge.distance,
       })
     }
-    for (const edge of (assignment2GraphData.hdbscanEdges ?? [])) {
+    for (const edge of (graphData.hdbscanEdges ?? [])) {
       graph.addEdge(edge.source, edge.target, {
         mode: 'hdbscan',
         size: Math.max(0.35, 1.2 - edge.distance),
@@ -247,7 +251,7 @@ export default function AssignmentTwoGraph() {
       graphRef.current = null
       neighborMapRef.current = null
     }
-  }, [])
+  }, [graphData]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Sync hovered node ref + refresh on hover change ───────────────────────
   useEffect(() => {
@@ -274,15 +278,15 @@ export default function AssignmentTwoGraph() {
   }, [clusterMode])
 
   // ── Legend content ────────────────────────────────────────────────────────
-  const legendItems = clusterMode === 'kmeans'
+  const legendItems = !derived ? [] : clusterMode === 'kmeans'
     ? KMEANS_COLOURS.map((colour, i) => ({
         colour,
-        label: KMEANS_NAMES[i] ?? `Cluster ${i}`,
+        label: derived.KMEANS_NAMES[i] ?? `Cluster ${i}`,
         clusterId: i,
       }))
-    : ALL_HDBSCAN_CLUSTERS.map((id) => ({
+    : derived.ALL_HDBSCAN_CLUSTERS.map((id) => ({
         colour: hdbscanColour(id),
-        label: HDBSCAN_NAMES[id] ?? `Cluster ${id}`,
+        label: derived.HDBSCAN_NAMES[id] ?? `Cluster ${id}`,
         clusterId: id,
       }))
 
@@ -353,8 +357,8 @@ export default function AssignmentTwoGraph() {
                 <div>
                   <p className="font-data text-[0.68rem] uppercase tracking-[0.22em] text-slate-500">
                     {clusterMode === 'hdbscan'
-                      ? (HDBSCAN_NAMES[hoveredNode.hdbscanClusterId] ?? `HDBSCAN Cluster ${hoveredNode.hdbscanClusterId}`)
-                      : (KMEANS_NAMES[hoveredNode.clusterId] ?? `K-Means Cluster ${hoveredNode.clusterId}`)}
+                      ? (derived?.HDBSCAN_NAMES[hoveredNode.hdbscanClusterId] ?? `HDBSCAN Cluster ${hoveredNode.hdbscanClusterId}`)
+                      : (derived?.KMEANS_NAMES[hoveredNode.clusterId] ?? `K-Means Cluster ${hoveredNode.clusterId}`)}
                   </p>
                   <h4 className="mt-1 font-title text-xl leading-tight text-slate-950">{hoveredNode.filename}</h4>
                 </div>

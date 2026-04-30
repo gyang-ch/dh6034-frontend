@@ -1,24 +1,48 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import tippy, { followCursor } from 'tippy.js'
 import 'tippy.js/dist/tippy.css'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { assignment2Data } from '../data/assignment2Data'
-import AssignmentTwoGraph from './AssignmentTwoGraph'
-import ChromaticSwarm, { STEPS as SWARM_STEPS } from './ChromaticSwarm'
 import PeoplePanel from './PeoplePanel'
-import SemanticTimeline from './SemanticTimeline'
 import PlaceSubjectAtlas from './PlaceSubjectAtlas'
 import TemporalRibbon from './TemporalRibbon'
-import PhotoMap from './PhotoMap'
 import StagedVisual from './StagedVisual'
 import JsonScrollExplainer from './JsonScrollExplainer'
-import YoloObjectTimeline from './YoloObjectTimeline'
-import GemmaSearch from './GemmaSearch'
 import { PresenceLineChart, PeopleCountLineChart } from './AnnotationTimeline'
 import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 import { photographUrl } from '../lib/photographs'
+
+const AssignmentTwoGraph = lazy(() => import('./AssignmentTwoGraph'))
+const ChromaticSwarm     = lazy(() => import('./ChromaticSwarm'))
+const GemmaSearch        = lazy(() => import('./GemmaSearch'))
+const PhotoMap           = lazy(() => import('./PhotoMap'))
+const SemanticTimeline   = lazy(() => import('./SemanticTimeline'))
+const YoloObjectTimeline = lazy(() => import('./YoloObjectTimeline'))
+
+const SWARM_STEPS = [
+  {
+    key: 'scatter',
+    title: 'The full corpus, set free',
+    desc: 'Each circle is one photograph. Radius encodes style energy; colour is the dominant hue. Circles drift loosely near their visual cluster.',
+  },
+  {
+    key: 'timeline',
+    title: 'Arranged along time',
+    desc: 'Circles slide into chronological order. The beeswarm spread on the vertical axis prevents overlap while preserving temporal position on the x-axis.',
+  },
+  {
+    key: 'families',
+    title: 'Gathered by visual family',
+    desc: 'Eight CLIP clusters pull their members into distinct vertical columns — each band is a recurring visual theme in the archive.',
+  },
+  {
+    key: 'energy',
+    title: 'Sorted by style energy',
+    desc: 'Low-contrast, quiet photographs settle to the left; high-energy images rise to the right. The most intense nodes emit a coloured glow.',
+  },
+]
 
 gsap.registerPlugin(useGSAP)
 
@@ -951,7 +975,9 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
 
         <VisBlock>
           <StagedVisual label="Preparing semantic timeline" minHeight="min(66vh,36rem)">
-            <SemanticTimeline years={assignment2Data.semanticTimeline} />
+            <Suspense fallback={null}>
+              <SemanticTimeline years={assignment2Data.semanticTimeline} />
+            </Suspense>
           </StagedVisual>
         </VisBlock>
 
@@ -963,7 +989,9 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
 
         <VisBlock>
           <StagedVisual label="Preparing object timeline" minHeight="28rem">
-            <YoloObjectTimeline />
+            <Suspense fallback={null}>
+              <YoloObjectTimeline />
+            </Suspense>
           </StagedVisual>
         </VisBlock>
 
@@ -982,7 +1010,9 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
         </section>
 
         <VisBlock>
-          <GemmaSearch />
+          <Suspense fallback={<div style={{ minHeight: '10rem' }} />}>
+            <GemmaSearch />
+          </Suspense>
         </VisBlock>
 
         <section style={SEC_CONT}>
@@ -1017,7 +1047,9 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
 
         <VisBlock>
           <StagedVisual label="Preparing geographic field" minHeight="34rem">
-            <PhotoMap semanticMap={assignment2Data.semanticMap} />
+            <Suspense fallback={null}>
+              <PhotoMap semanticMap={assignment2Data.semanticMap} />
+            </Suspense>
           </StagedVisual>
         </VisBlock>
 
@@ -1108,7 +1140,9 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
 
         <VisBlock>
           <StagedVisual label="Preparing visual constellation" minHeight="min(75vh,44rem)">
-            <AssignmentTwoGraph />
+            <Suspense fallback={null}>
+              <AssignmentTwoGraph />
+            </Suspense>
           </StagedVisual>
         </VisBlock>
 
@@ -1154,7 +1188,9 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
         <div id="swarm" style={{ display: 'flex', gap: '2.5rem', alignItems: 'flex-start', padding: '4.5rem 0 2rem' }}>
           <div style={{ flex: '0 0 64%', position: 'sticky', top: '1.5rem' }}>
             <StagedVisual label="Preparing beeswarm" minHeight="100vh">
-              <ChromaticSwarm step={swarmStep} />
+              <Suspense fallback={null}>
+                <ChromaticSwarm step={swarmStep} />
+              </Suspense>
             </StagedVisual>
           </div>
           <div style={{ flex: 1, minWidth: 0, paddingBottom: 'calc(50vh - 40vh - 1rem)' }}>
