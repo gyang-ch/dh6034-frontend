@@ -15,7 +15,7 @@ import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 import { photographUrl } from '../lib/photographs'
 
 const AssignmentTwoGraph = lazy(() => import('./AssignmentTwoGraph'))
-const ChromaticSwarm     = lazy(() => import('./ChromaticSwarm'))
+// const ChromaticSwarm     = lazy(() => import('./ChromaticSwarm'))
 const GemmaSearch        = lazy(() => import('./GemmaSearch'))
 const PhotoMap           = lazy(() => import('./PhotoMap'))
 const SemanticTimeline   = lazy(() => import('./SemanticTimeline'))
@@ -521,9 +521,9 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
   const flippingTilesRef = useRef(new Set())
   const lastCursorMoveRef = useRef(0)
 
-  // Beeswarm scroll-driven step
-  const [swarmStep, setSwarmStep] = useState(0)
-  const swarmCardRefs = useRef([])
+  // Beeswarm scroll-driven step (temporarily removed)
+  // const [swarmStep, setSwarmStep] = useState(0)
+  // const swarmCardRefs = useRef([])
 
   // Seasonal histogram scroll-driven step
   const [seasonalStep, setSeasonalStep] = useState(0)
@@ -569,33 +569,33 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
 
   }, { scope: heroRef, dependencies: [prefersReducedMotion] })
 
-  // Beeswarm cards: IntersectionObserver detects which card is centred in viewport
-  useEffect(() => {
-    const cards = swarmCardRefs.current.filter(Boolean)
-    if (!cards.length) return
-    gsap.set(cards[0], { opacity: 1, filter: 'blur(0px)', scale: 1 })
-    cards.slice(1).forEach(c => gsap.set(c, { opacity: 0.3, filter: 'blur(2px)', scale: 0.98 }))
-    const observers = cards.map((el, i) => {
-      const obs = new IntersectionObserver(
-        ([entry]) => { if (entry.isIntersecting) setSwarmStep(i) },
-        { rootMargin: '-49% 0px -49% 0px' },
-      )
-      obs.observe(el)
-      return obs
-    })
-    return () => observers.forEach(o => o.disconnect())
-  }, [])
+  // Beeswarm cards: IntersectionObserver detects which card is centred in viewport (temporarily removed)
+  // useEffect(() => {
+  //   const cards = swarmCardRefs.current.filter(Boolean)
+  //   if (!cards.length) return
+  //   gsap.set(cards[0], { opacity: 1, filter: 'blur(0px)', scale: 1 })
+  //   cards.slice(1).forEach(c => gsap.set(c, { opacity: 0.3, filter: 'blur(2px)', scale: 0.98 }))
+  //   const observers = cards.map((el, i) => {
+  //     const obs = new IntersectionObserver(
+  //       ([entry]) => { if (entry.isIntersecting) setSwarmStep(i) },
+  //       { rootMargin: '-49% 0px -49% 0px' },
+  //     )
+  //     obs.observe(el)
+  //     return obs
+  //   })
+  //   return () => observers.forEach(o => o.disconnect())
+  // }, [])
 
-  // Beeswarm cards: GSAP animates blur/scale/opacity when active step changes
-  useEffect(() => {
-    const cards = swarmCardRefs.current.filter(Boolean)
-    cards.forEach((c, j) => gsap.to(c, {
-      opacity: j === swarmStep ? 1 : 0.3,
-      filter: j === swarmStep ? 'blur(0px)' : 'blur(2px)',
-      scale: j === swarmStep ? 1 : 0.98,
-      duration: 0.5, ease: 'power2.out', overwrite: 'auto',
-    }))
-  }, [swarmStep])
+  // Beeswarm cards: GSAP animates blur/scale/opacity when active step changes (temporarily removed)
+  // useEffect(() => {
+  //   const cards = swarmCardRefs.current.filter(Boolean)
+  //   cards.forEach((c, j) => gsap.to(c, {
+  //     opacity: j === swarmStep ? 1 : 0.3,
+  //     filter: j === swarmStep ? 'blur(0px)' : 'blur(2px)',
+  //     scale: j === swarmStep ? 1 : 0.98,
+  //     duration: 0.5, ease: 'power2.out', overwrite: 'auto',
+  //   }))
+  // }, [swarmStep])
 
   // Seasonal cards: IntersectionObserver detects which card is centred in viewport
   useEffect(() => {
@@ -1146,9 +1146,9 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           </StagedVisual>
         </VisBlock>
 
-        <VisBlock>
+        {/* <VisBlock>
           <VisualThemesDonutPanel />
-        </VisBlock>
+        </VisBlock> */}
 
         <section style={SEC_CONT}>
           <p style={S.body}>
@@ -1184,56 +1184,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           </p>
         </section>
 
-        {/* Beeswarm: sticky viz left, scrollable text right */}
-        <div id="swarm" style={{ display: 'flex', gap: '2.5rem', alignItems: 'flex-start', padding: '4.5rem 0 2rem' }}>
-          <div style={{ flex: '0 0 64%', position: 'sticky', top: '1.5rem' }}>
-            <StagedVisual label="Preparing beeswarm" minHeight="100vh">
-              <Suspense fallback={null}>
-                <ChromaticSwarm step={swarmStep} />
-              </Suspense>
-            </StagedVisual>
-          </div>
-          <div style={{ flex: 1, minWidth: 0, paddingBottom: 'calc(50vh - 40vh - 1rem)' }}>
-            <div style={{ padding: '0 0 1rem' }}>
-            </div>
-            {SWARM_STEPS.map((s, i) => (
-              <div
-                key={s.key}
-                style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', padding: '1rem 0' }}
-              >
-                <div
-                  ref={el => { swarmCardRefs.current[i] = el }}
-                  className={`explanation-card${swarmStep === i ? ' active-card' : ''}`}
-                  style={{ padding: '1.5rem 1.6rem' }}
-                >
-                  <p style={{
-                    margin: '0 0 0.4rem',
-                    font: '600 0.68rem/1 var(--archive-font-ui)',
-                    letterSpacing: '0.16em',
-                    textTransform: 'uppercase',
-                    color: 'var(--archive-color-muted)',
-                  }}>
-                    Step {i + 1} of {SWARM_STEPS.length}
-                  </p>
-                  <h3 style={{
-                    margin: '0 0 0.75rem',
-                    font: '500 1.2rem/1.25 var(--archive-font-display)',
-                    color: 'var(--archive-color-ink)',
-                  }}>
-                    {s.title}
-                  </h3>
-                  <p style={{
-                    margin: 0,
-                    font: '0.9rem/1.75 var(--archive-font-ui)',
-                    color: 'var(--archive-color-copy)',
-                  }}>
-                    {s.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Beeswarm temporarily removed */}
 
         {/* 4 – Conclusion */}
         <section id="conclusion" style={SEC}>
