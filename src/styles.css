@@ -1323,3 +1323,44 @@
 .code-block-highlight.active::after {
   opacity: 1;
 }
+
+/* Photo Archive — magnetic link */
+.magnetic-hit-area {
+  display: inline-block;
+  padding: 0.5em 1em;
+  margin: -0.5em -1em;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.link-highlighter {
+  display: inline-block;
+  position: relative;
+  color: var(--archive-color-ink);
+  font-weight: 600;
+  z-index: 1;
+  transition: color 0.2s ease;
+  pointer-events: none;
+}
+
+.link-highlighter::after {
+  content: '';
+  position: absolute;
+  bottom: 0.05em;
+  left: -0.1em;
+  right: -0.1em;
+  height: 0.35em;
+  background: rgba(45, 212, 191, 0.35);
+  border-radius: 2px;
+  z-index: -1;
+  transition: height 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.magnetic-hit-area:hover .link-highlighter {
+  color: #0f172a;
+}
+
+.magnetic-hit-area:hover .link-highlighter::after {
+  height: 100%;
+  background: rgba(45, 212, 191, 0.5);
+}

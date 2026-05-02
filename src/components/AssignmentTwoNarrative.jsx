@@ -13,6 +13,7 @@ import JsonScrollExplainer from './JsonScrollExplainer'
 import { PresenceLineChart, PeopleCountLineChart } from './AnnotationTimeline'
 import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 import { photographUrl } from '../lib/photographs'
+import MagneticLink from './MagneticLink'
 
 const Network = lazy(() => import('./Network'))
 // const ChromaticSwarm     = lazy(() => import('./ChromaticSwarm'))
@@ -667,7 +668,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
               ease: 'power2.out',
             })
           }
-          // Images flip up with a grid-aware stagger (2 rows × 3 cols)
+          // Images flip up — pairs enter together, larger grids use a stagger
           gsap.to(images, {
             autoAlpha: 1,
             y: 0,
@@ -675,7 +676,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
             scale: 1,
             duration: 0.72,
             ease: 'power3.out',
-            stagger: { amount: 0.42, from: 'start', grid: [2, 3] },
+            stagger: images.length <= 2 ? 0 : { amount: 0.42, from: 'start', grid: [2, 3] },
             delay: 0.08,
             onComplete() {
               gsap.set(images, { clearProps: 'rotationX,transformPerspective,transformOrigin,scale' })
@@ -1003,18 +1004,9 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
         <section style={SEC_CONT}>
           <p style={S.body}>
             The full collection can be explored in the{' '}
-            <a
-              href="/photoarchive"
-              onClick={(event) => {
-                if (onOpenPhotoArchive) {
-                  event.preventDefault()
-                  onOpenPhotoArchive()
-                }
-              }}
-              style={S.link}
-            >
+            <MagneticLink onClick={onOpenPhotoArchive}>
               Photo Archive
-            </a>{' '}
+            </MagneticLink>{' '}
             tab, which provides direct access to all images alongside their metadata.
           </p>
         </section>
