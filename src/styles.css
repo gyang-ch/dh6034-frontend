@@ -1260,10 +1260,27 @@
   will-change: opacity, filter, transform;
 }
 
+.explanation-card h3 {
+  color: var(--archive-color-ink);
+  transition: color 0.35s ease;
+}
+
 .explanation-card.active-card {
   border-color: rgba(29, 35, 41, 0.22);
   background: rgba(255, 255, 255, 0.82);
   box-shadow: 0 8px 32px -8px rgba(15, 23, 42, 0.13);
+}
+
+.explanation-card.active-card h3 {
+  color: #0284c7;
+}
+
+.json-scroll-explainer .explanation-card {
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.json-scroll-explainer .explanation-card.active-card {
+  border-color: rgba(56, 189, 248, 0.7);
 }
 
 .code-block-highlight {
@@ -1279,9 +1296,9 @@
   top: 0;
   left: 0;
   bottom: 0;
-  width: 3px;
+  width: 4px;
   background: #38bdf8;
-  box-shadow: 0 0 8px rgba(56, 189, 248, 0.9), 0 0 20px rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 1), 0 0 28px rgba(56, 189, 248, 0.7);
   border-radius: 2px;
   transform: scaleY(0);
   transform-origin: top center;
@@ -1296,7 +1313,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, rgba(56, 189, 248, 0.1), transparent 75%);
+  background: linear-gradient(to right, rgba(56, 189, 248, 0.4), transparent 75%);
   opacity: 0;
   pointer-events: none;
   border-radius: 0 4px 4px 0;
