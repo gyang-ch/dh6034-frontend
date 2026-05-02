@@ -505,6 +505,7 @@
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
+  isolation: isolate; /* contain spotlight z-index so overlay text stays on top */
 }
 
 .assignment2-hero-aurora {
@@ -589,6 +590,28 @@
   gap: 0.36rem;
 }
 
+/* Cursor-tracking spotlight — updated via JS on mousemove */
+.assignment2-hero-spotlight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  will-change: background;
+}
+
+.assignment2-hero-shell:hover .assignment2-hero-spotlight {
+  opacity: 1;
+}
+
+/* Shimmer sweep — triggered by CSS :hover, runs once per enter */
+@keyframes assignment2-tile-shine {
+  from { transform: translateX(-140%) skewX(-22deg); opacity: 0.9; }
+  to   { transform: translateX(300%)  skewX(-22deg); opacity: 0; }
+}
+
 .assignment2-hero-tile {
   position: relative;
   overflow: hidden;
@@ -604,8 +627,28 @@
     rgba(15, 23, 42, 0.28);
   will-change: transform, opacity;
   cursor: default;
-  /* perspective on the tile so child rotationY looks 3D */
-  perspective: 600px;
+}
+
+/* Shimmer highlight bar over each tile on hover */
+.assignment2-hero-tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.12) 42%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.12) 58%,
+    transparent 100%
+  );
+  transform: translateX(-140%) skewX(-22deg);
+}
+
+.assignment2-hero-tile:hover::before {
+  animation: assignment2-tile-shine 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .assignment2-hero-tile-frame {

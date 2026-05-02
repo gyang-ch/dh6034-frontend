@@ -516,6 +516,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const heroRef = useRef(null)
   const overlayRef = useRef(null)
+  const spotlightRef = useRef(null)
   const railTracksRef = useRef([])
   const tilesRef = useRef([])
   const tileFramesRef = useRef([])
@@ -701,13 +702,18 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
 
   function handleTileEnter(tileIdx) {
     if (prefersReducedMotion) return
-    if (flippingTilesRef.current.has(tileIdx)) return
     // Ignore scroll-induced mouseenter (tile moved into stationary cursor)
     if (Date.now() - lastCursorMoveRef.current > 150) return
 
     const frame = tileFramesRef.current[tileIdx]
     const img = tileImagesRef.current[tileIdx]
     if (!frame || !img) return
+
+    // Kill any in-progress animation on this tile cleanly
+    if (flippingTilesRef.current.has(tileIdx)) {
+      gsap.killTweensOf([frame, img])
+      flippingTilesRef.current.delete(tileIdx)
+    }
 
     // Build the set of filenames currently displayed across all tiles
     const displayed = new Set(
@@ -722,33 +728,34 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
     if (!available.length) return
 
     const newFilename = available[Math.floor(Math.random() * available.length)]
-
     flippingTilesRef.current.add(tileIdx)
 
-    // Phase 1: rotate to edge-on + blur in
-    gsap.to(frame, {
-      rotationY: 90,
-      filter: 'blur(8px)',
-      duration: 0.2,
-      ease: 'power2.in',
-      overwrite: 'auto',
-      onComplete() {
-        // Swap image while tile is edge-on (invisible)
+    // Left-to-right wipe: old image collapses leftward, new image reveals from left
+    const closeTo = 'inset(0% 0% 0% 100%)'
+    const openFrom = 'inset(0% 100% 0% 0%)'
+
+    // Phase 1: wipe old image away + zoom image slightly
+    // Phase 2: set new image + reveal with wipe in opposite direction
+    gsap.timeline()
+      .set(frame, { clipPath: 'inset(0% 0% 0% 0%)' })
+      .to(frame, { clipPath: closeTo, duration: 0.22, ease: 'power2.in' })
+      .to(img, { scale: 1.14, duration: 0.22, ease: 'power2.in' }, '<')
+      .call(() => {
         img.src = imageUrl(newFilename)
         img.dataset.filename = newFilename
-
-        // Phase 2: rotate back to flat + blur out
-        gsap.to(frame, {
-          rotationY: 0,
-          filter: 'blur(0px)',
-          duration: 0.3,
-          ease: 'back.out(1.4)',
-          onComplete() {
-            flippingTilesRef.current.delete(tileIdx)
-          }
-        })
-      }
-    })
+      })
+      .set(frame, { clipPath: openFrom })
+      .set(img, { scale: 1.12 })
+      .to(frame, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.42, ease: 'expo.out' })
+      .to(img, {
+        scale: 1.06,
+        duration: 0.42,
+        ease: 'power3.out',
+        onComplete() {
+          flippingTilesRef.current.delete(tileIdx)
+          gsap.set(frame, { clearProps: 'clipPath' })
+        },
+      }, '<')
   }
 
   return (
@@ -758,7 +765,15 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
       <header
         ref={heroRef}
         className="assignment2-hero-shell hero-shell"
-        onMouseMove={() => { lastCursorMoveRef.current = Date.now() }}
+        onMouseMove={(e) => {
+          lastCursorMoveRef.current = Date.now()
+          if (!spotlightRef.current || !heroRef.current) return
+          const rect = heroRef.current.getBoundingClientRect()
+          const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1)
+          const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1)
+          spotlightRef.current.style.background =
+            `radial-gradient(circle at ${x}% ${y}%, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 22%, transparent 46%)`
+        }}
       >
         <div className="assignment2-hero-bg" aria-hidden="true">
           <div className="assignment2-hero-aurora" />
@@ -814,6 +829,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
             ))}
           </div>
           <div className="assignment2-hero-wash" />
+          <div ref={spotlightRef} className="assignment2-hero-spotlight" aria-hidden="true" />
         </div>
 
         <div ref={overlayRef} className="assignment2-hero-overlay">
