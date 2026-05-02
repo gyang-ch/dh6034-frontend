@@ -77,7 +77,7 @@ function computeDerived(nodes) {
   return { ALL_HDBSCAN_CLUSTERS, KMEANS_NAMES, HDBSCAN_NAMES }
 }
 
-export default function AssignmentTwoGraph() {
+export default function Network() {
   const containerRef = useRef(null)
   const sigmaRef = useRef(null)
   const graphRef = useRef(null)
@@ -223,22 +223,40 @@ export default function AssignmentTwoGraph() {
     sigma.setSetting('edgeReducer', (edge, data) => {
       const mode = clusterModeRef.current
       const hovered = hoveredNodeRef.current
+      const highlightCluster = hoveredClusterRef.current
       const edgeMode = graphRef.current?.getEdgeAttribute(edge, 'mode')
 
       // Hide edges that don't belong to the active mode
       if (edgeMode !== mode) return { ...data, hidden: true }
 
-      if (!hovered || !graphRef.current) return data
+      if (!graphRef.current) return data
 
       const source = graphRef.current.source(edge)
       const target = graphRef.current.target(edge)
-      const related = source === hovered.filename || target === hovered.filename
 
-      if (related) {
-        return { ...data, color: 'rgba(15, 23, 42, 0.34)', size: data.size * 1.5, hidden: false }
+      // Node hover takes priority over cluster hover
+      if (hovered) {
+        const related = source === hovered.filename || target === hovered.filename
+        if (related) {
+          return { ...data, color: 'rgba(15, 23, 42, 0.34)', size: data.size * 1.5, hidden: false }
+        }
+        return { ...data, color: 'rgba(148, 163, 184, 0.12)' }
       }
 
-      return { ...data, color: 'rgba(148, 163, 184, 0.12)' }
+      if (highlightCluster !== null) {
+        const srcCluster = mode === 'hdbscan'
+          ? graphRef.current.getNodeAttribute(source, 'hdbscanClusterId')
+          : graphRef.current.getNodeAttribute(source, 'clusterId')
+        const tgtCluster = mode === 'hdbscan'
+          ? graphRef.current.getNodeAttribute(target, 'hdbscanClusterId')
+          : graphRef.current.getNodeAttribute(target, 'clusterId')
+        if (srcCluster === highlightCluster && tgtCluster === highlightCluster) {
+          return data
+        }
+        return { ...data, color: 'rgba(148, 163, 184, 0.08)' }
+      }
+
+      return data
     })
 
     sigma.getCamera().animatedReset({ duration: 600 })
@@ -305,27 +323,29 @@ export default function AssignmentTwoGraph() {
       </div>
 
       {/* Cluster mode toggle */}
-      <div className="mb-4 inline-flex rounded-full border border-slate-200 bg-slate-50 p-1 text-xs font-medium">
-        <button
-          onClick={() => setClusterMode('kmeans')}
-          className={`rounded-full px-4 py-1.5 transition-colors ${
-            clusterMode === 'kmeans'
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
+      <div className="atlas-display-tabs__list-container mb-4">
+        <div
+          className="atlas-display-tabs__list"
+          role="group"
+          aria-label="Cluster algorithm"
+          style={{ '--atlas-active-tab-index': clusterMode === 'kmeans' ? 0 : 1, '--atlas-tab-gap': '3px' }}
         >
-          K-Means
-        </button>
-        <button
-          onClick={() => setClusterMode('hdbscan')}
-          className={`rounded-full px-4 py-1.5 transition-colors ${
-            clusterMode === 'hdbscan'
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          HDBSCAN
-        </button>
+          <span aria-hidden="true" className="atlas-display-tabs__indicator" />
+          {[['kmeans', 'K-Means'], ['hdbscan', 'HDBSCAN']].map(([key, label], index) => (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={clusterMode === key}
+              className="atlas-display-tabs__tab"
+              data-selected={clusterMode === key}
+              style={{ minWidth: 0, minHeight: 0, padding: '0.35rem 0.95rem' }}
+              onClick={() => setClusterMode(key)}
+            >
+              {index > 0 && <span aria-hidden="true" className="atlas-display-tabs__separator" />}
+              <span className="atlas-display-tabs__label">{label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="assignment2-graph-shell relative">
@@ -352,59 +372,51 @@ export default function AssignmentTwoGraph() {
                 <p className="font-data text-xs uppercase tracking-[0.22em] text-slate-600">Preview unavailable</p>
               </div>
             )}
-            <div className="space-y-4 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-data text-[0.68rem] uppercase tracking-[0.22em] text-slate-500">
-                    {clusterMode === 'hdbscan'
-                      ? (derived?.HDBSCAN_NAMES[hoveredNode.hdbscanClusterId] ?? `HDBSCAN Cluster ${hoveredNode.hdbscanClusterId}`)
-                      : (derived?.KMEANS_NAMES[hoveredNode.clusterId] ?? `K-Means Cluster ${hoveredNode.clusterId}`)}
-                  </p>
-                  <h4 className="mt-1 font-title text-xl leading-tight text-slate-950">{hoveredNode.filename}</h4>
-                </div>
-                <div
-                  className="shrink-0 rounded-full px-2.5 py-1 text-xs text-white"
-                  style={{ backgroundColor: nodeColour(hoveredNode, clusterMode) }}
-                >
-                  {hoveredNode.styleEnergy}
-                </div>
+            <div className="space-y-2.5 p-3">
+              <div>
+                <p className="font-data text-[0.65rem] uppercase tracking-[0.2em] text-slate-500">
+                  {clusterMode === 'hdbscan'
+                    ? (derived?.HDBSCAN_NAMES[hoveredNode.hdbscanClusterId] ?? `HDBSCAN Cluster ${hoveredNode.hdbscanClusterId}`)
+                    : (derived?.KMEANS_NAMES[hoveredNode.clusterId] ?? `K-Means Cluster ${hoveredNode.clusterId}`)}
+                </p>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {hoveredNode.dominant.map((colour) => (
                   <span
                     key={`${hoveredNode.filename}-${colour.hex}`}
-                    className="h-7 w-7 rounded-full border border-white/80 shadow-sm"
+                    className="h-5 w-5 rounded-full border border-white/80 shadow-sm"
                     style={{ backgroundColor: colour.hex }}
                     title={colour.hex}
                   />
                 ))}
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                {hoveredNode.tags.map((tag) => (
-                  <span key={tag} className="rounded-full border border-slate-300/80 bg-slate-50 px-2.5 py-1 text-xs text-slate-600">
-                    {tag}
+              <div className="flex flex-wrap gap-1">
+                {(hoveredNode.gemmaKeywords ?? []).map((kw) => (
+                  <span key={kw} className="rounded-full border border-slate-300/80 bg-slate-50 px-2 py-0.5 text-[0.68rem] text-slate-600">
+                    {kw}
                   </span>
                 ))}
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-sm text-slate-600">
-                <div>
-                  <p className="font-data text-[0.64rem] uppercase tracking-[0.18em] text-slate-500">Dimensions</p>
-                  <p className="mt-1">{hoveredNode.width} × {hoveredNode.height}</p>
-                </div>
-                <div>
-                  <p className="font-data text-[0.64rem] uppercase tracking-[0.18em] text-slate-500">Brightness</p>
-                  <p className="mt-1">{hoveredNode.brightness}</p>
-                </div>
-              </div>
-
               <div>
-                <p className="font-data text-[0.64rem] uppercase tracking-[0.18em] text-slate-500">Nearby Images</p>
-                <p className="mt-1 text-sm leading-6 text-slate-600">
-                  {hoveredNode.neighbours.length > 0 ? hoveredNode.neighbours.join(', ') : 'No linked neighbours.'}
-                </p>
+                <p className="font-data text-[0.62rem] uppercase tracking-[0.18em] text-slate-500">Nearby Images</p>
+                {hoveredNode.neighbours.length > 0 ? (
+                  <div className="mt-1.5 flex gap-1.5">
+                    {hoveredNode.neighbours.map((filename) => (
+                      <img
+                        key={filename}
+                        src={imageUrl(filename)}
+                        alt={filename}
+                        className="h-12 w-12 rounded-md object-cover shadow-sm"
+                        title={filename}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-1 text-xs text-slate-600">No linked neighbours.</p>
+                )}
               </div>
             </div>
           </article>

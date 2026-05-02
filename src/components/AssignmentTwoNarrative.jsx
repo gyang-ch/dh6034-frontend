@@ -14,7 +14,7 @@ import { PresenceLineChart, PeopleCountLineChart } from './AnnotationTimeline'
 import usePrefersReducedMotion from '../hooks/usePrefersReducedMotion'
 import { photographUrl } from '../lib/photographs'
 
-const AssignmentTwoGraph = lazy(() => import('./AssignmentTwoGraph'))
+const Network = lazy(() => import('./Network'))
 // const ChromaticSwarm     = lazy(() => import('./ChromaticSwarm'))
 const GemmaSearch        = lazy(() => import('./GemmaSearch'))
 const PhotoMap           = lazy(() => import('./PhotoMap'))
@@ -1126,7 +1126,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
         <VisBlock>
           <StagedVisual label="Preparing visual constellation" minHeight="min(75vh,44rem)">
             <Suspense fallback={null}>
-              <AssignmentTwoGraph />
+              <Network />
             </Suspense>
           </StagedVisual>
         </VisBlock>
