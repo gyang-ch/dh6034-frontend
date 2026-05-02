@@ -81,7 +81,7 @@ export default function ScrollCompass({ onScrollTop }) {
   return (
     <div 
       ref={wrapRef}
-      className={`fixed bottom-8 right-8 z-50 h-32 w-32 flex items-center justify-center transition-opacity duration-500 ${
+      className={`fixed bottom-4 right-4 z-50 h-28 w-28 flex items-center justify-center transition-opacity duration-500 ${
         isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
       onMouseMove={handleMouseMove}

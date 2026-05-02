@@ -273,7 +273,7 @@ export default function JsonScrollExplainer() {
   }, { scope: containerRef, dependencies: [] })
 
   return (
-    <div ref={containerRef} className="json-scroll-explainer" style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start', margin: '2.5rem 0 0', maxWidth: '80rem', marginLeft: 'auto', marginRight: 'auto' }}>
+    <div ref={containerRef} className="json-scroll-explainer" style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start', justifyContent: 'center', margin: '2.5rem 0 0', maxWidth: '80rem', marginLeft: 'auto', marginRight: 'auto' }}>
 
       {/* ── Left: sticky code window ─────────────────────────────────────── */}
       <div style={{ flex: '0 0 60%', position: 'sticky', top: 0, height: '100vh', display: 'flex', alignItems: 'center' }}>
