@@ -502,6 +502,7 @@ function TooltipLink({ href, children, style, ...rest }) {
       followCursor: true,
       plugins: [followCursor],
       offset: [0, 12],
+      maxWidth: 'none',
     })
     return () => instance.destroy()
   }, [href])
