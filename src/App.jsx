@@ -20,7 +20,7 @@ function getAssignmentFromPath(pathname) {
   ) {
     return 'archive-windowed'
   }
-  if (pathname === '/assignment2' || pathname.startsWith('/assignment2/')) {
+  if (pathname === '/' || pathname === '/assignment2' || pathname.startsWith('/assignment2/')) {
     return 'assignment2'
   }
 
