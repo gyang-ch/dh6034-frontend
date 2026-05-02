@@ -379,27 +379,27 @@ const SEASONAL_STEPS = [
   {
     key:   'overview',
     title: 'The full year at a glance',
-    desc:  'Twelve months, merged across every year in the archive. The variation is striking — some months are packed while others are near-empty. Scroll to unpack the pattern.',
+    desc:  'Twelve months, merged across every year in the archive. The variation is striking — some months are packed while others are near-empty.',
     highlight: null,
   },
   {
     key:   'summer',
     title: 'Summer dominates',
-    desc:  'June, July, and August together hold more than a third of the entire archive. These are the months of extended travel, family reunions, and outdoor exploration — the conditions most likely to prompt a camera.',
+    desc:  'June, July, and August together hold more than a third of the entire archive. These are the months of extended travel, family reunions, and outdoor exploration.',
     highlight: [5, 6, 7],
     color:     '#c28d5b',
   },
   {
     key:   'secondary',
     title: 'February, October, and December also stand out',
-    desc:  'Three shorter peaks break the quiet of the rest. February aligns with Chinese New Year — a season of family gatherings and celebrations. October corresponds to Golden Week, China\'s national holiday, which reliably produces travel photographs. December follows a similar pattern, likely tied to end-of-year festivities and the lead-up to the Lunar New Year.',
+    desc:  'Three shorter peaks break the quiet of the rest. This likely corresponds to recurring events such as the Chinese National Day holiday and the Chinese New Year',
     highlight: [1, 9, 11],
     color:     '#7b6f9c',
   },
   {
     key:   'quiet',
     title: 'The quiet months',
-    desc:  'Spring and mid-autumn are sparse. March, April, May, September, and November together hold fewer photos than August alone. These months represent routine rather than occasion — commutes, deadlines, and the undocumented pace of ordinary weeks.',
+    desc:  'Spring and mid-autumn are sparse. March, April, May, September, and November together hold fewer photos than August alone.',
     highlight: [0, 2, 3, 4, 8, 10],
     color:     '#8a9aaa',
   },
@@ -913,7 +913,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
             To understand how my photographic practices evolved over time, I analyse both the temporal distribution of images and shifts in their semantic content.
           </p>
           <p style={S.body}>
-            The bar chart below shows the distribution of photographs across time. A bar chart is appropriate here because it highlights variations in photographic activity, making periods of high and low activity easy to identify. The distribution is uneven, with noticeable peaks corresponding to periods of travel. This suggests that travel strongly influences when photographs are taken.
+            The bar chart below shows the distribution of photographs across time. A bar chart is appropriate here because it highlights variations in photographic activity, making periods of high and low activity easy to identify. The distribution is uneven, with noticeable peaks corresponding to periods of travel. For instance, the peak in 2013 reflects a trip to Europe, when the excitement of a new environment led me to take far more photographs than usual. This suggests that travel strongly influences when photographs are taken.
           </p>
         </section>
 
@@ -962,26 +962,13 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           </div>
         </div>
 
-        <section style={SEC_CONT}>
-          <p style={S.body}>
-            Changes over time can also be examined through semantic features derived from Gemma-generated keywords. The line graph below visualises the frequency of selected terms across different periods. The terms “boy” and “child” appear frequently in earlier years but decline sharply in later periods, reflecting a transition in how subjects are represented within the archive. This shift corresponds to my own ageing, as the collection moves from documenting childhood to adult life.
-          </p>
-          <p style={S.body}>
-            Other terms highlight changes in activities and interests. “Chinese calligraphy” increase significantly between 2022 and 2024, a period when I actively practised calligraphy and visited exhibitions featuring both contemporary and historical calligraphy. The term “classroom” appears much more frequently after 2023, aligning with my transition into a more structured academic environment.
-          </p>
-        </section>
-
-        <VisBlock>
-          <StagedVisual label="Preparing semantic timeline" minHeight="min(66vh,36rem)">
-            <Suspense fallback={null}>
-              <SemanticTimeline years={assignment2Data.semanticTimeline} />
-            </Suspense>
-          </StagedVisual>
-        </VisBlock>
 
         <section style={SEC_CONT}>
           <p style={S.body}>
-            The graph below shows the frequency of selected keywords and objects over time, calculated by dividing occurrences in each month by the total number of photographs taken in that month. This adjusts for months with more or fewer photos. For example, the term “boy” appears less frequently over time, suggesting a shift in life stage. A more precise analysis could distinguish whether the term refers to myself or to others, but the overall trend still indicates personal development.
+            Changes over time can also be examined through semantic features derived from Gemma-generated keywords. The line graph below visualises the frequency of selected terms across different periods, calculated by dividing occurrences in each month by the total number of photographs taken in that month to adjust for uneven activity.
+          </p>
+          <p style={S.body}>
+            The terms &ldquo;boy&rdquo; and &ldquo;child&rdquo; appear frequently in earlier years but decline sharply later, reflecting a shift from documenting childhood to adult life. Other terms highlight changes in activities and interests. For example, &ldquo;Chinese calligraphy&rdquo; increases significantly between 2022 and 2024, when I actively practised calligraphy and visited related exhibitions. Similarly, &ldquo;classroom&rdquo; becomes more frequent after 2023, aligning with my transition into a more structured academic environment.
           </p>
         </section>
 

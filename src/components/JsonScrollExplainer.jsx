@@ -336,7 +336,7 @@ export default function JsonScrollExplainer() {
       </div>
 
       {/* ── Right: scrollable explanation cards ──────────────────────────── */}
-      <div style={{ flex: '0 0 28%', minWidth: 0, paddingBottom: '50vh' }}>
+      <div style={{ flex: '0 0 28%', minWidth: 0, paddingTop: 'calc(50vh - 11rem)', paddingBottom: '50vh' }}>
         {STEPS.map((step, i) => (
           <div
             key={step.id}
