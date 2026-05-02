@@ -12,6 +12,32 @@ const monthFmt = new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC'
 
 const imageUrl = photographUrl
 
+const YEAR_PLACES_BY_COUNT = {
+  '2004': ['Suzhou', 'Shanghai', 'Lanzhou'],
+  '2005': ['Lanzhou', 'Linxia'],
+  '2006': ['Beidaihe', 'Guizhou', 'Beijing', 'Lanzhou', 'Chengdu', 'Qinghuangdao', 'Gannan'],
+  '2007': ['Tibet', 'Lanzhou'],
+  '2008': ['Lanzhou'],
+  '2009': ['Lanzhou', 'Qingyang'],
+  '2010': ['Shanghai', 'Baiyin', 'Jiaozuo', 'Lianyungang', 'Kaifeng', 'Lanzhou', 'Jiaxing'],
+  '2011': ['Qinan'],
+  '2012': ['Xian', 'Qingdao', 'Huashan', 'Lanzhou', 'Taian', 'Shandong', 'Qingyang'],
+  '2013': ['Lausanne', 'Paris', 'Italy', 'Venice', 'Xinjiang', 'Lanzhou', 'Beijing'],
+  '2014': ['Xiamen', 'Hangzhou', 'Shaoxing', 'Shanghai'],
+  '2015': ['Dunhuang', 'Zhongwei', 'Lanzhou'],
+  '2016': ['Hongkong', 'Lanzhou', 'Zhuhai', 'Shenzhen', 'Qingyang'],
+  '2017': ['Oxford', 'Hongkong', 'London', 'Liverpool', 'Lanzhou', 'Brussels'],
+  '2018': ['Hongkong', 'Shenzhen', 'Harbin'],
+  '2019': ['Hongkong', 'Hanoi', 'DaNang', 'Hue', 'NinhBinh', 'Harbin', 'HaLongBay'],
+  '2020': ['Shanxi', 'Shanghai', 'Wuwei', 'Beijing'],
+  '2021': ['Linxia', 'QinghaiGuide', 'Lanzhou', 'QinghaiHaidong', 'Beijing', 'Qinghai', 'Zhuhai', 'Shanghai'],
+  '2022': ['Lanzhou', 'Linxia', 'Tibet'],
+  '2023': ['Zhuhai', 'Beijing', 'Guangzhou', 'Tianshui', 'Shenzhen', 'Lanzhou'],
+  '2024': ['Bangkok', 'Chengdu', 'Hongkong', 'Hangzhou', 'Zhuhai', 'Phuket', 'Changsha', 'Xiangtan', 'Guiyang', 'Guangzhou', 'Qinan', 'Macau', 'Baoji', 'Tianshui', 'Lanzhou', 'Deyang', 'Shenzhen'],
+  '2025': ['Lisbon', 'Besancon', 'Vienna', 'Gottingen', 'Nuremberg', 'Heidelberg', 'Cork', 'Cobh', 'Lyon', 'Beijing', 'Zurich', 'Strasbourg', 'Ulaanbaatar', 'Dublin', 'Hanover', 'Frankfurt', 'Doha', 'Odense', 'Barcelona', 'Lanzhou', 'Shanghai', 'Cologne'],
+  '2026': ['Cork', 'Kinsale', 'Dublin'],
+}
+
 function barPath(x, barTop, bw, bh) {
   if (bh <= 0) return ''
   const r = Math.min(4, bh / 2, bw / 2)
@@ -41,13 +67,16 @@ export default function TemporalRibbon({ bins }) {
       const entry = map.get(bin.year)
       if (entry) {
         entry.count += bin.count
-        for (const p of bin.places) { if (!entry.places.includes(p) && entry.places.length < 6) entry.places.push(p) }
         if (bin.count > entry.topCount) { entry.topCount = bin.count; entry.samples = bin.samples }
       } else {
-        map.set(bin.year, { year: bin.year, count: bin.count, places: [...bin.places], samples: [...bin.samples], topCount: bin.count })
+        map.set(bin.year, { year: bin.year, count: bin.count, samples: [...bin.samples], topCount: bin.count })
       }
     }
-    return [...map.values()].map(({ topCount, ...e }) => ({ key: e.year, label: e.year, year: e.year, count: e.count, places: e.places, samples: e.samples }))
+    return [...map.values()].map(({ topCount, ...e }) => ({
+      key: e.year, label: e.year, year: e.year, count: e.count,
+      places: YEAR_PLACES_BY_COUNT[e.year] ?? [],
+      samples: e.samples,
+    }))
   }, [bins])
 
   const activeBins = granularity === 'month' ? monthBins : yearBins
