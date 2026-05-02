@@ -644,20 +644,36 @@ export default function PhotoArchiveWindowed() {
         >
           {selectedPhoto && nearestNeighbours.length > 0 ? (
             <>
-              <p
+              <div
                 style={{
-                  margin: '0 0 0.8rem',
-                  padding: '0.7rem 0.85rem',
-                  border: '1px solid rgba(62,91,113,0.16)',
-                  background: 'linear-gradient(180deg, rgba(255,255,255,0.76), rgba(247,244,237,0.96))',
-                  font: '600 0.82rem/1 var(--archive-font-ui)',
-                  letterSpacing: '0.16em',
-                  textTransform: 'uppercase',
-                  color: 'var(--archive-color-ink)',
+                  margin: '0 0 0.5rem',
+                  padding: '0.3rem 1rem',
+                  background: 'linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,248,243,0.4))',
+                  borderTop: '1px solid rgba(255,255,255,0.8)',
+                  borderBottom: '1px solid rgba(29,35,41,0.06)',
+                  borderRadius: '8px',
+                  boxShadow: '0 2px 12px -4px rgba(0,0,0,0.03)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
                 }}
               >
-                Similar Images
-              </p>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontFamily: '"Aptos", var(--archive-font-ui), sans-serif',
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    background: 'linear-gradient(135deg, var(--archive-color-ink) 20%, var(--archive-color-accent) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  Similar Images
+                </h3>
+              </div>
               <div ref={similarRailRef} style={{ display: 'grid', gap: '0.5rem' }}>
                 {nearestNeighbours.map((neighbor) => (
                   <button
