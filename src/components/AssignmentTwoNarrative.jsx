@@ -1202,7 +1202,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           <h2 style={S.h2}>References</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {[
-              <>Ang, Yi Zhe. n.d. <em>K-Means Clustering: An Explorable Explainer</em>. Accessed April 24, 2026. https://k-means-explorable.vercel.app/.</>,
+              <>Ang, Yi Zhe. n.d. <em>K-Means Clustering: An Explorable Explainer</em>. Accessed 24 April, 2026. https://k-means-explorable.vercel.app/.</>,
               <>Arnold, Taylor, and Lauren Tilton. 2023. <em>Distant Viewing: Computational Exploration of Digital Images</em>. Cambridge, MA: MIT Press.</>,
               <>Arnold, Taylor, Nathaniel Ayers, Justin Madron, Robert Nelson, and Lauren Tilton. 2020. “Visualizing a Large Spatiotemporal Collection of Historic Photography with a Generous Interface.” In <em>Proceedings of the IEEE 5th Workshop on Visualization for the Digital Humanities</em>, 30–35. IEEE.</>,
               <>Cherti, Mehdi, Romain Beaumont, Ross Wightman, Mitchell Wortsman, Gabriel Ilharco, Cade Gordon, Christoph Schuhmann, Ludwig Schmidt, and Jenia Jitsev. 2023. “Reproducible Scaling Laws for Contrastive Language-Image Learning.” In <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</em>, 2818–2829.</>,

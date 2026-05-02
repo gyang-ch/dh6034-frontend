@@ -253,18 +253,6 @@ export default function PlaceSubjectAtlas({ atlas }) {
             Heat signatures revealing which locations are visually remembered through specific subjects.
           </h3>
         </div>
-
-        {/* Modest Top-Right Detail Readout */}
-        {activeCell && (
-          <div style={{ textAlign: 'right', minWidth: '120px' }}>
-            <p style={{ margin: '0 0 0.2rem', font: '600 1.1rem/1 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-ink)' }}>
-              {prettyLabel(activeCell.subject)}
-            </p>
-            <p style={{ margin: 0, font: '400 0.8rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>
-              n = {activeCell.count} <br/> {activeCell.place}
-            </p>
-          </div>
-        )}
       </header>
 
       {/* ── Controls + Legend (same row, heatmap column only) ── */}
