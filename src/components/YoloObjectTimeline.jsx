@@ -22,11 +22,15 @@ const PAD = { top: 20, right: 24, bottom: 46, left: 58 }
 const IW = W - PAD.left - PAD.right
 const IH = H - PAD.top - PAD.bottom
 
-function TimelineChart({ items, series, months, groups, colorOf, defaultVisible, yFormat = 'percent' }) {
+function TimelineChart({ items, series, seriesAbsolute, months, groups, colorOf, defaultVisible, yFormat = 'percent' }) {
   const [enabled, setEnabled] = useState(() => new Set(defaultVisible ?? items.slice(0, 8)))
   const [hoveredIdx, setHoveredIdx] = useState(null)
   const [legendSearch, setLegendSearch] = useState('')
+  const [mode, setMode] = useState('freq')
   const svgRef = useRef(null)
+
+  const activeSeries = (seriesAbsolute && mode === 'count') ? seriesAbsolute : series
+  const activeYFormat = (seriesAbsolute && mode === 'count') ? 'count' : yFormat
 
   const prevItemsRef = useRef(items)
   if (prevItemsRef.current !== items) {
@@ -39,19 +43,19 @@ function TimelineChart({ items, series, months, groups, colorOf, defaultVisible,
   const colorOfItem = useCallback((item) => colorOf(item), [colorOf])
 
   const maxVal = useMemo(() => {
-    let m = 0.01
+    let m = activeYFormat === 'count' ? 1 : 0.01
     for (const item of enabled) {
-      const s = series[item]
+      const s = activeSeries[item]
       if (!s) continue
       for (const v of s) if (v > m) m = v
     }
-    return yFormat === 'percent' ? Math.min(m * 1.05, 1) : m * 1.1
-  }, [enabled, series, yFormat])
+    return activeYFormat === 'percent' ? Math.min(m * 1.05, 1) : m * 1.1
+  }, [enabled, activeSeries, activeYFormat])
 
   const paths = useMemo(() => {
     const result = {}
     for (const item of items) {
-      const vals = series[item]
+      const vals = activeSeries[item]
       if (!vals) continue
       result[item] = vals
         .map((v, i) => {
@@ -62,7 +66,7 @@ function TimelineChart({ items, series, months, groups, colorOf, defaultVisible,
         .join(' ')
     }
     return result
-  }, [items, series, months.length, maxVal])
+  }, [items, activeSeries, months.length, maxVal])
 
   const yearTicks = useMemo(() => {
     const ticks = []
@@ -77,12 +81,13 @@ function TimelineChart({ items, series, months, groups, colorOf, defaultVisible,
   const yTicks = useMemo(() => {
     return [0, 0.25, 0.5, 0.75, 1].map(t => {
       const val = maxVal * t
-      let label = yFormat === 'percent' 
-        ? (val * 100).toFixed(val < 0.1 ? 1 : 0) + '%'
-        : val < 1 ? val.toFixed(2) : val.toFixed(1)
+      let label
+      if (activeYFormat === 'percent') label = (val * 100).toFixed(val < 0.1 ? 1 : 0) + '%'
+      else if (activeYFormat === 'count') label = Math.round(val).toString()
+      else label = val < 1 ? val.toFixed(2) : val.toFixed(1)
       return { label, y: PAD.top + IH - t * IH }
     })
-  }, [maxVal, yFormat])
+  }, [maxVal, activeYFormat])
 
   const onMouseMove = useCallback((e) => {
     const rect = svgRef.current?.getBoundingClientRect()
@@ -98,23 +103,43 @@ function TimelineChart({ items, series, months, groups, colorOf, defaultVisible,
     if (hoveredIdx === null) return null
     const x = PAD.left + (hoveredIdx / (months.length - 1)) * IW
     const rows = [...enabled]
-      .map(item => ({ item, v: series[item]?.[hoveredIdx] ?? 0, color: colorOfItem(item) }))
+      .map(item => ({ item, v: activeSeries[item]?.[hoveredIdx] ?? 0, color: colorOfItem(item) }))
       .filter(d => d.v > 0)
       .sort((a, b) => b.v - a.v)
       .slice(0, 10)
     return { month: months[hoveredIdx], x, rows }
-  }, [hoveredIdx, enabled, series, months, colorOfItem])
+  }, [hoveredIdx, enabled, activeSeries, months, colorOfItem])
 
   const toggle = (item) =>
     setEnabled(prev => { const n = new Set(prev); n.has(item) ? n.delete(item) : n.add(item); return n })
 
   const enabledArr = [...enabled]
 
-  const formatTooltipVal = (v) =>
-    yFormat === 'percent' ? (v * 100).toFixed(1) + '%' : v < 1 ? v.toFixed(2) : v.toFixed(1)
+  const formatTooltipVal = (v) => {
+    if (activeYFormat === 'percent') return (v * 100).toFixed(1) + '%'
+    if (activeYFormat === 'count') return Math.round(v).toString()
+    return v < 1 ? v.toFixed(2) : v.toFixed(1)
+  }
 
   return (
     <div style={{ display: 'grid', gap: '2rem' }}>
+      {/* Mode toggle — only shown when absolute series is available */}
+      {seriesAbsolute && (
+        <div style={{ display: 'flex', gap: '0.25rem', alignSelf: 'start' }}>
+          {[['freq', 'Frequency'], ['count', 'Count']].map(([val, label]) => (
+            <button key={val} onClick={() => setMode(val)} style={{
+              padding: '0.22rem 0.75rem',
+              border: '1px solid var(--archive-color-rule)',
+              borderRadius: '999px',
+              background: mode === val ? 'var(--archive-color-ink)' : 'var(--archive-color-bg)',
+              color: mode === val ? 'var(--archive-color-bg)' : 'var(--archive-color-copy)',
+              font: `${mode === val ? '600' : '400'} 0.75rem/1 var(--archive-font-ui)`,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}>{label}</button>
+          ))}
+        </div>
+      )}
       {/* Chart */}
       <div style={{ position: 'relative', border: '1px solid var(--archive-color-rule)', background: 'rgba(29,35,41,0.01)', padding: '1rem 0' }}>
         <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}>
@@ -156,7 +181,7 @@ function TimelineChart({ items, series, months, groups, colorOf, defaultVisible,
             <>
               <line x1={tooltip.x} y1={PAD.top} x2={tooltip.x} y2={PAD.top + IH} stroke="var(--archive-color-ink)" strokeWidth="1" opacity="0.3" />
               {enabledArr.map(item => {
-                const v = series[item]?.[hoveredIdx] ?? 0
+                const v = activeSeries[item]?.[hoveredIdx] ?? 0
                 if (!v) return null
                 const cy = PAD.top + IH - (v / maxVal) * IH
                 return <circle key={item} cx={tooltip.x} cy={cy} r="3" fill={colorOfItem(item)} stroke="var(--archive-color-bg)" strokeWidth="1.5" />
@@ -271,10 +296,11 @@ export default function YoloObjectTimeline() {
   const yoloItems   = useMemo(() => ['person', ...tl.objects], [tl])
   const yoloSeries  = useMemo(() => tl.seriesCounts, [tl])
 
-  const gemmaItems  = gemmaKeywordsData.keywords
-  const gemmaSeries = gemmaKeywordsData.series
-  const gemmaMonths = gemmaKeywordsData.months
-  const gemmaGroups = gemmaKeywordsData.groups
+  const gemmaItems          = gemmaKeywordsData.keywords
+  const gemmaSeries         = gemmaKeywordsData.series
+  const gemmaSeriesAbsolute = gemmaKeywordsData.seriesAbsolute
+  const gemmaMonths         = gemmaKeywordsData.months
+  const gemmaGroups         = gemmaKeywordsData.groups
 
   const yoloColorOf  = useCallback((item) => PALETTE[yoloItems.indexOf(item)  % PALETTE.length], [yoloItems])
   const gemmaColorOf = useCallback((item) => PALETTE[gemmaItems.indexOf(item) % PALETTE.length], [gemmaItems])
@@ -316,10 +342,10 @@ export default function YoloObjectTimeline() {
             Share of photos each month mentioning specific concepts.
           </h3>
           <p style={{ margin: 0, maxWidth: '45rem', font: '400 0.9rem/1.6 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-copy)' }}>
-            Each value represents the fraction of photos in a given month where the generated caption contains the exact keyword. Presence or absence is noted per photo, regardless of multiple occurrences.
+            Matched against Gemma-generated captions. <strong>Frequency</strong> shows the share of photos that month whose caption contains the keyword; <strong>Count</strong> shows the raw number of such photos.
           </p>
         </header>
-        <TimelineChart items={gemmaItems} series={gemmaSeries} months={gemmaMonths} groups={gemmaGroups} colorOf={gemmaColorOf} defaultVisible={gemmaKeywordsData.defaultVisible} yFormat="percent" />
+        <TimelineChart items={gemmaItems} series={gemmaSeries} seriesAbsolute={gemmaSeriesAbsolute} months={gemmaMonths} groups={gemmaGroups} colorOf={gemmaColorOf} defaultVisible={gemmaKeywordsData.defaultVisible} yFormat="percent" />
       </article>
     </div>
   )
