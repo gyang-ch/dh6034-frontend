@@ -262,7 +262,7 @@ export default function GemmaSearch() {
           color: 'var(--archive-color-ink)',
           margin: '0 0 0.5rem 0',
         }}>
-          Machine Vision Archive
+          Caption-Based Photo Search
         </h2>
       </div>
 
