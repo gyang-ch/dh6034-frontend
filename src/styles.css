@@ -1346,11 +1346,11 @@
 .link-highlighter::after {
   content: '';
   position: absolute;
-  bottom: 0.05em;
+  bottom: 0.12em;
   left: -0.1em;
   right: -0.1em;
-  height: 0.35em;
-  background: rgba(45, 212, 191, 0.35);
+  height: 0.12em;
+  background: rgba(13, 148, 136, 0.65);
   border-radius: 2px;
   z-index: -1;
   transition: height 0.3s cubic-bezier(0.22, 1, 0.36, 1);

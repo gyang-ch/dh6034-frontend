@@ -2,39 +2,71 @@ import { useRef, useEffect } from 'react'
 import gsap from 'gsap'
 
 export default function MagneticLink({ onClick, children }) {
-  const areaRef = useRef(null)
-  const textRef = useRef(null)
+  const wrapperRef = useRef(null)
+  const primaryCharsRef = useRef([])
+  const secondaryCharsRef = useRef([])
+
+  const chars = String(children).split('')
 
   useEffect(() => {
-    const area = areaRef.current
-    const text = textRef.current
-    if (!area || !text) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const wrapper = wrapperRef.current
+    if (!wrapper || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
-    const handleMouseMove = (e) => {
-      const { left, top, width, height } = area.getBoundingClientRect()
-      const moveX = (e.clientX - (left + width / 2)) * 0.3
-      const moveY = (e.clientY - (top + height / 2)) * 0.3
-      gsap.to(text, { x: moveX, y: moveY, duration: 0.6, ease: 'power3.out' })
-    }
+    const primary = primaryCharsRef.current
+    const secondary = secondaryCharsRef.current
 
-    const handleMouseLeave = () => {
-      gsap.to(text, { x: 0, y: 0, duration: 1.2, ease: 'elastic.out(1, 0.3)' })
-    }
+    // Park secondary chars below, invisible
+    gsap.set(secondary, {
+      yPercent: 110,
+      rotationX: -20,
+      opacity: 0,
+      transformPerspective: 600,
+    })
 
-    area.addEventListener('mousemove', handleMouseMove)
-    area.addEventListener('mouseleave', handleMouseLeave)
+    const tl = gsap.timeline({ paused: true })
+
+    // Primary chars exit upward — fast ease-in, staggered left→right
+    tl.to(primary, {
+      yPercent: -110,
+      rotationX: 20,
+      opacity: 0,
+      duration: 0.3,
+      stagger: 0.022,
+      ease: 'power4.in',
+      transformPerspective: 600,
+    }, 0)
+
+    // Secondary chars enter from below — expo snap landing, slight delay so
+    // the exit wave leads the entrance wave by one stagger step
+    .to(secondary, {
+      yPercent: 0,
+      rotationX: 0,
+      opacity: 1,
+      duration: 0.42,
+      stagger: 0.022,
+      ease: 'expo.out',
+      transformPerspective: 600,
+    }, 0.04)
+
+    const play = () => tl.play()
+    const reverse = () => tl.reverse()
+
+    wrapper.addEventListener('mouseenter', play)
+    wrapper.addEventListener('mouseleave', reverse)
+
     return () => {
-      area.removeEventListener('mousemove', handleMouseMove)
-      area.removeEventListener('mouseleave', handleMouseLeave)
+      wrapper.removeEventListener('mouseenter', play)
+      wrapper.removeEventListener('mouseleave', reverse)
+      tl.kill()
     }
   }, [])
 
   return (
     <a
       href="/photoarchive"
-      ref={areaRef}
-      className="magnetic-hit-area"
+      ref={wrapperRef}
+      className="group relative inline-block py-1 cursor-pointer"
+      style={{ clipPath: 'inset(0)' }}
       onClick={(e) => {
         if (onClick) {
           e.preventDefault()
@@ -42,8 +74,37 @@ export default function MagneticLink({ onClick, children }) {
         }
       }}
     >
-      <span ref={textRef} className="link-highlighter">
-        {children}
+      {/* Primary text — each char is its own animatable unit */}
+      <span className="link-highlighter" style={{ display: 'flex' }}>
+        {chars.map((char, i) => (
+          <span
+            key={`p-${i}`}
+            ref={el => { primaryCharsRef.current[i] = el }}
+            style={{ display: 'inline-block' }}
+          >
+            {char === ' ' ? ' ' : char}
+          </span>
+        ))}
+      </span>
+
+      {/* Secondary text — teal, absolutely overlaid, char-for-char */}
+      <span
+        style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}
+        aria-hidden="true"
+      >
+        {chars.map((char, i) => (
+          <span
+            key={`s-${i}`}
+            ref={el => { secondaryCharsRef.current[i] = el }}
+            style={{
+              display: 'inline-block',
+              color: '#0d9488',
+              fontWeight: 600,
+            }}
+          >
+            {char === ' ' ? ' ' : char}
+          </span>
+        ))}
       </span>
     </a>
   )
