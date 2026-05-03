@@ -125,19 +125,28 @@ function TimelineChart({ items, series, seriesAbsolute, months, groups, colorOf,
     <div style={{ display: 'grid', gap: '2rem' }}>
       {/* Mode toggle — only shown when absolute series is available */}
       {seriesAbsolute && (
-        <div style={{ display: 'flex', gap: '0.25rem', alignSelf: 'start' }}>
-          {[['freq', 'Frequency'], ['count', 'Count']].map(([val, label]) => (
-            <button key={val} onClick={() => setMode(val)} style={{
-              padding: '0.22rem 0.75rem',
-              border: '1px solid var(--archive-color-rule)',
-              borderRadius: '999px',
-              background: mode === val ? 'var(--archive-color-ink)' : 'var(--archive-color-bg)',
-              color: mode === val ? 'var(--archive-color-bg)' : 'var(--archive-color-copy)',
-              font: `${mode === val ? '600' : '400'} 0.75rem/1 var(--archive-font-ui)`,
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-            }}>{label}</button>
-          ))}
+        <div className="atlas-display-tabs__list-container" style={{ alignSelf: 'start' }}>
+          <div
+            className="atlas-display-tabs__list"
+            role="group"
+            aria-label="Toggle frequency or absolute count"
+            style={{ '--atlas-active-tab-index': mode === 'freq' ? 0 : 1, '--atlas-tab-gap': '3px' }}
+          >
+            <span aria-hidden="true" className="atlas-display-tabs__indicator" />
+            {[['freq', 'Frequency'], ['count', 'Count']].map(([val, label], index) => {
+              const active = mode === val
+              return (
+                <button key={val} type="button" aria-pressed={active}
+                  className="atlas-display-tabs__tab"
+                  data-selected={active}
+                  style={{ minWidth: 0, minHeight: 0, padding: '0.35rem 0.95rem' }}
+                  onClick={() => setMode(val)}>
+                  {index > 0 && <span aria-hidden="true" className="atlas-display-tabs__separator" />}
+                  <span className="atlas-display-tabs__label">{label}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
       )}
       {/* Chart */}
