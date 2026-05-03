@@ -1084,7 +1084,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
 
         <section style={SEC_CONT}>
           <p style={S.body}>
-            Using the annotations of whether I appear in each photograph and the number of main people present, the line graph below shows how these values change over time. Both my presence and the number of people tend to decline in later years. This likely reflects a shift in my daily life: after leaving my family, I spend more time alone and more often photograph scenes rather than appearing in the images myself. There is a small peak in 2021, when I was at home with my parents and appeared more often in photos.
+            Using the annotations of whether I appear in each photo and the number of main people present, the line graph below shows how these values change over time. Both my presence and the number of people tend to decline in later years. This likely reflects a shift in my daily life: after leaving my family, I spend more time alone and more often photograph scenes rather than appearing in the photos, as I tend not to ask others to take photos for me. There is a small peak in 2021, when I was at home with my parents and appeared more often in photos.
           </p>
         </section>
 
