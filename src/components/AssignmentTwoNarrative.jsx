@@ -1048,13 +1048,13 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
 
         <section style={SEC_CONT}>
           <p style={S.body}>
-            By linking YOLO-detected objects and Gemma-generated keywords to geographic coordinates, place-specific visual patterns can be identified. In this visualisation, object and keyword frequencies are aggregated by location, allowing comparisons across different regions. Variations in these distributions reflect both environmental conditions and the social contexts in which photographs were taken. The heatmap below shows the correlation between locations and keywords, making patterns across locations easier to compare at a glance.
+            By linking YOLO-detected objects and Gemma-generated keywords to geographic coordinates, place-specific visual patterns can be identified. In this visualisation, object and keyword frequencies are aggregated by location, allowing comparisons across different regions. Variations in these distributions reflect both environmental conditions and the social contexts of the photographs. The heatmap below shows the correlation between locations and keywords, making patterns across locations easier to compare at a glance.
           </p>
           <p style={S.body}>
             In Tibet and Xinjiang, terms such as “cow”, “sheep”, “landscape”, and “mountain” occur more frequently, corresponding to pastoral environments and an emphasis on scenic documentation. By contrast, “suitcase” is especially common in Hong Kong, reflecting a period when my parents accompanied me there at the beginning of my university studies.
           </p>
           <p style={S.body}>
-            In Dunhuang, the high frequency of “bottle” and “people” corresponds to a group school trip in a hot desert environment, where both climate and group activity influenced photographic behaviour. Meanwhile, “car” appears relatively infrequently in both Dunhuang and Venice, reflecting the desert setting of the former and the car-free infrastructure of the latter.
+            In Dunhuang, the high frequency of “bottle” and “people” corresponds to a group school trip in a hot desert environment, where both climate and group activity influenced photographic behaviour. Meanwhile, “car” appears relatively infrequently in both Dunhuang and Venice, reflecting the desert setting of the former and the canal setting of the latter..
           </p>
         </section>
 
@@ -1074,16 +1074,19 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
         <section id="social" style={SEC_CONT}>
           <h3 style={S.h3}>3.5  Social Structure</h3>
           <p style={S.body}>
-            I used YOLO to estimate the number of people in each photograph and manually annotated how many main subjects were present (excluding passers-by), as well as the social context of each image (family, friends, professional/academic, or other). These features reveal changes in my social relationships over time, including shifts between family life, friendships, and academic environments.
-          </p>
-          <p style={S.body}>
-            Using the annotations of whether I appear in each photograph and the number of main people present, the line graph below shows how these values change over time. Both my presence and the number of people tend to decline in later years. This likely reflects a shift in my daily life: after leaving my family, I spend more time alone and more often photograph scenes rather than appearing in the images myself. There is a small peak in 2021, when I was at home with my parents and appeared more often in photos.
+            I used YOLO to estimate the number of people in each photograph and manually annotated how many main people were present (excluding passers-by), as well as the social context of each image (family, friends, professional/academic, or other). These features reveal changes in my social relationships over time, including shifts between family life, friendships, and academic environments.
           </p>
         </section>
 
         <VisBlock>
           <SocialDonutPanel />
         </VisBlock>
+
+        <section style={SEC_CONT}>
+          <p style={S.body}>
+            Using the annotations of whether I appear in each photograph and the number of main people present, the line graph below shows how these values change over time. Both my presence and the number of people tend to decline in later years. This likely reflects a shift in my daily life: after leaving my family, I spend more time alone and more often photograph scenes rather than appearing in the images myself. There is a small peak in 2021, when I was at home with my parents and appeared more often in photos.
+          </p>
+        </section>
 
         <VisBlock>
           <PresenceLineChart />

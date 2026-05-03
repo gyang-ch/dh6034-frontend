@@ -341,7 +341,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
       </div>
 
       {/* ── Grid + Detail Panel ─────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(16rem,20rem)', gap: '2.5rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: activeCell ? 'minmax(0,1fr) minmax(16rem,20rem)' : '1fr', gap: '2.5rem', alignItems: 'start' }}>
 
         {/* Scrollable grid */}
         <div
@@ -453,10 +453,10 @@ export default function PlaceSubjectAtlas({ atlas }) {
           </div>
         </div>
 
-        {/* Marginalia Detail Panel */}
+        {/* Marginalia Detail Panel — only rendered when a cell is active */}
+        {activeCell && (
         <aside style={{ minWidth: 0 }}>
         <div style={{ display: 'grid', alignContent: 'start', gap: '1.25rem' }}>
-          {activeCell ? (
             <div style={{
               display: 'flex', flexDirection: 'column', gap: '1rem',
               paddingTop: '1rem',
@@ -487,18 +487,9 @@ export default function PlaceSubjectAtlas({ atlas }) {
                 </div>
               )}
             </div>
-          ) : (
-            <div style={{
-              paddingTop: '1rem',
-              borderTop: '1px solid var(--archive-color-rule)',
-            }}>
-              <p style={{ margin: 0, font: '400 0.9rem/1.5 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-muted)' }}>
-                Select a cell in the matrix to view details.
-              </p>
-            </div>
-          )}
         </div>
         </aside>
+        )}
 
       </div>
     </article>
