@@ -1148,10 +1148,10 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
 
         <section style={SEC_CONT}>
           <p style={S.body}>
-            This form of visualisation supports exploratory analysis, enabling patterns to emerge through interaction rather than predefined classification. This makes thematic exploration more effective. Such patterns would be difficult to identify without computational similarity search.
+            This form of visualisation supports exploratory analysis, enabling patterns to emerge through interaction rather than predefined categories. This makes thematic exploration more effective. Such patterns would be difficult to identify without computational similarity search.
           </p>
           <p style={S.body}>
-            What surprised me most was how easily I could find similar moments across the archive. For instance, using image similarity search, I found two photos of the same activity (walking on wooden posts) taken at different times.
+            What surprised me most was how easily I could find similar moments across the archive. For instance, using image similarity search, I found two photos of the same activity (walking on wooden posts) taken at different times:
           </p>
 
           <div
@@ -1189,7 +1189,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
             To communicate these findings, the website adopts a narrative visualisation framework, following the “Martini Glass” structure <span className="in-text-cite">(Segel and Heer 2010)</span>, which combines an initial linear, guided narrative with a subsequent open, interactive exploration. The interface first leads the viewer through major temporal and geographical patterns in the archive, before allowing independent exploration of the dataset. This structure supports both guided interpretation and user-driven discovery, allowing viewers to move between patterns and individual images, for example by filtering terms such as “calligraphy” or “Paris” to examine the visual instances underlying broader trends.
           </p>
           <p style={S.body}>
-            This project demonstrates how computational analysis can be applied to a personal photographic archive to reveal patterns in social relationships, activities, and environments over time. By combining machine-driven feature extraction with human interpretation, the project creates a structured representation of lived experience that can be explored at multiple levels of abstraction. In this sense, the archive becomes not only a collection of images, but a structured system through which personal history can be examined and reinterpreted.
+            This project demonstrates how computational analysis can be applied to a personal photographic archive to reveal patterns in social relationships, activities, and environments over time. By combining machine-driven feature extraction with human interpretation, the project creates a structured representation of lived experience that can be explored from overall patterns to individual images. In this sense, the archive becomes not only a collection of images, but a structured system through which personal history can be examined and reinterpreted.
           </p>
           <p style={S.body}>
             At the same time, computational analysis reduces complex experiences into measurable features. While this enables large-scale pattern recognition, it also raises questions about what remains unrecorded or cannot be captured within the dataset, highlighting the limits of representing life through data.
