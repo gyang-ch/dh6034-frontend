@@ -20,7 +20,7 @@ function lerp(a, b, t) { return Math.round(a + (b - a) * t) }
 function cellColor(count, maxCount) {
   // More elegant, almost-invisible empty state
   if (count === 0) return { bg: 'rgba(29,35,41,0.02)', text: 'rgba(29,35,41,0.2)' }
-  const t = Math.pow(count / maxCount, 0.55)
+  const t = Math.pow(count / maxCount, 0.45)
 
   let r, g, b
   if (t < 0.33) {
@@ -58,39 +58,31 @@ function legendValueLabel(value, showFreq) {
 // Explicit column order: dense YOLO items → Gemma scenes/people → animals cluster → sparse right end
 const SUBJECT_ORDER = [
   // YOLO high-density everyday items (18–20/20 places)
-  { source: 'yolo', subject: 'handbag' },
   { source: 'yolo', subject: 'backpack' },
   { source: 'yolo', subject: 'car' },
   { source: 'yolo', subject: 'chair' },
-  { source: 'yolo', subject: 'potted plant' },
   { source: 'yolo', subject: 'bench' },
-  { source: 'yolo', subject: 'cell phone' },
   { source: 'yolo', subject: 'bottle' },
   { source: 'yolo', subject: 'bicycle' },
   { source: 'yolo', subject: 'bus' },
   { source: 'yolo', subject: 'dining table' },
   { source: 'yolo', subject: 'suitcase' },
   { source: 'gemma', subject: 'beach' },
+  { source: 'gemma', subject: 'ocean' },
   { source: 'gemma', subject: 'desert' },
+  { source: 'gemma', subject: 'sand' },
+  { source: 'gemma', subject: 'landscape' },
+  { source: 'gemma', subject: 'mountain' },
+  { source: 'gemma', subject: 'waterfall' },
+  { source: 'gemma', subject: 'rock' },
   { source: 'gemma', subject: 'boy' },
-  { source: 'yolo', subject: 'book' },
-  // Gemma (scenes / activities)
-  { source: 'gemma', subject: 'night' },
-  // Gemma medium (nature / activities / objects)
-  { source: 'gemma', subject: 'wall' },
-  { source: 'gemma', subject: 'tree' },
   { source: 'gemma', subject: 'painting' },
-  { source: 'gemma', subject: 'walking' },
   // Animals semantic cluster
   { source: 'yolo', subject: 'horse' },
   { source: 'yolo', subject: 'bird' },
   { source: 'yolo', subject: 'cow' },
   { source: 'yolo', subject: 'sheep' },
   { source: 'gemma', subject: 'yak' },
-  // Sparse / low-count columns → right end
-  { source: 'yolo', subject: 'airplane' },
-  { source: 'gemma', subject: 'ink' },
-  { source: 'gemma', subject: 'award' },
 ]
 
 const EXCLUDED_SUBJECTS = new Set(['gemma:horse', 'gemma:horses', 'gemma:sheep'])
@@ -347,7 +339,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
       </div>
 
       {/* ── Grid + Detail Panel ─────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(16rem,20rem)', gap: '2.5rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(16rem,20rem)', gap: '2.5rem', alignItems: 'stretch' }}>
 
         {/* Scrollable grid */}
         <div
@@ -460,10 +452,13 @@ export default function PlaceSubjectAtlas({ atlas }) {
         </div>
 
         {/* Marginalia Detail Panel */}
+        <div style={{ position: 'relative' }}>
         <aside style={{
-          display: 'grid', gap: '1.25rem', padding: '0',
-          alignContent: 'start',
+          position: 'absolute', inset: 0,
+          overflowY: 'auto',
+          overscrollBehavior: 'contain',
         }}>
+        <div style={{ display: 'grid', alignContent: 'start', gap: '1.25rem' }}>
           {activeCell ? (
             <div style={{
               display: 'flex', flexDirection: 'column', gap: '1rem',
@@ -480,18 +475,14 @@ export default function PlaceSubjectAtlas({ atlas }) {
                 </p>
               </div>
 
-              {activeCell.exampleFilenames?.length > 0 && (
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: activeCell.exampleFilenames.length === 1 ? '1fr' : '1fr 1fr',
-                  gap: '0.5rem',
-                  marginTop: '0.5rem'
-                }}>
-                  {activeCell.exampleFilenames.map((filename) => (
+              {activeCell.filenames?.length > 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                  {activeCell.filenames.map((filename) => (
                     <figure key={filename} style={{ margin: 0, aspectRatio: '4/3', background: 'rgba(29,35,41,0.04)', border: '1px solid var(--archive-color-rule)', padding: '0.25rem' }}>
                       <img
                         src={imageUrl(filename)}
                         alt={filename}
+                        loading="lazy"
                         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'grayscale(20%) contrast(1.05)' }}
                       />
                     </figure>
@@ -509,7 +500,9 @@ export default function PlaceSubjectAtlas({ atlas }) {
               </p>
             </div>
           )}
+        </div>
         </aside>
+        </div>
 
       </div>
     </article>
