@@ -34,6 +34,8 @@ const MAX_PEOPLE = Math.ceil(
   Math.max(4, ...annotationTimelineData.map(d => d.avgMainPeople), ...yoloYearlyData) / 2
 ) * 2
 
+const MAX_TOTAL = Math.max(...annotationTimelineData.map(d => d.total))
+
 function xOf(year)   { return PAD.left + ((year - MIN_YEAR) / (MAX_YEAR - MIN_YEAR)) * IW }
 function yOfPct(v)   { return PAD.top  + IH - (v / 100) * IH }
 function yOfPpl(v)   { return PAD.top  + IH - (v / MAX_PEOPLE) * IH }
@@ -110,9 +112,12 @@ export function PresenceLineChart() {
             Share of photos in which I appear.
           </h3>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', paddingTop: '0.15rem' }}>
-          <svg width="22" height="10"><line x1="0" y1="5" x2="22" y2="5" stroke={PCT_COLOR} strokeWidth="2" /><circle cx="11" cy="5" r="2.5" fill="white" stroke={PCT_COLOR} strokeWidth="1.5" /></svg>
-          <span style={{ font: '0.72rem/1 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>% photos with me</span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.3rem', paddingTop: '0.15rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+            <svg width="22" height="10"><line x1="0" y1="5" x2="22" y2="5" stroke={PCT_COLOR} strokeWidth="2" /><circle cx="11" cy="5" r="2.5" fill="white" stroke={PCT_COLOR} strokeWidth="1.5" /></svg>
+            <span style={{ font: '0.72rem/1 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>% photos with me</span>
+          </div>
+          <span style={{ font: '0.72rem/1 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>dot size = total photos that year</span>
         </div>
       </div>
 
@@ -150,11 +155,12 @@ export function PresenceLineChart() {
 
         {annotationTimelineData.map((pt, i) => {
           const isHov = hov === i
+          const rBase = 2 + (Math.sqrt(pt.total) / Math.sqrt(MAX_TOTAL)) * 2
           return (
             <g key={pt.year} onMouseEnter={() => setHov(i)} style={{ cursor: 'default' }}>
               <rect x={xOf(pt.year) - slotW / 2} y={PAD.top} width={slotW} height={IH} fill="transparent" />
               <circle cx={xOf(pt.year)} cy={yOfPct(pt.myselfPct)}
-                r={isHov ? 4.5 : 2.8} fill="white" stroke={PCT_COLOR} strokeWidth={isHov ? 2 : 1.5}
+                r={isHov ? rBase + 1.7 : rBase} fill="white" stroke={PCT_COLOR} strokeWidth={isHov ? 2 : 1.5}
                 style={{ transition: 'r 0.12s' }} />
             </g>
           )

@@ -3,6 +3,11 @@ import { scaleBand, scaleLinear } from 'd3'
 import { brushX } from 'd3'
 import { select } from 'd3'
 import { photographUrl } from '../lib/photographs'
+import { myselfByMonth, annotationTimelineData } from '../data/annotationTimelineData'
+
+const ME_COLOR    = '#e09455'
+const NO_ME_COLOR = '#4e79a7'
+const myselfByYear = Object.fromEntries(annotationTimelineData.map(d => [String(d.year), d.myselfCount]))
 
 const chartHeight = 340
 const BRUSH_H = 12
@@ -136,10 +141,7 @@ export default function TemporalRibbon({ bins }) {
 
   useEffect(() => {
     const exists = activeBins.some((b) => b.key === activeKey)
-    if (!exists) {
-      const peak = activeBins.find((b) => b.count === maxCount)
-      setActiveKey(peak?.key ?? activeBins[0]?.key ?? null)
-    }
+    if (!exists) setActiveKey(null)
   }, [activeBins, maxCount])
 
   useEffect(() => {
@@ -165,7 +167,7 @@ export default function TemporalRibbon({ bins }) {
   const brushedTotal = brushedBins ? brushedBins.reduce((s, b) => s + b.count, 0) : null
   const brushedLabel = brushedBins?.length > 0 ? `${brushedBins[0].label} – ${brushedBins[brushedBins.length - 1].label}` : null
 
-  const activeBin = activeBins.find((b) => b.key === activeKey) ?? activeBins[0] ?? null
+  const activeBin = activeBins.find((b) => b.key === activeKey) ?? null
   const popupPosition = popup && shellRef.current
     ? (() => {
         const shellWidth = shellRef.current.clientWidth
@@ -268,26 +270,46 @@ export default function TemporalRibbon({ bins }) {
                   const barTop = yScale(bin.count)
                   const bh = innerHeight - barTop
                   const dimmed = !isInBrush(bin.key)
-                  const fill = '#4e79a7'
+                  const isActive = activeKey === bin.key
+
+                  const myselfCount = granularity === 'year'
+                    ? myselfByYear[String(bin.year)]
+                    : myselfByMonth[bin.key]
+                  const showSplit = isActive && myselfCount !== undefined && bin.count > 0
+
+                  const handlers = {
+                    onMouseEnter: (event) => {
+                      setActiveKey(bin.key)
+                      const rect = shellRef.current?.getBoundingClientRect()
+                      if (rect) setPopup({ x: event.clientX - rect.left, y: event.clientY - rect.top })
+                    },
+                    onMouseLeave: () => { setActiveKey(null); setPopup(null) },
+                    onClick: () => setActiveKey(bin.key),
+                  }
+
+                  if (showSplit) {
+                    const meFrac = Math.min(1, Math.max(0, myselfCount / bin.count))
+                    const meH = meFrac * bh
+                    const noMeH = bh - meH
+                    const splitY = barTop + noMeH
+                    return (
+                      <g key={bin.key} style={{ cursor: 'pointer' }} tabIndex="0" role="button"
+                        aria-label={`${bin.label}, ${bin.count} photographs`} {...handlers}>
+                        {noMeH > 0 && <path d={barPath(x, barTop, bw, noMeH)} fill={NO_ME_COLOR} fillOpacity={dimmed ? 0.18 : 1} style={{ shapeRendering: 'crispEdges' }} />}
+                        {meH > 0 && <path d={`M${x},${splitY} H${x + bw} V${barTop + bh} H${x} Z`} fill={ME_COLOR} fillOpacity={dimmed ? 0.18 : 1} style={{ shapeRendering: 'crispEdges' }} />}
+                      </g>
+                    )
+                  }
+
                   return (
                     <path key={bin.key}
                       d={barPath(x, barTop, bw, Math.max(0, bh))}
-                      fill={fill}
-                      fillOpacity={dimmed ? 0.18 : activeKey === bin.key ? 1 : 0.72}
+                      fill="#4e79a7"
+                      fillOpacity={dimmed ? 0.18 : isActive ? 1 : 0.72}
                       style={{ cursor: 'pointer', shapeRendering: 'crispEdges', animationDelay: `${i * (granularity === 'year' ? 22 : 6)}ms`, outline: 'none' }}
-                      onMouseEnter={(event) => {
-                        setActiveKey(bin.key)
-                        const rect = shellRef.current?.getBoundingClientRect()
-                        if (rect) {
-                          setPopup({
-                            x: event.clientX - rect.left,
-                            y: event.clientY - rect.top,
-                          })
-                        }
-                      }}
-                      onClick={() => setActiveKey(bin.key)}
                       tabIndex="0" role="button"
                       aria-label={`${bin.label}, ${bin.count} photographs`}
+                      {...handlers}
                     />
                   )
                 })}
@@ -317,10 +339,20 @@ export default function TemporalRibbon({ bins }) {
       </div>
 
       {/* Hover popup */}
-      {activeBin && popupPosition && (
+      {activeBin && popupPosition && (() => {
+        const activeMyselfCount = granularity === 'year'
+          ? myselfByYear[String(activeBin.year)]
+          : myselfByMonth[activeBin.key]
+        return (
         <div style={{ position: 'absolute', zIndex: 20, pointerEvents: 'none', width: `${POPUP_WIDTH}px`, padding: '0.85rem 1rem', background: 'rgba(255,253,249,0.97)', border: '1px solid rgba(29,35,41,0.11)', borderRadius: '1.1rem', boxShadow: '0 6px 28px rgba(29,35,41,0.1)', backdropFilter: 'blur(6px)', display: 'grid', gap: '0.38rem', left: `${popupPosition.left}px`, top: `${popupPosition.top}px` }}>
           <p style={{ margin: 0, font: '600 0.9rem/1.2 var(--archive-font-ui)', color: 'var(--archive-color-ink)' }}>{activeBin.label}</p>
           <p style={{ margin: 0, font: '500 0.82rem/1.3 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>{activeBin.count} photographs</p>
+          {activeMyselfCount !== undefined && (
+            <p style={{ margin: 0, font: '0.78rem/1.3 var(--archive-font-ui)', color: ME_COLOR }}>
+              <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: ME_COLOR, marginRight: '0.35rem', verticalAlign: 'middle' }} />
+              {activeMyselfCount} with me ({activeBin.count > 0 ? Math.round(activeMyselfCount / activeBin.count * 100) : 0}%)
+            </p>
+          )}
           {activeBin.places.length > 0 && (
             <p style={{ margin: 0, font: '0.78rem/1.45 var(--archive-font-ui)', color: 'var(--archive-color-muted)' }}>{activeBin.places.slice(0, 4).join(' · ')}</p>
           )}
@@ -332,7 +364,8 @@ export default function TemporalRibbon({ bins }) {
             </div>
           )}
         </div>
-      )}
+        )
+      })()}
     </div>
   )
 }
