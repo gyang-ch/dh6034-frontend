@@ -287,13 +287,20 @@ export default function JsonScrollExplainer() {
         }}>
           {/* title bar */}
           <div style={{
-            display: 'flex', alignItems: 'center', gap: '0.45rem',
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
             padding: '0.65rem 1rem',
             background: '#1e293b',
             borderBottom: '1px solid rgba(255,255,255,0.06)',
           }}>
-            {['#f87171','#fbbf24','#34d399'].map(c => (
-              <span key={c} style={{ width: 11, height: 11, borderRadius: '50%', background: c, flexShrink: 0 }} />
+            {['#FF605C','#FFBD44','#00CA4E'].map(c => (
+              <span key={c} style={{
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                background: c,
+                flexShrink: 0,
+                border: '1px solid rgba(0, 0, 0, 0.15)',
+              }} />
             ))}
             <span style={{ marginLeft: '0.5rem', font: '0.72rem/1 "JetBrains Mono", monospace', color: '#64748b' }}>
               sample_photo_data.json
