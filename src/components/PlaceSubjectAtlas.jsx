@@ -185,11 +185,13 @@ export default function PlaceSubjectAtlas({ atlas }) {
       }
       timeline.fromTo(
         cells,
-        { autoAlpha: 0 },
+        { autoAlpha: 0, scale: 0.6, transformOrigin: '50% 50%' },
         {
           autoAlpha: 1,
-          duration: 0.16,
-          stagger: { each: 0.0015, from: 'start' },
+          scale: 1,
+          duration: 0.45,
+          ease: 'back.out(1.2)',
+          stagger: { amount: 0.8, grid: 'auto', from: 'start' },
           overwrite: 'auto',
         },
         legend ? 0.04 : 0
@@ -339,7 +341,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
       </div>
 
       {/* ── Grid + Detail Panel ─────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(16rem,20rem)', gap: '2.5rem', alignItems: 'stretch' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(16rem,20rem)', gap: '2.5rem', alignItems: 'start' }}>
 
         {/* Scrollable grid */}
         <div
@@ -452,12 +454,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
         </div>
 
         {/* Marginalia Detail Panel */}
-        <div style={{ position: 'relative' }}>
-        <aside style={{
-          position: 'absolute', inset: 0,
-          overflowY: 'auto',
-          overscrollBehavior: 'contain',
-        }}>
+        <aside style={{ minWidth: 0 }}>
         <div style={{ display: 'grid', alignContent: 'start', gap: '1.25rem' }}>
           {activeCell ? (
             <div style={{
@@ -477,7 +474,7 @@ export default function PlaceSubjectAtlas({ atlas }) {
 
               {activeCell.filenames?.length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
-                  {activeCell.filenames.map((filename) => (
+                  {activeCell.filenames.slice(0, 14).map((filename) => (
                     <figure key={filename} style={{ margin: 0, aspectRatio: '4/3', background: 'rgba(29,35,41,0.04)', border: '1px solid var(--archive-color-rule)', padding: '0.25rem' }}>
                       <img
                         src={imageUrl(filename)}
@@ -496,13 +493,12 @@ export default function PlaceSubjectAtlas({ atlas }) {
               borderTop: '1px solid var(--archive-color-rule)',
             }}>
               <p style={{ margin: 0, font: '400 0.9rem/1.5 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-muted)' }}>
-                Select a populated cell in the matrix to view specific archival examples and distribution metrics.
+                Select a cell in the matrix to view details.
               </p>
             </div>
           )}
         </div>
         </aside>
-        </div>
 
       </div>
     </article>
