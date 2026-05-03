@@ -67,16 +67,43 @@ export default function TemporalRibbon({ bins }) {
       const entry = map.get(bin.year)
       if (entry) {
         entry.count += bin.count
-        if (bin.count > entry.topCount) { entry.topCount = bin.count; entry.samples = bin.samples }
+        for (const s of bin.samples) {
+          const arr = entry.byPlace.get(s.place)
+          if (arr) arr.push(s)
+          else entry.byPlace.set(s.place, [s])
+        }
       } else {
-        map.set(bin.year, { year: bin.year, count: bin.count, samples: [...bin.samples], topCount: bin.count })
+        const byPlace = new Map()
+        for (const s of bin.samples) {
+          const arr = byPlace.get(s.place)
+          if (arr) arr.push(s)
+          else byPlace.set(s.place, [s])
+        }
+        map.set(bin.year, { year: bin.year, count: bin.count, byPlace })
       }
     }
-    return [...map.values()].map(({ topCount, ...e }) => ({
-      key: e.year, label: e.year, year: e.year, count: e.count,
-      places: YEAR_PLACES_BY_COUNT[e.year] ?? [],
-      samples: e.samples,
-    }))
+    return [...map.values()].map((e) => {
+      const ranked = (YEAR_PLACES_BY_COUNT[e.year] ?? []).filter(p => e.byPlace.has(p))
+      const unranked = [...e.byPlace.keys()].filter(p => !ranked.includes(p))
+      const orderedPlaces = [...ranked, ...unranked]
+      let samples = []
+      if (orderedPlaces.length >= 3) {
+        samples = orderedPlaces.slice(0, 3).map(p => e.byPlace.get(p)[0])
+      } else if (orderedPlaces.length === 2) {
+        const arr1 = e.byPlace.get(orderedPlaces[0])
+        const arr2 = e.byPlace.get(orderedPlaces[1])
+        const extraArr = arr1.length > arr2.length ? arr1 : arr2
+        samples = [arr1[0], arr2[0], extraArr[Math.min(1, extraArr.length - 1)]]
+      } else if (orderedPlaces.length === 1) {
+        const arr = e.byPlace.get(orderedPlaces[0])
+        samples = [0, 1, 2].map((i) => arr[Math.min(i, arr.length - 1)])
+      }
+      return {
+        key: e.year, label: e.year, year: e.year, count: e.count,
+        places: YEAR_PLACES_BY_COUNT[e.year] ?? [],
+        samples,
+      }
+    })
   }, [bins])
 
   const activeBins = granularity === 'month' ? monthBins : yearBins
@@ -300,8 +327,8 @@ export default function TemporalRibbon({ bins }) {
           )}
           {activeBin.samples.length > 0 && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0.4rem', marginTop: '0.25rem' }}>
-              {activeBin.samples.slice(0, 3).map((s) => (
-                <img key={s.filename} src={imageUrl(s.imagePath)} alt={s.filename} loading="lazy" style={{ display: 'block', width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: '0.5rem' }} />
+              {activeBin.samples.slice(0, 3).map((s, i) => (
+                <img key={i} src={imageUrl(s.imagePath)} alt={s.filename} loading="lazy" style={{ display: 'block', width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: '0.5rem' }} />
               ))}
             </div>
           )}

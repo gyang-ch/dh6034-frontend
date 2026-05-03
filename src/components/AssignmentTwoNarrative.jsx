@@ -921,10 +921,6 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           <p style={S.body}>
             The archive reveals a gradual shift in the structure of my lived experience: from family-oriented documentation in childhood toward a more individualised and academically shaped visual record in adulthood.
           </p>
-        </section>
-
-        {/* 3.2 – Temporal Patterns */}
-        <section id="temporal" style={SEC_CONT}>
           <h3 style={S.h3}>3.2  Temporal Patterns</h3>
           <p style={S.body}>
             To understand how my photographic practices evolved over time, I analyse both the temporal distribution of images and shifts in their semantic content.
