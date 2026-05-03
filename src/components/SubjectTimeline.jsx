@@ -1,5 +1,4 @@
 import { useState, useMemo, useRef, useCallback } from 'react'
-import { assignment2Data } from '../data/assignment2Data'
 import { gemmaKeywordsData } from '../data/gemmaKeywordsData'
 
 const PALETTE = [
@@ -8,14 +7,6 @@ const PALETTE = [
   '#4dc0e8','#d4a6c8','#a0cbe8','#ffbe7d','#8cd17d',
   '#b6992d','#499894','#d37295','#a8786a','#c9a227'
 ]
-
-const YOLO_GROUPS = {
-  'People':       ['person'],
-  'Vehicles':     ['airplane', 'bicycle', 'bus', 'car', 'train'],
-  'Animals':      ['bear', 'bird', 'cat', 'cow', 'dog', 'elephant', 'horse'],
-  'Furniture':    ['bed', 'bench', 'chair', 'couch', 'dining table', 'potted plant'],
-  'Personal':     ['backpack', 'book', 'cell phone', 'handbag', 'laptop'],
-}
 
 const W = 900, H = 300
 const PAD = { top: 20, right: 24, bottom: 46, left: 58 }
@@ -296,22 +287,13 @@ function TimelineChart({ items, series, seriesAbsolute, months, groups, colorOf,
   )
 }
 
-const YOLO_DEFAULT_VISIBLE = ['person', 'chair', 'cup', 'car', 'handbag', 'bowl']
-
-export default function YoloObjectTimeline() {
-  const tl = assignment2Data.yoloTimeline
-  if (!tl) return null
-
-  const yoloItems   = useMemo(() => ['person', ...tl.objects.filter(o => o !== 'person')], [tl])
-  const yoloSeries  = useMemo(() => tl.seriesCounts, [tl])
-
+export default function SubjectTimeline() {
   const gemmaItems          = gemmaKeywordsData.keywords
   const gemmaSeries         = gemmaKeywordsData.series
   const gemmaSeriesAbsolute = gemmaKeywordsData.seriesAbsolute
   const gemmaMonths         = gemmaKeywordsData.months
   const gemmaGroups         = gemmaKeywordsData.groups
 
-  const yoloColorOf  = useCallback((item) => PALETTE[yoloItems.indexOf(item)  % PALETTE.length], [yoloItems])
   const gemmaColorOf = useCallback((item) => PALETTE[gemmaItems.indexOf(item) % PALETTE.length], [gemmaItems])
 
   const articleStyle = {
@@ -325,33 +307,16 @@ export default function YoloObjectTimeline() {
 
   return (
     <div>
-      {/* ── YOLO Objects ── */}
       <article style={articleStyle}>
         <header style={{ display: 'grid', gap: '0.75rem', borderBottom: '1px solid var(--archive-color-rule)', paddingBottom: '1.5rem' }}>
           <p style={{ margin: 0, font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--archive-color-accent)' }}>
-            Figure 3. Visual Signals Over Time — YOLO Objects
+            Figure 3. Visual Signals Over Time — Subjects
           </p>
           <h3 style={{ margin: 0, font: '500 1.85rem/1.15 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '45rem' }}>
-            Average number of each detected object per photograph.
+            Share of photos each month featuring specific subjects.
           </h3>
           <p style={{ margin: 0, maxWidth: '45rem', font: '400 0.9rem/1.6 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-copy)' }}>
-            YOLO counts every instance in each photo. The y-axis shows the average count per photo that month, so values above 1 mean the object appeared multiple times per photo on average.
-          </p>
-        </header>
-        <TimelineChart items={yoloItems} series={yoloSeries} months={tl.months} groups={YOLO_GROUPS} colorOf={yoloColorOf} defaultVisible={YOLO_DEFAULT_VISIBLE} yFormat="avg" />
-      </article>
-
-      {/* ── Gemma Keywords ── */}
-      <article style={articleStyle}>
-        <header style={{ display: 'grid', gap: '0.75rem', borderBottom: '1px solid var(--archive-color-rule)', paddingBottom: '1.5rem' }}>
-          <p style={{ margin: 0, font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--archive-color-accent)' }}>
-            Figure 4. Visual Signals Over Time — Gemma Keywords
-          </p>
-          <h3 style={{ margin: 0, font: '500 1.85rem/1.15 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '45rem' }}>
-            Share of photos each month mentioning specific concepts.
-          </h3>
-          <p style={{ margin: 0, maxWidth: '45rem', font: '400 0.9rem/1.6 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-copy)' }}>
-            Matched against Gemma-generated captions. <strong>Frequency</strong> shows the share of photos that month whose caption contains the keyword; <strong>Count</strong> shows the raw number of such photos.
+            Most subjects are matched against Gemma-generated captions; <em>train</em>, <em>bottle</em>, and <em>dining table</em> come from YOLO object detection. Both sources count a photo once if the subject is present (regardless of how many times). <strong>Frequency</strong> shows the share of photos that month featuring the subject; <strong>Count</strong> shows the raw number of such photos.
           </p>
         </header>
         <TimelineChart items={gemmaItems} series={gemmaSeries} seriesAbsolute={gemmaSeriesAbsolute} months={gemmaMonths} groups={gemmaGroups} colorOf={gemmaColorOf} defaultVisible={gemmaKeywordsData.defaultVisible} yFormat="percent" />

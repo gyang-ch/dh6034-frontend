@@ -20,7 +20,7 @@ const Network = lazy(() => import('./Network'))
 const GemmaSearch        = lazy(() => import('./GemmaSearch'))
 const PhotoMap           = lazy(() => import('./PhotoMap'))
 const SemanticTimeline   = lazy(() => import('./SemanticTimeline'))
-const YoloObjectTimeline = lazy(() => import('./YoloObjectTimeline'))
+const SubjectTimeline    = lazy(() => import('./SubjectTimeline'))
 
 const SWARM_STEPS = [
   {
@@ -1002,7 +1002,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
         <VisBlock>
           <StagedVisual label="Preparing object timeline" minHeight="28rem">
             <Suspense fallback={null}>
-              <YoloObjectTimeline />
+              <SubjectTimeline />
             </Suspense>
           </StagedVisual>
         </VisBlock>
