@@ -321,7 +321,7 @@ export default function Network() {
       }))
 
   return (
-    <div className="assignment2-panel overflow-hidden rounded-[1.6rem] border border-slate-300/70 bg-white/72 p-5 shadow-[0_30px_80px_-36px_rgba(15,23,42,0.45)] backdrop-blur-sm md:p-7 max-w-[95%] mx-auto">
+    <div className="assignment2-panel overflow-hidden rounded-[1.6rem] border border-slate-300/70 bg-white/72 p-5 shadow-[0_30px_80px_-36px_rgba(15,23,42,0.45)] backdrop-blur-sm md:p-7 mx-auto" style={{ maxWidth: 'min(100%, 1120px)' }}>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="font-data text-[0.72rem] uppercase tracking-[0.22em] text-slate-500">Image Constellation</p>
