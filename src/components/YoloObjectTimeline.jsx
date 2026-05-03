@@ -293,7 +293,7 @@ export default function YoloObjectTimeline() {
   const tl = assignment2Data.yoloTimeline
   if (!tl) return null
 
-  const yoloItems   = useMemo(() => ['person', ...tl.objects], [tl])
+  const yoloItems   = useMemo(() => ['person', ...tl.objects.filter(o => o !== 'person')], [tl])
   const yoloSeries  = useMemo(() => tl.seriesCounts, [tl])
 
   const gemmaItems          = gemmaKeywordsData.keywords
