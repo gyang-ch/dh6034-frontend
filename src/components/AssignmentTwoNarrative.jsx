@@ -548,10 +548,24 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
     gsap.set(tiles, { opacity: 1, y: 0, scale: 1 })
 
     if (overlayRef.current) {
-      gsap.fromTo(
-        overlayRef.current,
-        { opacity: 0, y: 28, scale: 0.96 },
-        { opacity: 1, y: 0, scale: 1, duration: prefersReducedMotion ? 0.01 : 1.05, ease: 'power3.out' }
+      const tl = gsap.timeline({
+        delay: prefersReducedMotion ? 0 : 0.2,
+        defaults: { ease: 'power3.out', duration: prefersReducedMotion ? 0.01 : 1.2 },
+      })
+
+      tl.fromTo(overlayRef.current,
+        { opacity: 0, y: prefersReducedMotion ? 0 : 30 },
+        { opacity: 1, y: 0 }
+      )
+
+      tl.to(
+        overlayRef.current.querySelector('.assignment2-hero-title'),
+        {
+          clipPath: 'inset(0 0% 0 0)',
+          duration: prefersReducedMotion ? 0.01 : 1.5,
+          ease: 'power2.inOut',
+        },
+        '<0.3'
       )
     }
 
@@ -835,12 +849,12 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
         <div ref={overlayRef} className="assignment2-hero-overlay">
           <p className="hero-kicker">DH6034 Assignment 2</p>
           <h1 className="assignment2-hero-title">
-            From Portraits<br />to Patterns
+            <span className="hero-title-highlight">From Portraits to Patterns:</span>
+            <br />
+            A Data-Driven Analysis of Personal Life Through Photographs
           </h1>
           <hr className="hero-separator" aria-hidden="true" />
-          <p className="assignment2-hero-subtitle">
-            A Data-Driven Analysis of Personal Life Through Photographs
-          </p>
+          <p style={{ margin: 0, font: '500 0.88rem/1 var(--archive-font-ui)', letterSpacing: '0.12em', color: 'rgba(110,231,183,0.85)' }}>Guang Yang</p>
         </div>
       </header>
 
@@ -1021,10 +1035,6 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
             </MagneticLink>{' '}
             tab, which provides direct access to all images alongside their metadata.
           </p>
-        </section>
-
-        {/* 3.4 – Geographical Patterns */}
-        <section id="geography" style={SEC_CONT}>
           <h3 style={S.h3}>3.4  Geographical Patterns</h3>
           <p style={S.body}>
             To examine how place shapes visual content, I analyse the spatial distribution of objects and activities across locations.
@@ -1064,10 +1074,6 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           <p style={S.body}>
             These patterns highlight how place influences both activity and attention. The photographs capture not just movement across locations, but also shifts in what I noticed and chose to document in different environments.
           </p>
-        </section>
-
-        {/* 3.5 – Social Structure */}
-        <section id="social" style={SEC_CONT}>
           <h3 style={S.h3}>3.5  Social Structure</h3>
           <p style={S.body}>
             I used YOLO to estimate the number of people in each photograph and manually annotated how many main people were present (excluding passers-by), as well as the social context of each image (family, friends, professional/academic, or other). These features reveal changes in my social relationships over time, including shifts between family life, friendships, and academic environments.
