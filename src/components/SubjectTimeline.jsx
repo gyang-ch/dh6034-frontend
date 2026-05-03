@@ -309,15 +309,9 @@ export default function SubjectTimeline() {
     <div>
       <article style={articleStyle}>
         <header style={{ display: 'grid', gap: '0.75rem', borderBottom: '1px solid var(--archive-color-rule)', paddingBottom: '1.5rem' }}>
-          <p style={{ margin: 0, font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--archive-color-accent)' }}>
-            Figure 3. Visual Signals Over Time — Subjects
-          </p>
           <h3 style={{ margin: 0, font: '500 1.85rem/1.15 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '45rem' }}>
-            Share of photos each month featuring specific subjects.
+            Keyword Frequency Over Time
           </h3>
-          <p style={{ margin: 0, maxWidth: '45rem', font: '400 0.9rem/1.6 "Aptos", "Segoe UI", sans-serif', color: 'var(--archive-color-copy)' }}>
-            Most subjects are matched against Gemma-generated captions; <em>train</em>, <em>bottle</em>, and <em>dining table</em> come from YOLO object detection. Both sources count a photo once if the subject is present (regardless of how many times). <strong>Frequency</strong> shows the share of photos that month featuring the subject; <strong>Count</strong> shows the raw number of such photos.
-          </p>
         </header>
         <TimelineChart items={gemmaItems} series={gemmaSeries} seriesAbsolute={gemmaSeriesAbsolute} months={gemmaMonths} groups={gemmaGroups} colorOf={gemmaColorOf} defaultVisible={gemmaKeywordsData.defaultVisible} yFormat="percent" />
       </article>

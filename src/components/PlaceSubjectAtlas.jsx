@@ -240,17 +240,14 @@ export default function PlaceSubjectAtlas({ atlas }) {
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <header style={{ display: 'flex', justifyContent: 'space-between', gap: '2rem', alignItems: 'flex-start', flexWrap: 'wrap', borderBottom: '1px solid var(--archive-color-rule)', paddingBottom: '1.5rem' }}>
         <div>
-          <p style={{ margin: '0 0 0.75rem', font: '600 0.7rem/1.2 var(--archive-font-ui)', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--archive-color-accent)' }}>
-            Figure 1. Place × Subject Matrix
-          </p>
           <h3 style={{ margin: 0, font: '500 1.85rem/1.15 var(--archive-font-display)', color: 'var(--archive-color-ink)', maxWidth: '40rem' }}>
-            Heat signatures revealing which locations are visually remembered through specific subjects.
+            Place and Subject Co-occurrence
           </h3>
         </div>
       </header>
 
       {/* ── Controls + Legend (same row, heatmap column only) ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(16rem,20rem)', gap: '2.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: activeCell ? 'minmax(0,1fr) minmax(16rem,20rem)' : '1fr', gap: '2.5rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '1.5rem', flexWrap: 'wrap' }}>
         <div className="atlas-display-tabs" data-orientation="horizontal">
           <span id={`${displayTabsId}-label`} className="atlas-display-tabs__caption">

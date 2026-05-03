@@ -295,6 +295,18 @@ export default function Network() {
     sigma.refresh()
   }, [clusterMode])
 
+  const handleZoomIn = () => {
+    sigmaRef.current?.getCamera().animatedZoom({ duration: 260 })
+  }
+
+  const handleZoomOut = () => {
+    sigmaRef.current?.getCamera().animatedUnzoom({ duration: 260 })
+  }
+
+  const handleResetView = () => {
+    sigmaRef.current?.getCamera().animatedReset({ duration: 500 })
+  }
+
   // ── Legend content ────────────────────────────────────────────────────────
   const legendItems = !derived ? [] : clusterMode === 'kmeans'
     ? KMEANS_COLOURS.map((colour, i) => ({
@@ -350,6 +362,47 @@ export default function Network() {
 
       <div className="assignment2-graph-shell relative">
         <div ref={containerRef} className="assignment2-graph h-[34rem] w-full rounded-[1.2rem]" />
+
+        <div className="assignment2-map-toolbar" aria-label="Network zoom controls">
+          <button
+            type="button"
+            onClick={handleZoomIn}
+            title="Zoom In"
+            className="assignment2-map-toolbtn"
+            aria-label="Zoom in"
+          >
+            <span className="assignment2-map-toolbtn-glow" aria-hidden="true" />
+            <span className="assignment2-map-toolbtn-face" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleZoomOut}
+            title="Zoom Out"
+            className="assignment2-map-toolbtn"
+            aria-label="Zoom out"
+          >
+            <span className="assignment2-map-toolbtn-glow" aria-hidden="true" />
+            <span className="assignment2-map-toolbtn-face" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleResetView}
+            title="Return to 100%"
+            className="assignment2-map-toolbtn"
+            aria-label="Return network to 100%"
+          >
+            <span className="assignment2-map-toolbtn-glow" aria-hidden="true" />
+            <span className="assignment2-map-toolbtn-face" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            </span>
+          </button>
+        </div>
 
         {hoveredNode && (
           <article

@@ -200,7 +200,6 @@ export default function TemporalRibbon({ bins }) {
       {/* Toolbar */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gridTemplateRows: 'auto auto', alignItems: 'start', gap: '0.75rem 1.5rem' }}>
         <div>
-          <p style={{ margin: 0, font: '600 0.72rem/1.2 var(--archive-font-ui)', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>Temporal Register</p>
           <h3 style={{ margin: '0.3rem 0 0', font: '500 clamp(1.45rem,1.2vw + 1rem,1.95rem)/1.12 var(--archive-font-display)', color: 'var(--archive-color-ink)' }}>Temporal distribution of the photos</h3>
         </div>
         <div className="atlas-display-tabs__list-container">
