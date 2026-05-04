@@ -201,7 +201,8 @@ export default function PhotoArchiveWindowed() {
     const grouped = new Map()
 
     for (const photo of galleryData) {
-      const year = photo.date?.slice(0, 4) ?? 'Unknown'
+      if (!photo.date) continue
+      const year = photo.date.slice(0, 4)
       if (!grouped.has(year)) grouped.set(year, [])
       grouped.get(year).push(photo)
     }

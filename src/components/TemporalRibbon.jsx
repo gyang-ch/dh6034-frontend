@@ -5,7 +5,7 @@ import { select } from 'd3'
 import { photographUrl } from '../lib/photographs'
 import { myselfByMonth, annotationTimelineData } from '../data/annotationTimelineData'
 
-const ME_COLOR    = '#e09455'
+const ME_COLOR    = '#14b8a6'
 const NO_ME_COLOR = '#4e79a7'
 const myselfByYear = Object.fromEntries(annotationTimelineData.map(d => [String(d.year), d.myselfCount]))
 
