@@ -380,7 +380,7 @@ const SEASONAL_STEPS = [
   {
     key:   'overview',
     title: 'The full year at a glance',
-    desc:  'Twelve months, merged across every year in the archive. The variation is striking — some months are packed while others are near-empty.',
+    desc:  'Twelve months, merged across every year in the archive. Some months are packed while others are near-empty.',
     highlight: null,
   },
   {

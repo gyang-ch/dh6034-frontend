@@ -749,7 +749,7 @@
 
 .assignment2-hero-title {
   margin: 0;
-  font: 500 clamp(1.9rem, 2.4vw + 1rem, 2.9rem)/1.2 var(--archive-font-display);
+  font: 500 clamp(2.05rem, 2.5vw + 1.1rem, 3.05rem)/1.2 var(--archive-font-display);
   letter-spacing: -0.02em;
   text-wrap: balance;
   color: #fdfaf0;

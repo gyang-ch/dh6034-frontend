@@ -162,7 +162,7 @@ const STEPS = [
       '    "umap_x": 0.3585,',
       '    "umap_y": 0.3645,',
     ],
-    explanation: 'Position in a 2D UMAP projection of the CLIP embedding space — visually similar images cluster together. Used to place nodes in the network graph.',
+    explanation: 'Position in a 2D UMAP projection of the CLIP embedding space. Used to place nodes in the network graph.',
   },
   {
     id: 'style',
@@ -178,7 +178,7 @@ const STEPS = [
     lines: [
       '    "pca_features": { "structure": 0.7768, "palette": 0.4819, "texture": 0.4744 },',
     ],
-    explanation: 'Three PCA scores summarising compositional geometry, colour breadth, and texture complexity — each normalised across the archive.',
+    explanation: 'Three PCA scores summarising compositional geometry, colour breadth, and texture complexity.',
   },
   {
     id: 'kmeans',
@@ -194,7 +194,7 @@ const STEPS = [
       '      { "filename": "2006-07-27_Beidaihe_008.JPG", "distance": 0.3564 }',
       '    ],',
     ],
-    explanation: 'K-means cluster from CLIP embeddings, with a human-readable name from the cluster\'s most representative keywords. Photos in the same cluster share visual themes and a colour in the constellation graph. Neighbours are the five most similar images by cosine distance — these links form the graph edges.',
+    explanation: 'K-means cluster from CLIP embeddings. Photos in the same cluster share visual themes and a colour in the constellation graph. Neighbours are the five most similar images by cosine distance.',
   },
   {
     id: 'hdbscan',
