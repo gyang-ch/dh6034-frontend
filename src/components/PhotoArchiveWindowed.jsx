@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Layers2 } from 'lucide-react'
 import { List, useListRef } from 'react-window'
 import gsap from 'gsap'
 import Lightbox from 'yet-another-react-lightbox'
@@ -641,58 +642,45 @@ export default function PhotoArchiveWindowed() {
         <aside
           data-lenis-prevent
           data-lenis-prevent-wheel
-          style={{ minWidth: 0, minHeight: 0, overflowY: 'auto', borderLeft: '1px solid var(--archive-color-rule)', background: 'rgba(250,248,243,0.86)', padding: '0.75rem 0.5rem' }}
+          style={{ minWidth: 0, minHeight: 0, overflowY: 'auto', borderLeft: '1px solid rgba(29,35,41,0.13)', background: 'rgba(250,248,243,0.86)', padding: '0.75rem 0.6rem' }}
         >
           {selectedPhoto && nearestNeighbours.length > 0 ? (
             <>
-              <div
-                style={{
-                  margin: '0 0 0.5rem',
-                  padding: '0.3rem 1rem',
-                  background: 'linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,248,243,0.4))',
-                  borderTop: '1px solid rgba(255,255,255,0.8)',
-                  borderBottom: '1px solid rgba(29,35,41,0.06)',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 12px -4px rgba(0,0,0,0.03)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <h3
-                  style={{
-                    margin: 0,
-                    fontFamily: '"Aptos", var(--archive-font-ui), sans-serif',
-                    fontWeight: 600,
-                    fontSize: '0.95rem',
-                    letterSpacing: '0.14em',
-                    textTransform: 'uppercase',
-                    background: 'linear-gradient(135deg, var(--archive-color-ink) 20%, var(--archive-color-accent) 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
+              {/* Panel header */}
+              <div className="mb-3 flex items-center border-b border-[rgba(29,35,41,0.1)] pb-2.5 px-1">
+                <h3 className="font-major m-0 flex items-center gap-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--archive-color-ink)' }}>
+                  <Layers2 size={13} strokeWidth={1.75} style={{ color: '#14b8a6', flexShrink: 0 }} />
                   Similar Images
                 </h3>
               </div>
-              <div ref={similarRailRef} style={{ display: 'grid', gap: '0.5rem' }}>
+
+              {/* Cards rail */}
+              <div ref={similarRailRef} className="flex flex-col gap-2.5">
                 {nearestNeighbours.map((neighbor) => (
                   <button
                     data-similar-image
                     key={neighbor.filename}
                     type="button"
                     onClick={() => setSelectedFilename(neighbor.filename)}
-                    style={{ display: 'grid', gap: '0.4rem', width: '100%', border: '1px solid rgba(29,35,41,0.08)', background: 'rgba(255,255,255,0.76)', padding: '0.28rem', textAlign: 'left', cursor: 'pointer' }}
+                    className="group w-full cursor-pointer rounded-xl border border-transparent p-2 text-left shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                    style={{ background: 'linear-gradient(rgba(255,255,255,0.82),rgba(255,255,255,0.82)) padding-box, linear-gradient(135deg,rgba(45,212,191,0.32),rgba(14,165,233,0.32)) border-box' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(rgba(255,255,255,0.9),rgba(255,255,255,0.9)) padding-box, linear-gradient(135deg,rgba(45,212,191,0.72),rgba(14,165,233,0.72)) border-box' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(rgba(255,255,255,0.82),rgba(255,255,255,0.82)) padding-box, linear-gradient(135deg,rgba(45,212,191,0.32),rgba(14,165,233,0.32)) border-box' }}
                   >
-                    <div style={{ width: '100%', aspectRatio: '1 / 1', overflow: 'hidden', background: 'rgba(29,35,41,0.08)' }}>
+                    <div className="relative mb-1.5 overflow-hidden rounded-lg bg-slate-100" style={{ aspectRatio: '1' }}>
                       <img
                         src={photographThumbnailUrl(neighbor.filename)}
                         alt=""
                         loading="lazy"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
+                      {neighbor.distance != null && (
+                        <span className="absolute bottom-1.5 right-1.5 inline-flex items-center rounded-md border border-white/30 bg-black/40 px-1.5 py-0.5 text-[0.6rem] font-semibold text-white backdrop-blur-sm">
+                          {Math.round((1 - neighbor.distance) * 100)}%
+                        </span>
+                      )}
                     </div>
-                    <p style={{ margin: 0, font: '500 0.72rem/1.3 var(--archive-font-ui)', color: 'var(--archive-color-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <p className="font-major m-0 truncate text-[0.68rem] font-medium" style={{ color: 'var(--archive-color-ink)' }}>
                       {neighbor.filename}
                     </p>
                   </button>

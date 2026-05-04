@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
+import { Search, X, ImageOff } from 'lucide-react'
 import { gemmaCaptionsData } from '../data/gemmaCaptionsData'
 import { photographUrl } from '../lib/photographs'
 
@@ -146,7 +147,7 @@ function CaptionSnippet({ caption, queryToks, queryPhrase }) {
     snippet = caption.slice(0, 160) + (caption.length > 160 ? '…' : '')
   }
   return (
-    <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.5, fontFamily: '"Aptos", "Aptos Display", "Segoe UI", "Calibri", "Noto Sans", sans-serif', color: 'var(--archive-color-copy)' }}>
+    <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.5, color: 'var(--archive-color-copy)' }}>
       <HighlightedText text={snippet} queryToks={queryToks} />
     </p>
   )
@@ -157,35 +158,30 @@ function CaptionSnippet({ caption, queryToks, queryPhrase }) {
 function PhotoCard({ item, queryToks, queryPhrase }) {
   const [failed, setFailed] = useState(false)
   const { date, place } = parseName(item.f)
+
   return (
-    <div style={{
-      borderRadius: '4px',
-      border: '1px solid var(--archive-color-rule)',
-      background: '#ffffff',
-      padding: '0.5rem',
-      display: 'flex',
-      flexDirection: 'column',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-    }}>
-      <div style={{ aspectRatio: '1', overflow: 'hidden', background: '#e8e4da' }}>
+    <div className="group flex flex-col rounded-xl border border-[rgba(29,35,41,0.12)] bg-white p-2 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(29,35,41,0.28)] hover:shadow-md">
+      <div className="relative overflow-hidden rounded-lg bg-slate-100" style={{ aspectRatio: '1' }}>
         {!failed ? (
           <img
             src={photographUrl(item.f)}
             alt={item.f}
             onError={() => setFailed(true)}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: '0.65rem', color: '#aaa', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Unavailable</span>
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-slate-400">
+            <ImageOff size={24} strokeWidth={1.5} />
+            <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Unavailable</span>
           </div>
         )}
       </div>
-      <div style={{ padding: '0.75rem 0.25rem 0.25rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+
+      <div className="flex flex-col gap-2 p-3 pb-1">
         <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: 600, color: 'var(--archive-color-accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          {place}{date ? <span style={{ color: 'var(--archive-color-muted)' }}> — {date}</span> : null}
+          {place}{date && <span style={{ color: 'var(--archive-color-muted)' }}> — {date}</span>}
         </p>
-        <div style={{ font: '400 0.875rem/1.5 "Aptos", "Aptos Display", "Segoe UI", "Calibri", "Noto Sans", sans-serif' }}>
+        <div className="font-major">
           <CaptionSnippet caption={item.c} queryToks={queryToks} queryPhrase={queryPhrase} />
         </div>
       </div>
@@ -244,88 +240,60 @@ export default function GemmaSearch() {
   }, [results.length])
 
   return (
-    <div style={{
-      display: 'grid', gap: '1.25rem',
-      padding: '1.4rem 1.6rem',
-      margin: '0 6rem',
-      border: '1px solid var(--archive-color-rule)',
-      borderRadius: '1.75rem',
-      background:
-        'linear-gradient(180deg,rgba(255,255,255,0.88),rgba(247,244,237,0.92)),' +
-        'radial-gradient(circle at 80% 10%,rgba(234,179,8,0.06),transparent 32%)',
-    }}>
+    <div
+      className="mx-auto max-w-5xl rounded-[1.75rem] border p-8 shadow-sm backdrop-blur-sm flex flex-col gap-5"
+      style={{
+        borderColor: 'rgba(29,35,41,0.22)',
+        background:
+          'linear-gradient(180deg,rgba(255,255,255,0.88),rgba(247,244,237,0.92)),' +
+          'radial-gradient(circle at 80% 10%,rgba(234,179,8,0.06),transparent 32%)',
+      }}
+    >
 
       {/* Archive Header */}
-      <div style={{ marginBottom: '0.25rem', textAlign: 'center' }}>
-        <h2 style={{
-          font: '400 2rem var(--archive-font-display)',
-          color: 'var(--archive-color-ink)',
-          margin: '0 0 0.5rem 0',
-        }}>
+      <div className="text-center">
+        <h2 className="m-0 font-title text-3xl font-medium" style={{ color: 'var(--archive-color-ink)' }}>
           Caption-Based Photo Search
         </h2>
       </div>
 
       {/* Search input + suggestions */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <div style={{ position: 'relative' }}>
-          <span style={{
-            position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)',
-            color: 'var(--archive-color-muted)', fontSize: '1rem', pointerEvents: 'none',
-            lineHeight: 1,
-          }}>⌕</span>
+      <div className="flex flex-col gap-3">
+        <div className="group relative">
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200 group-focus-within:text-[var(--archive-color-accent)]"
+            size={20}
+            strokeWidth={1.5}
+            style={{ color: 'var(--archive-color-muted)' }}
+          />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Query the archive (e.g. 'museum', 'botanical garden', 'red coat')…"
-            style={{
-              width: '100%', boxSizing: 'border-box',
-              padding: '1rem 2.5rem',
-              border: '1px solid var(--archive-color-rule)',
-              borderRadius: '8px',
-              font: '0.95rem/1.5 var(--archive-font-ui)',
-              color: 'var(--archive-color-ink)',
-              background: 'var(--parchment)',
-              outline: 'none',
-              transition: 'border-color 0.2s, box-shadow 0.2s',
-            }}
-            onFocus={e => { e.target.style.borderColor = 'var(--archive-color-accent)'; e.target.style.boxShadow = '0 4px 20px rgba(0,0,0,0.04)' }}
-            onBlur={e  => { e.target.style.borderColor = 'var(--archive-color-rule)'; e.target.style.boxShadow = 'none' }}
+            className="w-full rounded-xl border border-[rgba(29,35,41,0.22)] bg-white py-4 pl-12 pr-12 font-major text-[0.95rem] shadow-xs outline-none transition-[color,box-shadow,border-color] duration-200 placeholder:text-slate-400 focus:border-[var(--archive-color-accent)] focus:ring-[3px] focus:ring-[var(--archive-color-accent)]/15"
+            style={{ boxSizing: 'border-box', color: 'var(--archive-color-ink)' }}
           />
           {trimmed && (
             <button
               onClick={() => { setQuery(''); inputRef.current?.focus() }}
-              style={{
-                position: 'absolute', right: '0.85rem', top: '50%', transform: 'translateY(-50%)',
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: 'var(--archive-color-muted)', fontSize: '0.85rem', padding: '0.2rem',
-                lineHeight: 1,
-              }}
-            >✕</button>
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 transition-colors hover:bg-slate-100"
+              style={{ color: 'var(--archive-color-muted)' }}
+            >
+              <X size={18} strokeWidth={2} />
+            </button>
           )}
         </div>
 
         {/* Suggested searches */}
         {trimmed.length < 2 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'flex-start' }}>
+          <div className="flex flex-wrap gap-2">
             {['food', 'restaurant', 'calligraphy', 'museum', 'gallery'].map(suggestion => (
               <button
                 key={suggestion}
                 onClick={() => { setQuery(suggestion); inputRef.current?.focus() }}
-                style={{
-                  padding: '0.3rem 0.85rem',
-                  borderRadius: '999px',
-                  border: '1px solid var(--archive-color-rule)',
-                  background: 'transparent',
-                  color: 'var(--archive-color-muted)',
-                  fontSize: '0.82rem',
-                  cursor: 'pointer',
-                  transition: 'border-color 0.15s, color 0.15s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--archive-color-text)'; e.currentTarget.style.color = 'var(--archive-color-text)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--archive-color-rule)'; e.currentTarget.style.color = 'var(--archive-color-muted)' }}
+                className="rounded-full border border-[rgba(29,35,41,0.22)] bg-transparent px-4 py-1.5 text-xs font-medium text-[var(--archive-color-muted)] cursor-pointer transition-[color,background-color,border-color] duration-150 hover:border-[rgba(29,35,41,0.4)] hover:bg-white/60 hover:text-[var(--archive-color-ink)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--archive-color-accent)]/20"
               >
                 {suggestion}
               </button>
@@ -335,35 +303,39 @@ export default function GemmaSearch() {
       </div>
 
       {/* Status line */}
-      <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--archive-color-muted)' }}>
+      <p className="m-0 text-sm" style={{ color: 'var(--archive-color-muted)' }}>
         {isSearching && (
           results.length === 0
             ? `No photos found for "${trimmed}"`
-            : <><strong style={{ color: 'var(--archive-color-ink)' }}>{results.length}</strong> photo{results.length !== 1 ? 's' : ''} found — showing {Math.min(visibleCount, results.length)}</>
+            : <>
+                <span className="inline-flex items-center rounded-md border border-[rgba(29,35,41,0.22)] px-2 py-0.5 text-xs font-semibold" style={{ color: 'var(--archive-color-ink)' }}>
+                  {results.length}
+                </span>
+                {' '}photo{results.length !== 1 ? 's' : ''} found — showing {Math.min(visibleCount, results.length)}
+              </>
         )}
       </p>
 
       {/* Results grid — fixed-height scrollable container */}
       {shown.length > 0 && (
-        <div
-          ref={gridRef}
-          onScroll={onGridScroll}
-          data-lenis-prevent
-          style={{
-            height: GRID_HEIGHT,
-            overflowY: 'auto',
-            overflowX: 'hidden',
-          }}
-        >
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-            gap: '0.75rem',
-            paddingRight: '0.25rem',
-          }}>
-            {shown.map(item => (
-              <PhotoCard key={item.f} item={item} queryToks={queryToks} queryPhrase={queryPhrase} />
-            ))}
+        <div className="relative">
+          {/* Faded-bottom fade hint (shadcn-admin faded-bottom pattern) */}
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 rounded-b-xl"
+            style={{ background: 'linear-gradient(to bottom, transparent, rgba(247,244,237,0.92))' }}
+          />
+          <div
+            ref={gridRef}
+            onScroll={onGridScroll}
+            data-lenis-prevent
+            className="custom-scrollbar pr-2"
+            style={{ height: GRID_HEIGHT, overflowY: 'auto', overflowX: 'hidden' }}
+          >
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {shown.map(item => (
+                <PhotoCard key={item.f} item={item} queryToks={queryToks} queryPhrase={queryPhrase} />
+              ))}
+            </div>
           </div>
         </div>
       )}
