@@ -330,7 +330,7 @@ export default function Network() {
           </h3>
         </div>
         <p className="max-w-xl text-sm leading-6 text-slate-600">
-          Nodes are photographs, positioned by their precomputed UMAP coordinates and linked to nearby images in the shared feature space. Hover or tap a node to inspect the photograph, tags, cluster, and dimensions.
+          Nodes are photographs, positioned by their precomputed UMAP coordinates and linked to nearby images in the shared feature space. Hover a node to inspect the photograph, cluster, and other information.
         </p>
       </div>
 

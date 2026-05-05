@@ -91,6 +91,8 @@ export default function PlaceSubjectAtlas({ atlas }) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const [activeKey, setActiveKey] = useState(null)
   const [showFreq, setShowFreq]   = useState(false)
+  const [hoveredRow, setHoveredRow] = useState(null)
+  const [hoveredCol, setHoveredCol] = useState(null)
   const rootRef = useRef(null)
   const matrixRef = useRef(null)
   const legendRef = useRef(null)
@@ -414,15 +416,19 @@ export default function PlaceSubjectAtlas({ atlas }) {
                   const share = cell?.share ?? 0
                   const val   = showFreq ? share : count
                   const { bg, text } = cellColor(val, maxVal)
-                  const cellKey = cell ? `${cell.place}::${cell.subject}::${cell.source}` : null
-                  const label   = showFreq ? freqLabel(share) : (count > 0 ? count : '')
-                  
-                  const isActive = activeKey === cellKey && cellKey !== null;
+                  const cellKey    = cell ? `${cell.place}::${cell.subject}::${cell.source}` : null
+                  const label      = showFreq ? freqLabel(share) : (count > 0 ? count : '')
+                  const isActive   = activeKey === cellKey && cellKey !== null
+                  const subjectKey = `${subject.source}:${subject.subject}`
+                  const anyHovered = hoveredRow !== null
+                  const inCross    = place.place === hoveredRow || subjectKey === hoveredCol
+                  const cellOpacity = anyHovered ? (inCross ? 1 : count > 0 ? 0.08 : 0.3) : 1
 
                   return (
                     <button
-                      key={`${subject.source}:${subject.subject}`}
+                      key={subjectKey}
                       type="button"
+                      className={`atlas-heatmap-cell ${count > 0 ? 'is-populated' : 'is-empty'}`}
                       data-atlas-cell={count > 0 ? 'populated' : 'empty'}
                       style={{
                         position: 'relative',
@@ -432,13 +438,22 @@ export default function PlaceSubjectAtlas({ atlas }) {
                         border: 0,
                         background: bg,
                         color: text,
-                        font: `400 0.75rem/1 var(--archive-font-data)`, // Use monospace for numbers
+                        font: `400 0.75rem/1 var(--archive-font-data)`,
                         cursor: count > 0 ? 'pointer' : 'default',
-                        transition: 'box-shadow 150ms ease, opacity 150ms ease',
-                        boxShadow: isActive ? 'inset 0 0 0 2px var(--archive-color-ink)' : 'none',
+                        boxShadow: isActive ? 'inset 0 0 0 2px var(--archive-color-ink)' : undefined,
+                        zIndex: isActive ? 2 : 1,
+                        opacity: cellOpacity,
                       }}
                       aria-label={`${place.place}, ${prettyLabel(subject.subject)}, ${count} photographs (${share}%)`}
                       onClick={() => { if (cellKey) setActiveKey((prev) => prev === cellKey ? null : cellKey) }}
+                      onMouseEnter={count > 0 ? () => {
+                        setHoveredRow(place.place)
+                        setHoveredCol(subjectKey)
+                      } : undefined}
+                      onMouseLeave={count > 0 ? () => {
+                        setHoveredRow(null)
+                        setHoveredCol(null)
+                      } : undefined}
                     >
                       {label}
                     </button>
@@ -489,6 +504,8 @@ export default function PlaceSubjectAtlas({ atlas }) {
         )}
 
       </div>
+
+
     </article>
   )
 }

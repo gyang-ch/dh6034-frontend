@@ -243,7 +243,28 @@
     }
   }
 
-  
+  /* ── Heatmap cell hover (Options A + B combined) ───────────────────── */
+  .atlas-heatmap-cell {
+    transition:
+      transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 200ms ease,
+      filter 200ms ease,
+      border-radius 200ms ease,
+      opacity 180ms ease;
+    will-change: transform, box-shadow, filter, opacity;
+  }
+
+  .atlas-heatmap-cell.is-populated:hover {
+    transform: scale(1.08);
+    z-index: 10 !important;
+    filter: brightness(1.2) saturate(1.2) contrast(1.05);
+    border-radius: 4px;
+    box-shadow:
+      0 12px 24px -8px rgba(15, 23, 42, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.2),
+      inset 0 0 15px rgba(255, 255, 255, 0.3);
+  }
+
   @keyframes bob {
     0%,
     100% {
