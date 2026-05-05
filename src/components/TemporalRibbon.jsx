@@ -178,7 +178,7 @@ export default function TemporalRibbon({ bins }) {
           Math.max(12, shellWidth - POPUP_WIDTH - 12)
         )
         const top = Math.min(
-          Math.max(popup.y + POPUP_OFFSET, 12),
+          Math.max(popup.y - estimatedHeight - 6, 12),
           Math.max(12, shellHeight - estimatedHeight - 12)
         )
         return { left, top }
