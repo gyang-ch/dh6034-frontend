@@ -243,6 +243,21 @@
     }
   }
 
+  /* ── Donut chart entry animation ────────────────────────────────────── */
+  @keyframes donut-slice-in {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  .donut-slice {
+    transform-origin: 80px 80px;
+    animation: donut-slice-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .donut-slice { animation: none; }
+  }
+
   /* ── Heatmap cell hover (Options A + B combined) ───────────────────── */
   .atlas-heatmap-cell {
     transition:

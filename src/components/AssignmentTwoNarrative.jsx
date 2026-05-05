@@ -278,6 +278,7 @@ function DonutChart({ slices, title, defaultCenter }) {
   const active = hov !== null ? arcs[hov] : null
   const cVal = active ? `${((active.count / total) * 100).toFixed(0)}%` : defaultCenter.value
   const cSub = active ? (active.shortLabel ?? active.label) : defaultCenter.label
+  const filterId = `donut-glow-${title.replace(/\W+/g, '-').toLowerCase()}`
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.55rem' }}>
@@ -285,12 +286,45 @@ function DonutChart({ slices, title, defaultCenter }) {
         {title}
       </p>
       <svg viewBox="0 0 160 160" style={{ width: '100%', maxWidth: 220, display: 'block' }}>
-        {arcs.map((arc, i) => (
-          <path key={i} d={donutArc(CX, CY, R, r, arc.a0, arc.a1)} fill={arc.color}
-            opacity={hov === null || hov === i ? 1 : 0.28}
-            onMouseEnter={() => setHov(i)} onMouseLeave={() => setHov(null)}
-            style={{ transition: 'opacity 0.18s', cursor: 'default' }} />
-        ))}
+        <defs>
+          <filter id={filterId} x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        {arcs.map((arc, i) => {
+          const midAngle = (arc.a0 + arc.a1) / 2
+          const isHov = hov === i
+          const dx = (5 * Math.cos(midAngle)).toFixed(2)
+          const dy = (5 * Math.sin(midAngle)).toFixed(2)
+          return (
+            <g key={i} className="donut-slice" style={{ animationDelay: `${i * 70}ms` }}>
+              {/* Visual — translates on hover, never receives pointer events */}
+              <path
+                d={donutArc(CX, CY, R, r, arc.a0, arc.a1)}
+                fill={arc.color}
+                opacity={hov === null || isHov ? 1 : 0.28}
+                filter={isHov ? `url(#${filterId})` : undefined}
+                style={{
+                  transform: isHov ? `translate(${dx}px, ${dy}px)` : undefined,
+                  transition: 'transform 0.22s cubic-bezier(0.22,1,0.36,1), opacity 0.18s',
+                  pointerEvents: 'none',
+                }}
+              />
+              {/* Stationary hit area — invisible, owns all mouse events */}
+              <path
+                d={donutArc(CX, CY, R, r, arc.a0, arc.a1)}
+                fill="transparent"
+                onMouseEnter={() => setHov(i)}
+                onMouseLeave={() => setHov(null)}
+                style={{ cursor: 'default' }}
+              />
+            </g>
+          )
+        })}
         <text x={CX} y={CY - 5} textAnchor="middle"
           style={{ font: '700 15px var(--archive-font-ui)', fill: 'var(--archive-color-ink)' }}>
           {cVal}

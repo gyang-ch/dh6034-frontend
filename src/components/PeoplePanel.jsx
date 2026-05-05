@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const PALETTE = ['#7f8ea0', '#9f6f45', '#6a8373', '#3e5b71', '#c28d5b']
 
@@ -12,9 +12,20 @@ function polarToXY(deg) {
 export default function PeoplePanel({ bins, withPeople, totalImages }) {
   const [hoveredIndex, setHoveredIndex] = useState(null)
   const [dialHovered, setDialHovered] = useState(false)
+  const [arcReady, setArcReady] = useState(false)
 
   const maxCount = Math.max(...bins.map((b) => b.count), 1)
   const pct = totalImages > 0 ? Math.round((withPeople / totalImages) * 100) : 0
+  const fillArcLength = R * ((SWEEP_DEG * pct) / 100) * (Math.PI / 180)
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setArcReady(true)
+      return
+    }
+    const id = requestAnimationFrame(() => setArcReady(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
 
   const trackStart = polarToXY(START_DEG)
   const trackEnd = polarToXY(START_DEG + SWEEP_DEG)
@@ -36,9 +47,30 @@ export default function PeoplePanel({ bins, withPeople, totalImages }) {
           onMouseLeave={() => setDialHovered(false)}
         >
           <svg viewBox="0 0 96 72" fill="none" aria-hidden="true" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
+            <defs>
+              <filter id="arc-glow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
             <path d={`M ${trackStart.x} ${trackStart.y} A ${R} ${R} 0 1 1 ${trackEnd.x} ${trackEnd.y}`} stroke="rgba(32,38,44,0.08)" strokeWidth="7" strokeLinecap="round" fill="none" />
             {pct > 0 && (
-              <path d={`M ${trackStart.x} ${trackStart.y} A ${R} ${R} 0 ${fillLarge} 1 ${fillEnd.x} ${fillEnd.y}`} stroke="#9f6f45" strokeWidth="7" strokeLinecap="round" fill="none" />
+              <path
+                d={`M ${trackStart.x} ${trackStart.y} A ${R} ${R} 0 ${fillLarge} 1 ${fillEnd.x} ${fillEnd.y}`}
+                stroke="#9f6f45"
+                strokeLinecap="round"
+                fill="none"
+                strokeDasharray={fillArcLength}
+                filter={dialHovered ? 'url(#arc-glow)' : undefined}
+                style={{
+                  strokeWidth: dialHovered ? 9 : 7,
+                  strokeDashoffset: arcReady ? 0 : fillArcLength,
+                  transition: 'stroke-dashoffset 0.9s cubic-bezier(0.22,1,0.36,1), stroke-width 0.2s ease',
+                }}
+              />
             )}
             {dialHovered ? (
               <>
