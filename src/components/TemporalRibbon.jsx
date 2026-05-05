@@ -245,6 +245,15 @@ export default function TemporalRibbon({ bins }) {
           onMouseLeave={() => setPopup(null)}>
           <div style={{ minWidth: '100%', width: `${chartWidth}px`, padding: '0.9rem 0.9rem 0.35rem' }}>
             <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" style={{ display: 'block', width: '100%', height: 'auto', overflow: 'visible' }}>
+              <defs>
+                <filter id="ribbon-bar-glow" x="-30%" y="-40%" width="160%" height="180%">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
               <g transform={`translate(${paddingBase.left},${paddingBase.top})`}>
                 {yTicks.map((tick) => (
                   <g key={tick}>
@@ -287,32 +296,29 @@ export default function TemporalRibbon({ bins }) {
                     onClick: () => setActiveKey(bin.key),
                   }
 
-                  if (showSplit) {
-                    const meFrac = Math.min(1, Math.max(0, myselfCount / bin.count))
-                    const meH = meFrac * bh
-                    const noMeH = bh - meH
-                    const splitY = barTop + noMeH
-                    return (
-                      <g key={bin.key} style={{ cursor: 'pointer' }} tabIndex="0" role="button"
-                        aria-label={`${bin.label}, ${bin.count} photographs`} {...handlers}>
-                        {noMeH > 0 && <path d={barPath(x, barTop, bw, noMeH)} fill={NO_ME_COLOR} fillOpacity={dimmed ? 0.18 : 1} style={{ shapeRendering: 'crispEdges' }} />}
-                        {meH > 0 && <path d={`M${x},${splitY} H${x + bw} V${barTop + bh} H${x} Z`} fill={ME_COLOR} fillOpacity={dimmed ? 0.18 : 1} style={{ shapeRendering: 'crispEdges' }} />}
-                      </g>
-                    )
-                  }
+                  const meFrac = showSplit ? Math.min(1, Math.max(0, myselfCount / bin.count)) : 0
+                  const meH = meFrac * bh
+                  const noMeH = bh - meH
+                  const splitY = barTop + noMeH
+                  const fillOpacity = dimmed ? 0.18 : isActive ? 1 : 0.72
 
                   return (
-                    <path key={bin.key}
-                      d={barPath(x, barTop, bw, Math.max(0, bh))}
-                      fill="#4e79a7"
-                      fillOpacity={dimmed ? 0.18 : isActive ? 1 : 0.72}
-                      style={{ cursor: 'pointer', shapeRendering: 'crispEdges', animationDelay: `${i * (granularity === 'year' ? 22 : 6)}ms`, outline: 'none' }}
-                      tabIndex="0" role="button"
-                      aria-label={`${bin.label}, ${bin.count} photographs`}
-                      {...handlers}
-                    />
+                    <g key={bin.key} className="ribbon-bar" tabIndex="0" role="button"
+                      aria-label={`${bin.label}, ${bin.count} photographs`} {...handlers}
+                      filter={isActive ? 'url(#ribbon-bar-glow)' : undefined}
+                      style={{ cursor: 'pointer', animationDelay: `${i * (granularity === 'year' ? 22 : 2)}ms`, outline: 'none' }}>
+                      {noMeH > 0 && (
+                        <path d={barPath(x, barTop, bw, showSplit ? noMeH : Math.max(0, bh))}
+                          fill={NO_ME_COLOR} fillOpacity={fillOpacity} style={{ shapeRendering: 'crispEdges' }} />
+                      )}
+                      {showSplit && meH > 0 && (
+                        <path d={`M${x},${splitY} H${x + bw} V${barTop + bh} H${x} Z`}
+                          fill={ME_COLOR} fillOpacity={fillOpacity} style={{ shapeRendering: 'crispEdges' }} />
+                      )}
+                    </g>
                   )
                 })}
+
 
                 {activeBins.map((bin) => {
                   const x = xScale(bin.key) ?? 0
