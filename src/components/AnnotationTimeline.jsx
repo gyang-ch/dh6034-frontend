@@ -273,15 +273,15 @@ export function PeopleCountLineChart() {
               style={{ font: '600 10.5px var(--archive-font-ui)', fill: 'rgba(29,35,41,0.72)' }}>
               {d.year} · {d.total.toLocaleString()} photos
             </text>
-            <circle cx={tipX + 13} cy={tipY + 34} r="3.5" fill={PEOPLE_COLOR} />
+            <circle cx={tipX + 13} cy={tipY + 34} r="3.5" fill={YOLO_COLOR} />
             <text x={tipX + 22} y={tipY + 37.5} dominantBaseline="middle"
-              style={{ font: '10px var(--archive-font-ui)', fill: PEOPLE_COLOR }}>
-              avg {d.avgMainPeople} main people (manual)
-            </text>
-            <circle cx={tipX + 13} cy={tipY + 54} r="3.5" fill={YOLO_COLOR} />
-            <text x={tipX + 22} y={tipY + 57.5} dominantBaseline="middle"
               style={{ font: '10px var(--archive-font-ui)', fill: YOLO_COLOR }}>
               avg {yoloYearlyData[hov].toFixed(1)} people (YOLO)
+            </text>
+            <circle cx={tipX + 13} cy={tipY + 54} r="3.5" fill={PEOPLE_COLOR} />
+            <text x={tipX + 22} y={tipY + 57.5} dominantBaseline="middle"
+              style={{ font: '10px var(--archive-font-ui)', fill: PEOPLE_COLOR }}>
+              avg {d.avgMainPeople} main people (manual)
             </text>
           </g>
         )}
