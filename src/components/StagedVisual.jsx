@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-export default function StagedVisual({ label = 'Preparing visual field', minHeight = '30rem', delay = 420, eager = false, children }) {
+export default function StagedVisual({ label = 'Preparing visual field', minHeight = '30rem', delay = 420, eager = false, rootMargin = '160px 0px', children }) {
   const hostRef = useRef(null)
   const [mounted, setMounted] = useState(eager)
   const [revealed, setRevealed] = useState(false)
@@ -24,7 +24,7 @@ export default function StagedVisual({ label = 'Preparing visual field', minHeig
           return () => clearTimeout(timer)
         }
       },
-      { threshold: 0.2, rootMargin: '160px 0px' }
+      { threshold: 0.2, rootMargin }
     )
 
     if (hostRef.current) observer.observe(hostRef.current)

@@ -5,6 +5,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { assignment2Data } from '../data/assignment2Data'
+import { photoMaskData } from '../data/photoMaskData'
 import PeoplePanel from './PeoplePanel'
 import PlaceSubjectAtlas from './PlaceSubjectAtlas'
 import TemporalRibbon from './TemporalRibbon'
@@ -140,6 +141,13 @@ const SIMILARITY_PAIR = [
   { filename: '2004-08-19_Suzhou_006.JPG',     date: '19 Aug 2004', place: 'Suzhou'   },
   { filename: '2015-06-16_Dunhuang_00031.jpg', date: '16 Jun 2015', place: 'Dunhuang' },
 ]
+
+const MASK_DATA_MAP = {
+  '2004-08-19_Suzhou_006.JPG':     photoMaskData.suzhou,
+  '2015-06-16_Dunhuang_00031.jpg': photoMaskData.dunhuang,
+}
+const MASK_FILL   = 'rgb(96,150,186)'        // alpha controlled separately via fillOpacity attr
+const MASK_STROKE = 'rgba(150,215,255,0.95)'
 
 const SIMILARITY_GROUPS = [
   {
@@ -565,7 +573,10 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
   // Seasonal histogram scroll-driven step
   const [seasonalStep, setSeasonalStep] = useState(0)
   const seasonalCardRefs = useRef([])
-  const similarityGroupRefs = useRef([])
+  const similarityGroupRefs  = useRef([])
+  const simPairContainerRef  = useRef(null)
+  const simPairImgRefs       = useRef([null, null])
+  const simPairSvgRefs       = useRef([null, null])
 
   useGSAP(() => {
     const railTracks = railTracksRef.current.filter(Boolean)
@@ -738,6 +749,79 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
     })
 
     return () => triggers.forEach((t) => t.kill())
+  }, [prefersReducedMotion])
+
+  // Mask-reveal + always-on dynamic animation for the similarity pair
+  useEffect(() => {
+    const container = simPairContainerRef.current
+    if (!container) return
+    const imgs        = simPairImgRefs.current.filter(Boolean)
+    const svgs        = simPairSvgRefs.current.filter(Boolean)
+    const allPolygons = svgs.flatMap(svg => [...svg.querySelectorAll('polygon')])
+
+    if (prefersReducedMotion) {
+      // No motion: show everything statically
+      gsap.set(imgs,        { autoAlpha: 1 })
+      gsap.set(allPolygons, { autoAlpha: 1 })
+      return undefined
+    }
+
+    gsap.set(imgs,        { autoAlpha: 0 })
+    gsap.set(allPolygons, { autoAlpha: 0 })
+
+    const continuousTweens = []
+
+    // After the reveal completes, start two perpetual animations:
+    // 1. Marching-ants stroke — dashoffset increments continuously (seamless loop
+    //    because the increment equals one full dasharray period: 0.025 + 0.012 = 0.037)
+    // 2. Breathing fill — each polygon's fill-opacity pulses at a random phase offset,
+    //    creating a shimmering effect across the whole mask layer
+    const startContinuous = () => {
+      continuousTweens.push(
+        gsap.to(allPolygons, {
+          attr: { 'stroke-dashoffset': '-=0.037' },
+          duration: 2.4,
+          repeat: -1,
+          ease: 'none',
+        }),
+        gsap.to(allPolygons, {
+          attr: { 'fill-opacity': 0.25 },
+          duration: 2.6,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut',
+          stagger: { amount: 2.0, from: 'random' },
+        }),
+      )
+    }
+
+    const st = ScrollTrigger.create({
+      trigger: container,
+      start: 'top 80%',
+      once: true,
+      onEnter() {
+        const tl = gsap.timeline({ onComplete: startContinuous })
+        // Phase 1 – masks materialise with a random stagger over 1.2 s
+        tl.to(allPolygons, {
+          autoAlpha: 1,
+          duration: 0.4,
+          stagger: { amount: 1.2, from: 'random' },
+          ease: 'power2.out',
+        })
+        // Phase 2 – 0.8 s pause, then image cross-fades in; masks STAY visible
+        tl.to(imgs, {
+          autoAlpha: 1,
+          duration: 1.1,
+          ease: 'power2.inOut',
+          stagger: 0.15,
+        }, '+=0.2')
+      },
+    })
+
+    return () => {
+      st.kill()
+      continuousTweens.forEach(tw => tw.kill())
+    }
   }, [prefersReducedMotion])
 
   let tileIndex = 0
@@ -1079,7 +1163,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
         </section>
 
         <VisBlock>
-          <StagedVisual label="Preparing geographic field" minHeight="34rem">
+          <StagedVisual label="Preparing geographic field" minHeight="34rem" rootMargin="1400px 0px">
             <Suspense fallback={null}>
               <PhotoMap semanticMap={assignment2Data.semanticMap} />
             </Suspense>
@@ -1191,24 +1275,54 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
           </p>
 
           <div
-            ref={(element) => { similarityGroupRefs.current[4] = element }}
-            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', margin: '1.5rem auto', maxWidth: '82%' }}
+            ref={(element) => {
+              similarityGroupRefs.current[4] = element
+              simPairContainerRef.current = element
+            }}
+            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', margin: '2rem -5rem 2.5rem' }}
           >
-            {SIMILARITY_PAIR.map(({ filename, date, place }) => (
-              <div key={filename} className="sim-pair-item">
-                <img
-                  data-similarity-piece
-                  src={imageUrl(filename)}
-                  alt=""
-                  loading="lazy"
-                  style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block' }}
-                />
-                <div className="sim-pair-caption" aria-hidden="true">
-                  <p className="sim-pair-place">{place}</p>
-                  <p className="sim-pair-date">{date}</p>
+            {SIMILARITY_PAIR.map(({ filename, date, place }, pairIdx) => {
+              const maskData = MASK_DATA_MAP[filename]
+              return (
+                <div key={filename} className="sim-pair-item" style={{ background: '#0f172a' }}>
+                  <img
+                    ref={el => { simPairImgRefs.current[pairIdx] = el }}
+                    src={imageUrl(filename)}
+                    alt=""
+                    loading="lazy"
+                    style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block' }}
+                  />
+                  {maskData && (
+                    <svg
+                      ref={el => { simPairSvgRefs.current[pairIdx] = el }}
+                      viewBox="0 0 1 1"
+                      preserveAspectRatio="none"
+                      aria-hidden="true"
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
+                    >
+                      {maskData.annotations.map(ann =>
+                        ann.polygons.map((poly, pi) => (
+                          <polygon
+                            key={`${ann.id}-${pi}`}
+                            points={poly.map(([x, y]) => `${x},${y}`).join(' ')}
+                            fill={MASK_FILL}
+                            fillOpacity="0.55"
+                            stroke={MASK_STROKE}
+                            strokeWidth="0.002"
+                            strokeDasharray="0.025 0.012"
+                            strokeDashoffset="0"
+                          />
+                        ))
+                      )}
+                    </svg>
+                  )}
+                  <div className="sim-pair-caption" aria-hidden="true" style={{ zIndex: 2 }}>
+                    <p className="sim-pair-place">{place}</p>
+                    <p className="sim-pair-date">{date}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <p style={S.body}>
