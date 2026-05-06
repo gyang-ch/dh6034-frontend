@@ -38,6 +38,10 @@ export function photographFullUrl(filename) {
   return buildPhotographUrl('full', filename)
 }
 
+export function photographMiddleSizedUrl(filename) {
+  return buildPhotographUrl('middle_sized', filename)
+}
+
 export function photographUrl(filename) {
   return photographThumbnailUrl(filename)
 }
