@@ -148,6 +148,12 @@ const MASK_DATA_MAP = {
 }
 const MASK_FILL   = 'rgb(96,150,186)'        // alpha controlled separately via fillOpacity attr
 const MASK_STROKE = 'rgba(150,215,255,0.95)'
+const MASK_PNG_MAP = {
+  '2004-08-19_Suzhou_006.JPG':     '/masks/suzhou_masked.webp',
+  '2015-06-16_Dunhuang_00031.jpg': '/masks/dunhuang_masked.webp',
+}
+const HOVER_FILL   = 'rgb(255,160,50)'    // orange highlight on individual polygon hover
+const HOVER_STROKE = 'rgb(255,210,100)'
 
 const SIMILARITY_GROUPS = [
   {
@@ -576,7 +582,9 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
   const similarityGroupRefs  = useRef([])
   const simPairContainerRef  = useRef(null)
   const simPairImgRefs       = useRef([null, null])
-  const simPairSvgRefs       = useRef([null, null])
+  const simPairMaskRefs      = useRef([null, null])   // transparent masked WebP
+  const simPairSvgRefs       = useRef([null, null])   // marching-ants animation layer
+  const simPairHoverSvgRefs  = useRef([null, null])   // hover hit-detection layer
 
   useGSAP(() => {
     const railTracks = railTracksRef.current.filter(Boolean)
@@ -751,48 +759,95 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
     return () => triggers.forEach((t) => t.kill())
   }, [prefersReducedMotion])
 
-  // Mask-reveal + always-on dynamic animation for the similarity pair
+  // Mask-reveal + always-on borders + per-annotation hover highlight
   useEffect(() => {
     const container = simPairContainerRef.current
     if (!container) return
-    const imgs        = simPairImgRefs.current.filter(Boolean)
-    const svgs        = simPairSvgRefs.current.filter(Boolean)
-    const allPolygons = svgs.flatMap(svg => [...svg.querySelectorAll('polygon')])
 
-    if (prefersReducedMotion) {
-      // No motion: show everything statically
-      gsap.set(imgs,        { autoAlpha: 1 })
-      gsap.set(allPolygons, { autoAlpha: 1 })
-      return undefined
-    }
-
-    gsap.set(imgs,        { autoAlpha: 0 })
-    gsap.set(allPolygons, { autoAlpha: 0 })
+    const imgs       = simPairImgRefs.current.filter(Boolean)
+    const maskImgs   = simPairMaskRefs.current.filter(Boolean)
+    const animSvgs   = simPairSvgRefs.current.filter(Boolean)
+    const hoverSvgs  = simPairHoverSvgRefs.current.filter(Boolean)
+    const animPolys  = animSvgs.flatMap(svg => [...svg.querySelectorAll('polygon')])
 
     const continuousTweens = []
+    const hoverCleanups    = []
 
-    // After the reveal completes, start two perpetual animations:
-    // 1. Marching-ants stroke — dashoffset increments continuously (seamless loop
-    //    because the increment equals one full dasharray period: 0.025 + 0.012 = 0.037)
-    // 2. Breathing fill — each polygon's fill-opacity pulses at a random phase offset,
-    //    creating a shimmering effect across the whole mask layer
+    // Wire hover-highlight on the invisible hit-detection polygons.
+    // Each polygon carries data-ann-id so all polygons of the same annotation
+    // light up together when any one of them is entered.
+    const setupHover = () => {
+      hoverSvgs.forEach(hoverSvg => {
+        const hoverPolys = [...hoverSvg.querySelectorAll('[data-ann-id]')]
+        const byId = {}
+        hoverPolys.forEach(p => { (byId[p.dataset.annId] ??= []).push(p) })
+
+        hoverPolys.forEach(poly => {
+          const group = byId[poly.dataset.annId]
+          const onEnter = () => gsap.to(group, {
+            attr: { 'fill-opacity': 0.62 },
+            duration: 0.18, ease: 'power2.out', overwrite: 'auto',
+          })
+          const onLeave = () => gsap.to(group, {
+            attr: { 'fill-opacity': 0 },
+            duration: 0.32, ease: 'power2.in', overwrite: 'auto',
+          })
+          poly.addEventListener('mouseenter', onEnter)
+          poly.addEventListener('mouseleave', onLeave)
+          hoverCleanups.push(() => {
+            poly.removeEventListener('mouseenter', onEnter)
+            poly.removeEventListener('mouseleave', onLeave)
+          })
+        })
+      })
+    }
+
+    if (prefersReducedMotion) {
+      gsap.set(imgs,     { autoAlpha: 1 })
+      gsap.set(maskImgs, { autoAlpha: 0 })
+      gsap.set(animPolys, { autoAlpha: 1 })
+      setupHover()
+      return () => hoverCleanups.forEach(fn => fn())
+    }
+
+    gsap.set(imgs,      { autoAlpha: 0 })
+    gsap.set(maskImgs,  { autoAlpha: 0 })
+    gsap.set(animPolys, { autoAlpha: 0 })
+
+    // After the reveal, start perpetual border animations then arm hover.
     const startContinuous = () => {
       continuousTweens.push(
-        gsap.to(allPolygons, {
-          attr: { 'stroke-dashoffset': '-=0.037' },
-          duration: 2.4,
-          repeat: -1,
-          ease: 'none',
-        }),
-        gsap.to(allPolygons, {
+        // Breathing fill — each polygon at a random phase offset → shimmer
+        gsap.to(animPolys, {
           attr: { 'fill-opacity': 0.25 },
-          duration: 2.6,
-          yoyo: true,
-          repeat: -1,
-          ease: 'sine.inOut',
+          duration: 2.6, yoyo: true, repeat: -1, ease: 'sine.inOut',
           stagger: { amount: 2.0, from: 'random' },
         }),
       )
+      setupHover()
+
+      // Image-level hover: full photo fades out → only the masked WebP stays,
+      // showing the subjects isolated on the dark background.
+      imgs.forEach((img, i) => {
+        const maskImg = maskImgs[i]
+        if (!maskImg) return
+        const item = img.parentElement   // .sim-pair-item
+
+        const onEnter = () => {
+          gsap.to(img,     { autoAlpha: 0, duration: 0.4, ease: 'power2.inOut', overwrite: 'auto' })
+          gsap.to(maskImg, { autoAlpha: 1, duration: 0.4, ease: 'power2.inOut', overwrite: 'auto' })
+        }
+        const onLeave = () => {
+          gsap.to(img,     { autoAlpha: 1, duration: 0.4, ease: 'power2.inOut', overwrite: 'auto' })
+          gsap.to(maskImg, { autoAlpha: 0, duration: 0.4, ease: 'power2.inOut', overwrite: 'auto' })
+        }
+        item.addEventListener('mouseenter', onEnter)
+        item.addEventListener('mouseleave', onLeave)
+        hoverCleanups.push(() => {
+          item.removeEventListener('mouseenter', onEnter)
+          item.removeEventListener('mouseleave', onLeave)
+        })
+      })
     }
 
     const st = ScrollTrigger.create({
@@ -801,26 +856,21 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
       once: true,
       onEnter() {
         const tl = gsap.timeline({ onComplete: startContinuous })
-        // Phase 1 – masks materialise with a random stagger over 1.2 s
-        tl.to(allPolygons, {
-          autoAlpha: 1,
-          duration: 0.4,
-          stagger: { amount: 1.2, from: 'random' },
-          ease: 'power2.out',
-        })
-        // Phase 2 – 0.8 s pause, then image cross-fades in; masks STAY visible
-        tl.to(imgs, {
-          autoAlpha: 1,
-          duration: 1.1,
-          ease: 'power2.inOut',
-          stagger: 0.15,
-        }, '+=0.2')
+
+        // Phase 1 — masked WebP (subjects on dark bg) + border outlines appear
+        tl.to(maskImgs,  { autoAlpha: 1, duration: 0.7, ease: 'power2.out', stagger: 0.1 })
+        tl.to(animPolys, { autoAlpha: 1, duration: 0.5, ease: 'power2.out' }, '<0.15')
+
+        // Phase 2 — full photo cross-fades in; masked WebP fades out beneath it
+        tl.to(imgs,     { autoAlpha: 1, duration: 1.1, ease: 'power2.inOut', stagger: 0.15 }, '+=0.2')
+        tl.to(maskImgs, { autoAlpha: 0, duration: 0.9, ease: 'power1.in',    stagger: 0.15 }, '<')
       },
     })
 
     return () => {
       st.kill()
       continuousTweens.forEach(tw => tw.kill())
+      hoverCleanups.forEach(fn => fn())
     }
   }, [prefersReducedMotion])
 
@@ -1282,9 +1332,13 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
             style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', margin: '2rem -5rem 2.5rem' }}
           >
             {SIMILARITY_PAIR.map(({ filename, date, place }, pairIdx) => {
-              const maskData = MASK_DATA_MAP[filename]
+              const maskData  = MASK_DATA_MAP[filename]
+              const maskedSrc = MASK_PNG_MAP[filename]
               return (
-                <div key={filename} className="sim-pair-item" style={{ background: '#0f172a' }}>
+                <div key={filename}>
+                <div className="sim-pair-item" style={{ background: '#0f172a' }}>
+
+                  {/* Full photo — defines layout height; starts hidden, fades in second */}
                   <img
                     ref={el => { simPairImgRefs.current[pairIdx] = el }}
                     src={imageUrl(filename)}
@@ -1292,34 +1346,75 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
                     loading="lazy"
                     style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block' }}
                   />
+
+                  {/* Masked WebP — subjects on transparent bg; appears first on dark bg */}
+                  {maskedSrc && (
+                    <img
+                      ref={el => { simPairMaskRefs.current[pairIdx] = el }}
+                      src={maskedSrc}
+                      alt=""
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block', zIndex: 1 }}
+                    />
+                  )}
+
+                  {/* Animation SVG — marching-ants borders + breathing fill; not interactive */}
                   {maskData && (
                     <svg
                       ref={el => { simPairSvgRefs.current[pairIdx] = el }}
                       viewBox="0 0 1 1"
                       preserveAspectRatio="none"
                       aria-hidden="true"
-                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }}
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}
                     >
                       {maskData.annotations.map(ann =>
                         ann.polygons.map((poly, pi) => (
                           <polygon
-                            key={`${ann.id}-${pi}`}
+                            key={`anim-${ann.id}-${pi}`}
                             points={poly.map(([x, y]) => `${x},${y}`).join(' ')}
                             fill={MASK_FILL}
                             fillOpacity="0.55"
                             stroke={MASK_STROKE}
                             strokeWidth="0.002"
-                            strokeDasharray="0.025 0.012"
-                            strokeDashoffset="0"
                           />
                         ))
                       )}
                     </svg>
                   )}
-                  <div className="sim-pair-caption" aria-hidden="true" style={{ zIndex: 2 }}>
-                    <p className="sim-pair-place">{place}</p>
-                    <p className="sim-pair-date">{date}</p>
-                  </div>
+
+                  {/* Hover SVG — invisible hit polygons; GSAP highlights each annotation
+                      on mouseenter in a distinct orange, leaving others unchanged. The SVG
+                      background (transparent) passes events through to the image below, so
+                      the caption CSS hover (.sim-pair-item:hover) continues to work. */}
+                  {maskData && (
+                    <svg
+                      ref={el => { simPairHoverSvgRefs.current[pairIdx] = el }}
+                      viewBox="0 0 1 1"
+                      preserveAspectRatio="none"
+                      aria-hidden="true"
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 3 }}
+                    >
+                      {maskData.annotations.map(ann =>
+                        ann.polygons.map((poly, pi) => (
+                          <polygon
+                            key={`hover-${ann.id}-${pi}`}
+                            data-ann-id={String(ann.id)}
+                            points={poly.map(([x, y]) => `${x},${y}`).join(' ')}
+                            fill={HOVER_FILL}
+                            fillOpacity="0"
+                            stroke={HOVER_STROKE}
+                            strokeOpacity="0"
+                            strokeWidth="0.022"
+                            style={{ pointerEvents: 'all', cursor: 'crosshair' }}
+                          />
+                        ))
+                      )}
+                    </svg>
+                  )}
+
+                </div>
+                <p style={{ margin: '0.5rem 0 0', textAlign: 'right', font: '400 0.83rem/1.3 var(--archive-font-ui)', color: 'var(--archive-color-muted)', letterSpacing: '0.01em' }}>
+                  <strong style={{ fontWeight: 600, color: 'var(--archive-color-ink)' }}>{place}</strong>{' · '}{date}
+                </p>
                 </div>
               )
             })}
