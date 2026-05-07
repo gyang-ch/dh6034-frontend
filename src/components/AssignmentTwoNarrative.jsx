@@ -146,14 +146,17 @@ const MASK_DATA_MAP = {
   '2004-08-19_Suzhou_006.JPG':     photoMaskData.suzhou,
   '2015-06-16_Dunhuang_00031.jpg': photoMaskData.dunhuang,
 }
-const MASK_FILL   = 'rgb(96,150,186)'        // alpha controlled separately via fillOpacity attr
-const MASK_STROKE = 'rgba(150,215,255,0.95)'
+// ann IDs for the "person" class (determined by segment size/shape inspection)
+// dunhuang: 0, 1 — suzhou: 12, 13, 14
+const PERSON_ANN_IDS = new Set([0, 1, 12, 13, 14])
+const MASK_FILL_PERSON   = 'rgb(160,90,210)'           // violet — people
+const MASK_FILL_POST     = 'rgb(70,170,140)'           // teal — wooden posts
+const MASK_STROKE_PERSON = 'rgba(210,150,255,0.95)'
+const MASK_STROKE_POST   = 'rgba(120,225,195,0.95)'
 const MASK_PNG_MAP = {
   '2004-08-19_Suzhou_006.JPG':     '/masks/suzhou_masked.webp',
   '2015-06-16_Dunhuang_00031.jpg': '/masks/dunhuang_masked.webp',
 }
-const HOVER_FILL   = 'rgb(255,160,50)'    // orange highlight on individual polygon hover
-const HOVER_STROKE = 'rgb(255,210,100)'
 
 // ── YOLO annotation view ──────────────────────────────────────────────────────
 
@@ -282,21 +285,21 @@ function YoloAnnotationView() {
         const t1 = setTimeout(() => {
           const start = performance.now()
           const tick = (now) => {
-            const p = Math.min((now - start) / 1000, 1)
+            const p = Math.min((now - start) / 1400, 1)
             setPersonCount(Math.round((1 - Math.pow(1 - p, 2)) * 14))
             if (p < 1) requestAnimationFrame(tick)
           }
           requestAnimationFrame(tick)
-        }, 350)
+        }, 500)
         const t2 = setTimeout(() => {
           const start = performance.now()
           const tick = (now) => {
-            const p = Math.min((now - start) / 600, 1)
+            const p = Math.min((now - start) / 800, 1)
             setMainCount(Math.round((1 - Math.pow(1 - p, 2)) * 3))
             if (p < 1) requestAnimationFrame(tick)
           }
           requestAnimationFrame(tick)
-        }, 1200)
+        }, 1550)
         timeouts.push(t1, t2)
       },
       { rootMargin: '-5% 0px -5% 0px' }
@@ -322,7 +325,7 @@ function YoloAnnotationView() {
         position: 'relative',
         lineHeight: 0,
         opacity: revealed ? 1 : 0,
-        transition: prefersReducedMotion ? 'none' : 'opacity 700ms ease',
+        transition: prefersReducedMotion ? 'none' : 'opacity 950ms ease',
       }}>
         <img
           src={src}
@@ -368,7 +371,7 @@ function YoloAnnotationView() {
                 onMouseEnter={() => personOn && setHoveredClass('person')}
                 onMouseLeave={() => setHoveredClass(null)}
                 style={{
-                  ...(revealed && !prefersReducedMotion ? { animationDelay: `${350 + i * 50}ms` } : {}),
+                  ...(revealed && !prefersReducedMotion ? { animationDelay: `${450 + i * 65}ms` } : {}),
                   filter: showPersonOverlay ? 'drop-shadow(0 0 5px rgba(56,189,248,0.9))' : undefined,
                   pointerEvents: personBoxOpacity === 0 ? 'none' : undefined,
                   transition: 'filter 220ms ease, stroke-width 220ms ease',
@@ -386,7 +389,7 @@ function YoloAnnotationView() {
                 onMouseEnter={() => mainOn && setHoveredClass('main')}
                 onMouseLeave={() => setHoveredClass(null)}
                 style={{
-                  ...(revealed && !prefersReducedMotion ? { animationDelay: `${1150 + i * 100}ms` } : {}),
+                  ...(revealed && !prefersReducedMotion ? { animationDelay: `${1450 + i * 130}ms` } : {}),
                   filter: showMainOverlay ? 'drop-shadow(0 0 6px rgba(249,115,22,0.9))' : undefined,
                   pointerEvents: mainBoxOpacity === 0 ? 'none' : undefined,
                   transition: 'filter 220ms ease, stroke-width 220ms ease',
@@ -641,7 +644,7 @@ function DonutChart({ slices, title, defaultCenter }) {
               <path
                 d={donutArc(CX, CY, R, r, arc.a0, arc.a1)}
                 fill={arc.color}
-                opacity={hov === null || isHov ? 1 : 0.28}
+                opacity={hov === null || isHov ? 1 : 0.34}
                 filter={isHov ? `url(#${filterId})` : undefined}
                 style={{
                   transform: isHov ? `translate(${dx}px, ${dy}px)` : undefined,
@@ -711,8 +714,8 @@ function SocialDonutPanel() {
         <DonutChart
           title="My Presence"
           slices={[
-            { label: 'I appear',     count: 2893, color: '#274c77' },
-            { label: "Don't appear", count: 4350, color: '#c8d8e6' },
+            { label: 'I appear',     count: 2893, color: '#c28d5b' },
+            { label: "Don't appear", count: 4350, color: '#7d8f9e' },
           ]}
           defaultCenter={{ value: '40%', label: 'I appear' }}
         />
@@ -1106,7 +1109,7 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
         hoverPolys.forEach(poly => {
           const group = byId[poly.dataset.annId]
           const onEnter = () => gsap.to(group, {
-            attr: { 'fill-opacity': 0.62 },
+            attr: { 'fill-opacity': 0.88 },
             duration: 0.18, ease: 'power2.out', overwrite: 'auto',
           })
           const onLeave = () => gsap.to(group, {
@@ -1693,9 +1696,9 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
                           <polygon
                             key={`anim-${ann.id}-${pi}`}
                             points={poly.map(([x, y]) => `${x},${y}`).join(' ')}
-                            fill={MASK_FILL}
+                            fill={PERSON_ANN_IDS.has(ann.id) ? MASK_FILL_PERSON : MASK_FILL_POST}
                             fillOpacity="0.55"
-                            stroke={MASK_STROKE}
+                            stroke={PERSON_ANN_IDS.has(ann.id) ? MASK_STROKE_PERSON : MASK_STROKE_POST}
                             strokeWidth="0.002"
                           />
                         ))
@@ -1703,10 +1706,10 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
                     </svg>
                   )}
 
-                  {/* Hover SVG — invisible hit polygons; GSAP highlights each annotation
-                      on mouseenter in a distinct orange, leaving others unchanged. The SVG
-                      background (transparent) passes events through to the image below, so
-                      the caption CSS hover (.sim-pair-item:hover) continues to work. */}
+                  {/* Hover SVG — invisible hit polygons; GSAP intensifies the class colour
+                      on mouseenter, leaving other annotations unchanged. The SVG background
+                      (transparent) passes events through to the image below, so the caption
+                      CSS hover (.sim-pair-item:hover) continues to work. */}
                   {maskData && (
                     <svg
                       ref={el => { simPairHoverSvgRefs.current[pairIdx] = el }}
@@ -1721,9 +1724,9 @@ export default function AssignmentTwoNarrative({ onOpenPhotoArchive }) {
                             key={`hover-${ann.id}-${pi}`}
                             data-ann-id={String(ann.id)}
                             points={poly.map(([x, y]) => `${x},${y}`).join(' ')}
-                            fill={HOVER_FILL}
+                            fill={PERSON_ANN_IDS.has(ann.id) ? MASK_FILL_PERSON : MASK_FILL_POST}
                             fillOpacity="0"
-                            stroke={HOVER_STROKE}
+                            stroke={PERSON_ANN_IDS.has(ann.id) ? MASK_STROKE_PERSON : MASK_STROKE_POST}
                             strokeOpacity="0"
                             strokeWidth="0.022"
                             style={{ pointerEvents: 'all', cursor: 'crosshair' }}

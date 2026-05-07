@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
@@ -194,6 +195,7 @@ export default function App() {
         ) : null}
         <ScrollCompass onScrollTop={handleScrollTop} />
       </main>
+      <Analytics />
     </>
   )
 }
