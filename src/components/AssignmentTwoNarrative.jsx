@@ -212,30 +212,42 @@ function ToggleSwitch({ checked, onChange, color }) {
       onClick={onChange}
       style={{
         position: 'relative',
-        display: 'inline-flex',
-        width: 32,
-        height: 18,
-        borderRadius: 9,
-        background: checked ? color : 'rgba(29,35,41,0.18)',
-        border: 'none',
+        width: 46,
+        height: 26,
+        borderRadius: 13,
+        background: checked
+          ? `linear-gradient(125deg, ${color}ee, ${color}88)`
+          : 'rgb(40,40,51)',
+        border: `1.5px solid ${checked ? color + '55' : 'rgb(56,56,70)'}`,
+        boxShadow: checked
+          ? `inset 0 1.5px 4px rgba(0,0,0,0.14), 0 0 0 3px ${color}1a`
+          : 'inset 0 1px 4px rgba(0,0,0,0.4)',
         cursor: 'pointer',
-        padding: 0,
         flexShrink: 0,
-        transition: 'background 220ms ease',
+        outline: 'none',
+        padding: 0,
+        overflow: 'hidden',
+        transition: 'background 320ms ease, border-color 320ms ease, box-shadow 320ms ease',
       }}
     >
-      <span style={{
-        position: 'absolute',
-        top: 2,
-        left: checked ? 14 : 2,
-        width: 14,
-        height: 14,
-        borderRadius: '50%',
-        background: 'white',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
-        transition: 'left 220ms cubic-bezier(0.22,1,0.36,1)',
-        pointerEvents: 'none',
-      }} />
+
+      {/* Knob — glowing orb inspired by the sun glow box-shadow in the day/night toggle.
+          OFF state uses the moon's cool grey (rgb 160,162,178). */}
+      <span
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: 4,
+          left: checked ? 24 : 4,
+          width: 18,
+          height: 18,
+          borderRadius: '50%',
+          background: 'white',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+          transition: 'left 320ms cubic-bezier(0.22,1,0.36,1)',
+          pointerEvents: 'none',
+        }}
+      />
     </button>
   )
 }
@@ -353,6 +365,8 @@ function YoloAnnotationView() {
                 className={revealed ? 'yolo-box yolo-box--person' : undefined}
                 x={box.x} y={box.y} width={box.w} height={box.h}
                 fill="none" stroke={PERSON_BOX_COLOR} strokeWidth="0.003"
+                onMouseEnter={() => personOn && setHoveredClass('person')}
+                onMouseLeave={() => setHoveredClass(null)}
                 style={{
                   ...(revealed && !prefersReducedMotion ? { animationDelay: `${350 + i * 50}ms` } : {}),
                   filter: showPersonOverlay ? 'drop-shadow(0 0 5px rgba(56,189,248,0.9))' : undefined,
@@ -369,6 +383,8 @@ function YoloAnnotationView() {
                 className={revealed ? 'yolo-box yolo-box--main' : undefined}
                 x={box.x} y={box.y} width={box.w} height={box.h}
                 fill="none" stroke={MAIN_PEOPLE_BOX_COLOR} strokeWidth="0.004"
+                onMouseEnter={() => mainOn && setHoveredClass('main')}
+                onMouseLeave={() => setHoveredClass(null)}
                 style={{
                   ...(revealed && !prefersReducedMotion ? { animationDelay: `${1150 + i * 100}ms` } : {}),
                   filter: showMainOverlay ? 'drop-shadow(0 0 6px rgba(249,115,22,0.9))' : undefined,
@@ -403,7 +419,7 @@ function YoloAnnotationView() {
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <div style={{ width: 14, height: 3, background: PERSON_BOX_COLOR, borderRadius: 2, flexShrink: 0 }} />
+              <div style={{ width: 11, height: 11, background: PERSON_BOX_COLOR, borderRadius: '50%', flexShrink: 0, boxShadow: `0 0 6px ${PERSON_BOX_COLOR}99` }} />
               <span style={{ font: '600 0.65rem/1 var(--archive-font-ui)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
                 YOLO
               </span>
@@ -436,7 +452,7 @@ function YoloAnnotationView() {
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <div style={{ width: 14, height: 3, background: MAIN_PEOPLE_BOX_COLOR, borderRadius: 2, flexShrink: 0 }} />
+              <div style={{ width: 11, height: 11, background: MAIN_PEOPLE_BOX_COLOR, borderRadius: '50%', flexShrink: 0, boxShadow: `0 0 6px ${MAIN_PEOPLE_BOX_COLOR}99` }} />
               <span style={{ font: '600 0.65rem/1 var(--archive-font-ui)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
                 Manual
               </span>

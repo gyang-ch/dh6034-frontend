@@ -1479,6 +1479,7 @@
 
 /* ── YOLO Annotation View ───────────────────────────────────────────────── */
 
+
 @keyframes yolo-scanline {
   from { transform: translateY(-100%); }
   to   { transform: translateY(100%);  }
@@ -1521,12 +1522,3 @@
   transition: stroke-width 220ms ease, filter 220ms ease;
 }
 
-.yolo-box--person:hover {
-  stroke-width: 0.006;
-  filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.8));
-}
-
-.yolo-box--main:hover {
-  stroke-width: 0.007;
-  filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.85));
-}
