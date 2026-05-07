@@ -205,54 +205,202 @@ const PERSON_BOX_COLOR = '#38bdf8'
 const MAIN_PEOPLE_BOX_COLOR = '#f97316'
 
 function YoloAnnotationView() {
+  const prefersReducedMotion = usePrefersReducedMotion()
   const src = photographMiddleSizedUrl(YOLO_ANNOTATION_IMAGE)
   const { person, main_people } = YOLO_ANNOTATIONS
+  const containerRef = useRef(null)
+  const [revealed, setRevealed] = useState(false)
+  const [personCount, setPersonCount] = useState(0)
+  const [mainCount, setMainCount] = useState(0)
+  const [hoveredClass, setHoveredClass] = useState(null) // 'person' | 'main' | null
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+
+    if (prefersReducedMotion) {
+      setRevealed(true)
+      setPersonCount(14)
+      setMainCount(3)
+      return
+    }
+
+    const timeouts = []
+
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return
+        obs.disconnect()
+        setRevealed(true)
+
+        const t1 = setTimeout(() => {
+          const start = performance.now()
+          const tick = (now) => {
+            const p = Math.min((now - start) / 1000, 1)
+            setPersonCount(Math.round((1 - Math.pow(1 - p, 2)) * 14))
+            if (p < 1) requestAnimationFrame(tick)
+          }
+          requestAnimationFrame(tick)
+        }, 350)
+
+        const t2 = setTimeout(() => {
+          const start = performance.now()
+          const tick = (now) => {
+            const p = Math.min((now - start) / 600, 1)
+            setMainCount(Math.round((1 - Math.pow(1 - p, 2)) * 3))
+            if (p < 1) requestAnimationFrame(tick)
+          }
+          requestAnimationFrame(tick)
+        }, 1200)
+
+        timeouts.push(t1, t2)
+      },
+      { rootMargin: '-5% 0px -5% 0px' }
+    )
+    obs.observe(el)
+
+    return () => {
+      obs.disconnect()
+      timeouts.forEach(clearTimeout)
+    }
+  }, [prefersReducedMotion])
+
   return (
-    <div style={{ margin: '1.5rem 0 2rem', maxWidth: '32rem', marginLeft: 'auto', marginRight: 'auto' }}>
-      <div style={{ position: 'relative', display: 'block', lineHeight: 0 }}>
+    <div ref={containerRef} style={{ margin: '1.5rem auto 2rem', maxWidth: '32rem' }}>
+      <div style={{
+        position: 'relative',
+        lineHeight: 0,
+        opacity: revealed ? 1 : 0,
+        transition: prefersReducedMotion ? 'none' : 'opacity 700ms ease',
+      }}>
         <img
           src={src}
-          alt="Hong Kong 2019-12-22 with YOLO and manual annotation bounding boxes"
+          alt="Hong Kong 2019-12-22 — YOLO detected people and manually annotated main people"
           loading="lazy"
           style={{ width: '100%', display: 'block', borderRadius: '0.5rem' }}
         />
+        {revealed && !prefersReducedMotion && (
+          <div className="yolo-scanline-overlay" />
+        )}
         <svg
           viewBox="0 0 1 1"
           preserveAspectRatio="none"
           aria-hidden="true"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', borderRadius: '0.5rem' }}
         >
-          {person.map((box, i) => (
-            <rect
-              key={`person-${i}`}
-              x={box.x} y={box.y} width={box.w} height={box.h}
-              fill="none"
-              stroke={PERSON_BOX_COLOR}
-              strokeWidth="0.003"
-            />
-          ))}
-          {main_people.map((box, i) => (
-            <rect
-              key={`main-${i}`}
-              x={box.x} y={box.y} width={box.w} height={box.h}
-              fill="none"
-              stroke={MAIN_PEOPLE_BOX_COLOR}
-              strokeWidth="0.004"
-            />
-          ))}
+          <defs>
+            {/* White = overlay visible (dimmed), black cutouts = image shows through */}
+            <mask id="yolo-dim-person" x="0" y="0" width="1" height="1" maskUnits="userSpaceOnUse">
+              <rect x="0" y="0" width="1" height="1" fill="white" />
+              {person.map((box, i) => (
+                <rect key={i} x={box.x} y={box.y} width={box.w} height={box.h} fill="black" />
+              ))}
+            </mask>
+            <mask id="yolo-dim-main" x="0" y="0" width="1" height="1" maskUnits="userSpaceOnUse">
+              <rect x="0" y="0" width="1" height="1" fill="white" />
+              {main_people.map((box, i) => (
+                <rect key={i} x={box.x} y={box.y} width={box.w} height={box.h} fill="black" />
+              ))}
+            </mask>
+          </defs>
+
+          {/* Dark overlay — dims image outside the highlighted class's boxes */}
+          <rect x="0" y="0" width="1" height="1" fill="rgba(0,0,0,0.58)"
+            mask="url(#yolo-dim-person)"
+            opacity={hoveredClass === 'person' ? 1 : 0}
+            style={{ transition: 'opacity 250ms ease', pointerEvents: 'none' }}
+          />
+          <rect x="0" y="0" width="1" height="1" fill="rgba(0,0,0,0.58)"
+            mask="url(#yolo-dim-main)"
+            opacity={hoveredClass === 'main' ? 1 : 0}
+            style={{ transition: 'opacity 250ms ease', pointerEvents: 'none' }}
+          />
+
+          {/* YOLO detected person boxes
+              Opacity lives on the <g> so it doesn't fight animation-fill-mode on the <rect> */}
+          {person.map((box, i) => {
+            const dimmed = hoveredClass === 'main'
+            const highlighted = hoveredClass === 'person'
+            return (
+              <g key={`person-${i}`} style={{ opacity: dimmed ? 0 : 1, transition: 'opacity 250ms ease' }}>
+                <rect
+                  className={revealed ? 'yolo-box yolo-box--person' : undefined}
+                  x={box.x} y={box.y} width={box.w} height={box.h}
+                  fill="none"
+                  stroke={PERSON_BOX_COLOR}
+                  strokeWidth="0.003"
+                  style={{
+                    ...(revealed && !prefersReducedMotion ? { animationDelay: `${350 + i * 50}ms` } : {}),
+                    filter: highlighted ? 'drop-shadow(0 0 5px rgba(56,189,248,0.9))' : undefined,
+                    pointerEvents: dimmed ? 'none' : undefined,
+                    transition: 'filter 220ms ease, stroke-width 220ms ease',
+                  }}
+                />
+              </g>
+            )
+          })}
+
+          {/* Manually annotated main people boxes */}
+          {main_people.map((box, i) => {
+            const dimmed = hoveredClass === 'person'
+            const highlighted = hoveredClass === 'main'
+            return (
+              <g key={`main-${i}`} style={{ opacity: dimmed ? 0 : 1, transition: 'opacity 250ms ease' }}>
+                <rect
+                  className={revealed ? 'yolo-box yolo-box--main' : undefined}
+                  x={box.x} y={box.y} width={box.w} height={box.h}
+                  fill="none"
+                  stroke={MAIN_PEOPLE_BOX_COLOR}
+                  strokeWidth="0.004"
+                  style={{
+                    ...(revealed && !prefersReducedMotion ? { animationDelay: `${1150 + i * 100}ms` } : {}),
+                    filter: highlighted ? 'drop-shadow(0 0 6px rgba(249,115,22,0.9))' : undefined,
+                    pointerEvents: dimmed ? 'none' : undefined,
+                    transition: 'filter 220ms ease, stroke-width 220ms ease',
+                  }}
+                />
+              </g>
+            )
+          })}
         </svg>
       </div>
+
+      {/* Legend — hover triggers class-level highlight + dim */}
       <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', marginTop: '0.75rem', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            cursor: 'pointer', userSelect: 'none',
+            opacity: hoveredClass === 'main' ? 0.32 : 1,
+            transition: 'opacity 250ms ease',
+          }}
+          onMouseEnter={() => setHoveredClass('person')}
+          onMouseLeave={() => setHoveredClass(null)}
+        >
           <div style={{ width: 24, height: 3, background: PERSON_BOX_COLOR, borderRadius: 2, flexShrink: 0 }} />
           <span style={{ font: '0.85rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
-            YOLO detected person: <strong style={{ color: 'var(--archive-color-ink)' }}>14</strong>
+            YOLO detected person:{' '}
+            <strong style={{ color: 'var(--archive-color-ink)', fontVariantNumeric: 'tabular-nums' }}>
+              {personCount}
+            </strong>
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            cursor: 'pointer', userSelect: 'none',
+            opacity: hoveredClass === 'person' ? 0.32 : 1,
+            transition: 'opacity 250ms ease',
+          }}
+          onMouseEnter={() => setHoveredClass('main')}
+          onMouseLeave={() => setHoveredClass(null)}
+        >
           <div style={{ width: 24, height: 3, background: MAIN_PEOPLE_BOX_COLOR, borderRadius: 2, flexShrink: 0 }} />
           <span style={{ font: '0.85rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
-            Manually annotated main people: <strong style={{ color: 'var(--archive-color-ink)' }}>3</strong>
+            Manually annotated main people:{' '}
+            <strong style={{ color: 'var(--archive-color-ink)', fontVariantNumeric: 'tabular-nums' }}>
+              {mainCount}
+            </strong>
           </span>
         </div>
       </div>
