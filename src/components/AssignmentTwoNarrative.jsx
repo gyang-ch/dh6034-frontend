@@ -204,6 +204,42 @@ const YOLO_ANNOTATIONS = parseYoloAnnotations(YOLO_LABEL_RAW)
 const PERSON_BOX_COLOR = '#38bdf8'
 const MAIN_PEOPLE_BOX_COLOR = '#f97316'
 
+function ToggleSwitch({ checked, onChange, color }) {
+  return (
+    <button
+      role="switch"
+      aria-checked={checked}
+      onClick={onChange}
+      style={{
+        position: 'relative',
+        display: 'inline-flex',
+        width: 32,
+        height: 18,
+        borderRadius: 9,
+        background: checked ? color : 'rgba(29,35,41,0.18)',
+        border: 'none',
+        cursor: 'pointer',
+        padding: 0,
+        flexShrink: 0,
+        transition: 'background 220ms ease',
+      }}
+    >
+      <span style={{
+        position: 'absolute',
+        top: 2,
+        left: checked ? 14 : 2,
+        width: 14,
+        height: 14,
+        borderRadius: '50%',
+        background: 'white',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+        transition: 'left 220ms cubic-bezier(0.22,1,0.36,1)',
+        pointerEvents: 'none',
+      }} />
+    </button>
+  )
+}
+
 function YoloAnnotationView() {
   const prefersReducedMotion = usePrefersReducedMotion()
   const src = photographMiddleSizedUrl(YOLO_ANNOTATION_IMAGE)
@@ -213,26 +249,24 @@ function YoloAnnotationView() {
   const [personCount, setPersonCount] = useState(0)
   const [mainCount, setMainCount] = useState(0)
   const [hoveredClass, setHoveredClass] = useState(null) // 'person' | 'main' | null
+  const [personOn, setPersonOn] = useState(true)
+  const [mainOn, setMainOn] = useState(true)
 
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
-
     if (prefersReducedMotion) {
       setRevealed(true)
       setPersonCount(14)
       setMainCount(3)
       return
     }
-
     const timeouts = []
-
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return
         obs.disconnect()
         setRevealed(true)
-
         const t1 = setTimeout(() => {
           const start = performance.now()
           const tick = (now) => {
@@ -242,7 +276,6 @@ function YoloAnnotationView() {
           }
           requestAnimationFrame(tick)
         }, 350)
-
         const t2 = setTimeout(() => {
           const start = performance.now()
           const tick = (now) => {
@@ -252,22 +285,28 @@ function YoloAnnotationView() {
           }
           requestAnimationFrame(tick)
         }, 1200)
-
         timeouts.push(t1, t2)
       },
       { rootMargin: '-5% 0px -5% 0px' }
     )
     obs.observe(el)
-
-    return () => {
-      obs.disconnect()
-      timeouts.forEach(clearTimeout)
-    }
+    return () => { obs.disconnect(); timeouts.forEach(clearTimeout) }
   }, [prefersReducedMotion])
 
+  // Box visibility: toggle off always wins; hover dim applies only when both are on
+  const personBoxOpacity = !personOn ? 0 : (hoveredClass === 'main' && mainOn ? 0 : 1)
+  const mainBoxOpacity   = !mainOn   ? 0 : (hoveredClass === 'person' && personOn ? 0 : 1)
+
+  // Dim overlay: only when the hovered class is on (so there's something to spotlight)
+  const showPersonOverlay = hoveredClass === 'person' && personOn
+  const showMainOverlay   = hoveredClass === 'main'   && mainOn
+
   return (
-    <div ref={containerRef} style={{ margin: '1.5rem auto 2rem', maxWidth: '32rem' }}>
+    <div ref={containerRef} style={{ margin: '1.5rem auto 2rem', maxWidth: '44rem', display: 'flex', gap: '1.25rem', alignItems: 'stretch' }}>
+
+      {/* ── Image + SVG overlay ── */}
       <div style={{
+        flex: 1,
         position: 'relative',
         lineHeight: 0,
         opacity: revealed ? 1 : 0,
@@ -279,9 +318,7 @@ function YoloAnnotationView() {
           loading="lazy"
           style={{ width: '100%', display: 'block', borderRadius: '0.5rem' }}
         />
-        {revealed && !prefersReducedMotion && (
-          <div className="yolo-scanline-overlay" />
-        )}
+        {revealed && !prefersReducedMotion && <div className="yolo-scanline-overlay" />}
         <svg
           viewBox="0 0 1 1"
           preserveAspectRatio="none"
@@ -289,120 +326,135 @@ function YoloAnnotationView() {
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', borderRadius: '0.5rem' }}
         >
           <defs>
-            {/* White = overlay visible (dimmed), black cutouts = image shows through */}
             <mask id="yolo-dim-person" x="0" y="0" width="1" height="1" maskUnits="userSpaceOnUse">
               <rect x="0" y="0" width="1" height="1" fill="white" />
-              {person.map((box, i) => (
-                <rect key={i} x={box.x} y={box.y} width={box.w} height={box.h} fill="black" />
-              ))}
+              {person.map((box, i) => <rect key={i} x={box.x} y={box.y} width={box.w} height={box.h} fill="black" />)}
             </mask>
             <mask id="yolo-dim-main" x="0" y="0" width="1" height="1" maskUnits="userSpaceOnUse">
               <rect x="0" y="0" width="1" height="1" fill="white" />
-              {main_people.map((box, i) => (
-                <rect key={i} x={box.x} y={box.y} width={box.w} height={box.h} fill="black" />
-              ))}
+              {main_people.map((box, i) => <rect key={i} x={box.x} y={box.y} width={box.w} height={box.h} fill="black" />)}
             </mask>
           </defs>
 
-          {/* Dark overlay — dims image outside the highlighted class's boxes */}
           <rect x="0" y="0" width="1" height="1" fill="rgba(0,0,0,0.58)"
             mask="url(#yolo-dim-person)"
-            opacity={hoveredClass === 'person' ? 1 : 0}
+            opacity={showPersonOverlay ? 1 : 0}
             style={{ transition: 'opacity 250ms ease', pointerEvents: 'none' }}
           />
           <rect x="0" y="0" width="1" height="1" fill="rgba(0,0,0,0.58)"
             mask="url(#yolo-dim-main)"
-            opacity={hoveredClass === 'main' ? 1 : 0}
+            opacity={showMainOverlay ? 1 : 0}
             style={{ transition: 'opacity 250ms ease', pointerEvents: 'none' }}
           />
 
-          {/* YOLO detected person boxes
-              Opacity lives on the <g> so it doesn't fight animation-fill-mode on the <rect> */}
-          {person.map((box, i) => {
-            const dimmed = hoveredClass === 'main'
-            const highlighted = hoveredClass === 'person'
-            return (
-              <g key={`person-${i}`} style={{ opacity: dimmed ? 0 : 1, transition: 'opacity 250ms ease' }}>
-                <rect
-                  className={revealed ? 'yolo-box yolo-box--person' : undefined}
-                  x={box.x} y={box.y} width={box.w} height={box.h}
-                  fill="none"
-                  stroke={PERSON_BOX_COLOR}
-                  strokeWidth="0.003"
-                  style={{
-                    ...(revealed && !prefersReducedMotion ? { animationDelay: `${350 + i * 50}ms` } : {}),
-                    filter: highlighted ? 'drop-shadow(0 0 5px rgba(56,189,248,0.9))' : undefined,
-                    pointerEvents: dimmed ? 'none' : undefined,
-                    transition: 'filter 220ms ease, stroke-width 220ms ease',
-                  }}
-                />
-              </g>
-            )
-          })}
+          {person.map((box, i) => (
+            <g key={`person-${i}`} style={{ opacity: personBoxOpacity, transition: 'opacity 250ms ease' }}>
+              <rect
+                className={revealed ? 'yolo-box yolo-box--person' : undefined}
+                x={box.x} y={box.y} width={box.w} height={box.h}
+                fill="none" stroke={PERSON_BOX_COLOR} strokeWidth="0.003"
+                style={{
+                  ...(revealed && !prefersReducedMotion ? { animationDelay: `${350 + i * 50}ms` } : {}),
+                  filter: showPersonOverlay ? 'drop-shadow(0 0 5px rgba(56,189,248,0.9))' : undefined,
+                  pointerEvents: personBoxOpacity === 0 ? 'none' : undefined,
+                  transition: 'filter 220ms ease, stroke-width 220ms ease',
+                }}
+              />
+            </g>
+          ))}
 
-          {/* Manually annotated main people boxes */}
-          {main_people.map((box, i) => {
-            const dimmed = hoveredClass === 'person'
-            const highlighted = hoveredClass === 'main'
-            return (
-              <g key={`main-${i}`} style={{ opacity: dimmed ? 0 : 1, transition: 'opacity 250ms ease' }}>
-                <rect
-                  className={revealed ? 'yolo-box yolo-box--main' : undefined}
-                  x={box.x} y={box.y} width={box.w} height={box.h}
-                  fill="none"
-                  stroke={MAIN_PEOPLE_BOX_COLOR}
-                  strokeWidth="0.004"
-                  style={{
-                    ...(revealed && !prefersReducedMotion ? { animationDelay: `${1150 + i * 100}ms` } : {}),
-                    filter: highlighted ? 'drop-shadow(0 0 6px rgba(249,115,22,0.9))' : undefined,
-                    pointerEvents: dimmed ? 'none' : undefined,
-                    transition: 'filter 220ms ease, stroke-width 220ms ease',
-                  }}
-                />
-              </g>
-            )
-          })}
+          {main_people.map((box, i) => (
+            <g key={`main-${i}`} style={{ opacity: mainBoxOpacity, transition: 'opacity 250ms ease' }}>
+              <rect
+                className={revealed ? 'yolo-box yolo-box--main' : undefined}
+                x={box.x} y={box.y} width={box.w} height={box.h}
+                fill="none" stroke={MAIN_PEOPLE_BOX_COLOR} strokeWidth="0.004"
+                style={{
+                  ...(revealed && !prefersReducedMotion ? { animationDelay: `${1150 + i * 100}ms` } : {}),
+                  filter: showMainOverlay ? 'drop-shadow(0 0 6px rgba(249,115,22,0.9))' : undefined,
+                  pointerEvents: mainBoxOpacity === 0 ? 'none' : undefined,
+                  transition: 'filter 220ms ease, stroke-width 220ms ease',
+                }}
+              />
+            </g>
+          ))}
         </svg>
       </div>
 
-      {/* Legend — hover triggers class-level highlight + dim */}
-      <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+      {/* ── Legend panel ── */}
+      <div style={{
+        width: '10rem',
+        flexShrink: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        gap: '1.5rem',
+      }}>
+
+        {/* Person item */}
         <div
           style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            cursor: 'pointer', userSelect: 'none',
-            opacity: hoveredClass === 'main' ? 0.32 : 1,
+            opacity: !personOn ? 0.4 : (hoveredClass === 'main' && mainOn ? 0.3 : 1),
             transition: 'opacity 250ms ease',
+            cursor: 'default',
           }}
-          onMouseEnter={() => setHoveredClass('person')}
+          onMouseEnter={() => personOn && setHoveredClass('person')}
           onMouseLeave={() => setHoveredClass(null)}
         >
-          <div style={{ width: 24, height: 3, background: PERSON_BOX_COLOR, borderRadius: 2, flexShrink: 0 }} />
-          <span style={{ font: '0.85rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
-            YOLO detected person:{' '}
-            <strong style={{ color: 'var(--archive-color-ink)', fontVariantNumeric: 'tabular-nums' }}>
-              {personCount}
-            </strong>
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <div style={{ width: 14, height: 3, background: PERSON_BOX_COLOR, borderRadius: 2, flexShrink: 0 }} />
+              <span style={{ font: '600 0.65rem/1 var(--archive-font-ui)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+                YOLO
+              </span>
+            </div>
+            <ToggleSwitch
+              checked={personOn}
+              onChange={() => { setPersonOn(v => !v); setHoveredClass(null) }}
+              color={PERSON_BOX_COLOR}
+            />
+          </div>
+          <p style={{ margin: '0 0 0.15rem', font: '0.8rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
+            Detected person
+          </p>
+          <p style={{ margin: 0, font: '500 1.4rem/1 var(--archive-font-display)', color: 'var(--archive-color-ink)', fontVariantNumeric: 'tabular-nums' }}>
+            {personCount}
+          </p>
         </div>
+
+        <div style={{ height: 1, background: 'var(--archive-color-rule)' }} />
+
+        {/* Main people item */}
         <div
           style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            cursor: 'pointer', userSelect: 'none',
-            opacity: hoveredClass === 'person' ? 0.32 : 1,
+            opacity: !mainOn ? 0.4 : (hoveredClass === 'person' && personOn ? 0.3 : 1),
             transition: 'opacity 250ms ease',
+            cursor: 'default',
           }}
-          onMouseEnter={() => setHoveredClass('main')}
+          onMouseEnter={() => mainOn && setHoveredClass('main')}
           onMouseLeave={() => setHoveredClass(null)}
         >
-          <div style={{ width: 24, height: 3, background: MAIN_PEOPLE_BOX_COLOR, borderRadius: 2, flexShrink: 0 }} />
-          <span style={{ font: '0.85rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
-            Manually annotated main people:{' '}
-            <strong style={{ color: 'var(--archive-color-ink)', fontVariantNumeric: 'tabular-nums' }}>
-              {mainCount}
-            </strong>
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <div style={{ width: 14, height: 3, background: MAIN_PEOPLE_BOX_COLOR, borderRadius: 2, flexShrink: 0 }} />
+              <span style={{ font: '600 0.65rem/1 var(--archive-font-ui)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--archive-color-muted)' }}>
+                Manual
+              </span>
+            </div>
+            <ToggleSwitch
+              checked={mainOn}
+              onChange={() => { setMainOn(v => !v); setHoveredClass(null) }}
+              color={MAIN_PEOPLE_BOX_COLOR}
+            />
+          </div>
+          <p style={{ margin: '0 0 0.15rem', font: '0.8rem/1.4 var(--archive-font-ui)', color: 'var(--archive-color-copy)' }}>
+            Main people
+          </p>
+          <p style={{ margin: 0, font: '500 1.4rem/1 var(--archive-font-display)', color: 'var(--archive-color-ink)', fontVariantNumeric: 'tabular-nums' }}>
+            {mainCount}
+          </p>
         </div>
+
       </div>
     </div>
   )
